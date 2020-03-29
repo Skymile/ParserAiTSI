@@ -1,14 +1,14 @@
-﻿using Core;
-
-namespace Terminal
+﻿namespace Terminal
 {
+	using Core;
+	
 	class Program
 	{
 		static void Main()
 		{
 			var parser = new Parser();
 
-			parser.LoadFile("input/1.txt");
+			//parser.LoadFile("input/1.txt");
 			/*
 				var x = 4;
 				if (x == 2) {
@@ -40,8 +40,10 @@ namespace Terminal
 				}
 			);
 
-			
 
+			var pql = new PQL();
+			pql.GetQuery();
+			pql.ProcessQuery();
 		}
 	}
 }

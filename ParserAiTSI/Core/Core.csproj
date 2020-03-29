@@ -41,18 +41,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interfaces\AST\IAssignNode.cs" />
-    <Compile Include="Interfaces\AST\IBinaryNode.cs" />
-    <Compile Include="Interfaces\AST\IConditionalNode.cs" />
-    <Compile Include="Interfaces\AST\IExpressionNode.cs" />
-    <Compile Include="Interfaces\AST\ILoopNode.cs" />
-    <Compile Include="Interfaces\AST\INode.cs" />
-    <Compile Include="Interfaces\AST\IStatementListNode.cs" />
-    <Compile Include="Interfaces\AST\ITree.cs" />
-    <Compile Include="Interfaces\AST\IValueNode.cs" />
-    <Compile Include="Interfaces\AST\IVariableNode.cs" />
-    <Compile Include="Interfaces\PQL\IModifies.cs" />
-    <Compile Include="Interfaces\PQL\IUses.cs" />
+    <Compile Include="Interfaces\PKB\AST\IAssignNode.cs" />
+    <Compile Include="Interfaces\PKB\AST\IBinaryNode.cs" />
+    <Compile Include="Interfaces\PKB\AST\IConditionalNode.cs" />
+    <Compile Include="Interfaces\PKB\AST\IExpressionNode.cs" />
+    <Compile Include="Interfaces\PKB\AST\ILoopNode.cs" />
+    <Compile Include="Interfaces\PKB\AST\INode.cs" />
+    <Compile Include="Interfaces\PKB\AST\IStatementListNode.cs" />
+    <Compile Include="Interfaces\PKB\AST\ITree.cs" />
+    <Compile Include="Interfaces\PKB\AST\IValueNode.cs" />
+    <Compile Include="Interfaces\PKB\AST\IVariableNode.cs" />
+    <Compile Include="Interfaces\PKB\Operations\IModifies.cs" />
+    <Compile Include="Interfaces\PKB\Operations\IUses.cs" />
+    <Compile Include="Interfaces\PQL\IPQL.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Unused.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
