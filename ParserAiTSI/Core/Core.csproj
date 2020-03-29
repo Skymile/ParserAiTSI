@@ -41,9 +41,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\AST\INode.cs" />
+    <Compile Include="Interfaces\AST\IVariable.cs" />
+    <Compile Include="Interfaces\PQL\IModifies.cs" />
+    <Compile Include="Interfaces\PQL\IUses.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Unused.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
