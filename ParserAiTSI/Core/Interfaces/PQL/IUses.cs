@@ -2,12 +2,12 @@
 {
     using System.Collections.Generic;
 
-    public interface IUses
+    internal interface IUses
     {
         IEnumerable<(int, INode)> UsesTable { get; }
-        void SetUses(INode statement, IVariable variable);
-        IEnumerable<(int, INode)> GetUses(IVariable variable);
-        IEnumerable<(int, IVariable)> GetUsed(INode statement);
-        bool isUsed(INode statement, IVariable variable);
+        void SetUses(INode statement, IVariableNode variable);
+        IEnumerable<(int, INode)> GetUses(IVariableNode variable);
+        IEnumerable<(int, IVariableNode)> GetUsed(INode statement);
+        bool isUsed(INode statement, IVariableNode variable);
     }
 }

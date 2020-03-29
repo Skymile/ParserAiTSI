@@ -2,12 +2,12 @@
 {
     using System.Collections.Generic;
     
-    public interface IModifies
+    internal interface IModifies
     {
         IEnumerable<(int, INode)> ModifiesTable { get; }
-        void SetModify(INode statement, IVariable variable);
-        IEnumerable<(int, INode)> GetModifies(IVariable variable);
-        IEnumerable<(int, IVariable)> GetModifies(INode statement);
-        bool isModifies(INode statement, IVariable variable);
+        void SetModify(INode statement, IVariableNode variable);
+        IEnumerable<(int, INode)> GetModifies(IVariableNode variable);
+        IEnumerable<(int, IVariableNode)> GetModifies(INode statement);
+        bool isModifies(INode statement, IVariableNode variable);
     }
 }
