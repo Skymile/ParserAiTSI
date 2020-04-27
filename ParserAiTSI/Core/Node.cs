@@ -1,66 +1,64 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Core
 {
-	public class Parser
-	{
-		public Parser LoadFile(string filename) =>
-			File.Exists(filename)
-				? LoadScript(File.ReadAllText(filename))
-				: throw new FileNotFoundException($"\"{filename}\" was not found.");
-
-		public Parser LoadScript(string text)
-		{
-
-
-			return this;
-		}
-
-		public Parser Add(Node node)
-		{
-			Node next = this.Root;
-
-			while (next.First != null)
-				next = next.First;
-			next.First = node;
-
-			return this;
-		}
-
-		public readonly Node Root = new Node(Instruction.Statements);
-	}
-
+	[DebuggerDisplay("{Id}|{Nodes?.Count??0}: {Instruction}")]
 	public class Node
 	{
-		public Node(Instruction instruction, params Node[] list)
-		{
-			this.InsType = instruction;
-			if (list.Length > 0)
-				this.List = new List<Node>(list);
+		public readonly List<Node> Nodes = new List<Node>();
+
+		public int Id { get; set; }
+		public int Level { get; set; }
+
+		public string Instruction 
+		{ 
+			get => this.instruction; 
+			set 
+			{
+				this.instruction = value;
+				this.Token = FindToken(value);
+			}
 		}
 
-		public Node First  { get; set; }
-		public Node Second { get; set; }
+		private string instruction;
 
-		public object Value { get; set; }
-		public string Token { get; set; }
+		public Instruction Token { get; private set; }
 
+		private static Instruction FindToken(string instruction)
+		{
+			string s = instruction.ToUpperInvariant().Trim();
 
-		public readonly IEnumerable<Node> List;
-		public readonly Instruction InsType;
+			if (s.Contains("PROCEDURE"))
+				return Core.Instruction.Procedure;
+			if (s.Contains("IF"))
+				return Core.Instruction.If;
+			if (s.Contains("ELSE"))
+				return Core.Instruction.Else;
+
+			if (s.Contains("+") || s.Contains("-") || s.Contains("*") || s.Contains("/"))
+				return Core.Instruction.Expression;
+			if (s.Contains("="))
+				return Core.Instruction.Assign;
+
+			if (s.Contains("WHILE"))
+				return Core.Instruction.Loop;
+			if (s.Contains("CALL"))
+				return Core.Instruction.Call;
+
+			throw new NotImplementedException($"Unrecognized instruction: \"{instruction}\"");
+		}
 	}
 
 	public enum Instruction : byte
 	{
-		NoOp,
-		Conditional,
+		If,
+		Else,
 		Assign,
-		Declare,
 		Expression,
 		Loop,
-		Statements,
 		Call,
-		Constant,
+		Procedure,
 	}
 }

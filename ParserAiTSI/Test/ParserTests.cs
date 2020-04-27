@@ -12,7 +12,7 @@ namespace Test
 		{
 			var parser = new Parser();
 
-			parser.LoadScript("var x = 4;");
+//			parser.LoadScript("var x = 4;");
 
 			;
 		}
