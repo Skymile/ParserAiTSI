@@ -51,11 +51,15 @@
     <Compile Include="Interfaces\AST\ITree.cs" />
     <Compile Include="Interfaces\AST\IValueNode.cs" />
     <Compile Include="Interfaces\AST\IVariableNode.cs" />
+    <Compile Include="Interfaces\PQL\IFollows.cs" />
     <Compile Include="Interfaces\PQL\IModifies.cs" />
+    <Compile Include="Interfaces\PQL\IParent.cs" />
     <Compile Include="Interfaces\PQL\IUses.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExtensions.cs" />
+    <Compile Include="Tables\FollowsTable.cs" />
+    <Compile Include="Tables\ParentTable.cs" />
     <Compile Include="Unused.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

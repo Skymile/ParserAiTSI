@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Core.Interfaces.PQL;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Core
 {
 	[DebuggerDisplay("{Id}|{Nodes?.Count??0}: {Instruction}")]
-	public class Node
+	public class Node : INode
 	{
 		public readonly List<Node> Nodes = new List<Node>();
 
