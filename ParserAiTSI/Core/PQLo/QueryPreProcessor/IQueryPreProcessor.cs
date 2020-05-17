@@ -12,5 +12,6 @@ namespace Core.PQLo.QueryPreProcessor
         void GetQuery();
         List<Field> CreateFields(List<string> elements);
         List<Field> CreateFieldType(string type, string declaration);
+        void CreatePQLTree(List<string> elements);
     }
 }
