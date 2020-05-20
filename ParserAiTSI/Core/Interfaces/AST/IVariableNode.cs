@@ -1,7 +1,7 @@
 ﻿namespace Core.Interfaces.PQL
 {
-    interface IVariableNode : INode
+    public interface IVariableNode : INode
 	{
-		string Name { get; }
+		string Name { get; set; }
 	}
 }
