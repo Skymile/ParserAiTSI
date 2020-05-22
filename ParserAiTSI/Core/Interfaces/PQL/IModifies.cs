@@ -4,10 +4,12 @@
     
     internal interface IModifies
     {
-        IEnumerable<(int, INode)> ModifiesTable { get; }
-        void SetModify(INode statement, IVariableNode variable);
-        IEnumerable<(int, INode)> GetModifies(IVariableNode variable);
-        IEnumerable<(int, IVariableNode)> GetModifies(INode statement);
-        bool isModifies(INode statement, IVariableNode variable);
+        void SetModifies(INode statement, IVariableNode var);
+
+        IEnumerable<INode> GetModifies(INode var);
+
+        IEnumerable<INode> GetModified(IVariableNode statement);
+
+        bool isModifies(INode statement, IVariableNode var);
     }
 }

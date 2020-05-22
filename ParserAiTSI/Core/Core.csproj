@@ -69,9 +69,12 @@
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExtensions.cs" />
     <Compile Include="Tables\FollowsTable.cs" />
+    <Compile Include="Tables\ModifiesTable.cs" />
     <Compile Include="Tables\ParentTable.cs" />
+    <Compile Include="Tables\UsesTable.cs" />
     <Compile Include="Unused.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VariableNode.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

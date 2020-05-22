@@ -4,10 +4,12 @@
 
     internal interface IUses
     {
-        IEnumerable<(int, INode)> UsesTable { get; }
-        void SetUses(INode statement, IVariableNode variable);
-        IEnumerable<(int, INode)> GetUses(IVariableNode variable);
-        IEnumerable<(int, IVariableNode)> GetUsed(INode statement);
-        bool isUsed(INode statement, IVariableNode variable);
+        void SetUses(INode statement, IVariableNode var);
+
+        IEnumerable<INode> GetUses(INode var);
+
+        IEnumerable<INode> GetUsedBy(IVariableNode statement);
+
+        bool isUses(INode statement, IVariableNode var);
     }
 }
