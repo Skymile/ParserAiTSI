@@ -123,6 +123,74 @@ namespace Core.PQLo.QueryPreProcessor
 						break;
 				}
 			}
+
+			tree<tree_node_<PQLNode>*>::iterator iter;
+			PQLNode* node;
+			tree_node_<PQLNode*>* treeNode;
+
+			PqlTree = new PQLTree();
+
+			node = new PQLNode("queryNode");
+			treeNode = new tree_node_<PQLNode*>(node);
+			iter = PqlTree->appendRoot(treeNode);
+
+			if (selectNodes.size() > 0)
+			{
+				node = new PQLNode("resultMainNode");
+				treeNode = new tree_node_<PQLNode*>(node);
+				iter = PqlTree->appendChild(iter, treeNode);
+
+				node = selectNodes[0];
+				treeNode = new tree_node_<PQLNode*>(node);
+				iter = PqlTree->appendChild(iter, treeNode);
+
+				for (size_t i = 1; i < selectNodes.size(); i++)
+				{
+					node = selectNodes[i];
+					treeNode = new tree_node_<PQLNode*>(node);
+					iter = PqlTree->appendSibling(iter, treeNode);
+				}
+			}
+
+			if (withNodes.size() > 0)
+			{
+				iter = PqlTree->getKorzenDrzewa();
+
+				node = new PQLNode("withMainNode");
+				treeNode = new tree_node_<PQLNode*>(node);
+				iter = PqlTree->appendChild(iter, treeNode);
+
+				node = withNodes[0];
+				treeNode = new tree_node_<PQLNode*>(node);
+				iter = PqlTree->appendChild(iter, treeNode);
+
+				for (size_t i = 1; i < withNodes.size(); i++)
+				{
+					node = withNodes[i];
+					treeNode = new tree_node_<PQLNode*>(node);
+					iter = PqlTree->appendSibling(iter, treeNode);
+				}
+			}
+
+			if (suchNodes.size() > 0)
+			{
+				iter = PqlTree->getKorzenDrzewa();
+
+				node = new PQLNode("suchMainNode");
+				treeNode = new tree_node_<PQLNode*>(node);
+				iter = PqlTree->appendChild(iter, treeNode);
+
+				node = suchNodes[0];
+				treeNode = new tree_node_<PQLNode*>(node);
+				iter = PqlTree->appendChild(iter, treeNode);
+
+				for (size_t i = 1; i < suchNodes.size(); i++)
+				{
+					node = suchNodes[i];
+					treeNode = new tree_node_<PQLNode*>(node);
+					iter = PqlTree->appendSibling(iter, treeNode);
+				}
+			}
 		}
 
 		private void MakeSuchNode(string item)

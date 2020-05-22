@@ -57,6 +57,8 @@
     <Compile Include="Interfaces\PQL\IParent.cs" />
     <Compile Include="Interfaces\PQL\IPQLMatcher.cs" />
     <Compile Include="Interfaces\PQL\IUses.cs" />
+    <Compile Include="PQLo\Node.cs" />
+    <Compile Include="PQLo\NodeExtensions.cs" />
     <Compile Include="PQLo\PQLMatcher.cs" />
     <Compile Include="PQLo\PQLNode.cs" />
     <Compile Include="PQLo\PQLTree.cs" />
