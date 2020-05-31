@@ -176,7 +176,7 @@ namespace Core.PQLo.QueryEvaluator
 			//{
 			//	if (wynikType == "boolean")
 			//	{
-			//		result.push_back("true");
+			//		result.Add("true");
 			//	}
 			//	else
 			//	{
@@ -184,65 +184,65 @@ namespace Core.PQLo.QueryEvaluator
 			//		{
 			//			if (wynikType == "procedure")
 			//			{
-			//				string name = pkbApi->getNazwaProcedury(pkbApi->getIdProcedury(lines[i]));
+			//				string name = pkbApi.getNazwaProcedury(pkbApi.getIdProcedury(lines[i]));
 			//				if (find(result.begin(), result.end(), name) >= result.begin())
-			//					result.push_back(name);
+			//					result.Add(name);
 			//			}
 			//			else if (wynikType == "variable")
 			//			{
-			//				if (isUses && !isModifies) // Czy występuje tylko relacja -> Uses
+			//				if (isUses && !isModifies) // Czy występuje tylko relacja . Uses
 			//				{
 			//					for (set<std::pair<string, int>>::iterator it = usesPairs.begin(); it != usesPairs.end(); ++it)
 			//					{
 			//						if ((*it).second == lines[i] && find(result.begin(), result.end(), (*it).first) == result.end())
 			//						{
-			//							result.push_back((*it).first);
+			//							result.Add((*it).first);
 			//						}
 			//					}
 			//				}
 
-			//				SortedDictionary<int, List<int>> varUsesLines = pkb->getUses()->getAllUses();
-			//				SortedDictionary<int, List<int>> varModifiesLines = pkb->getModifies()->getWszystkieModifies();
-			//				vector<int> variableIds;
+			//				SortedDictionary<int, List<int>> varUsesLines = pkb.getUses().getAllUses();
+			//				SortedDictionary<int, List<int>> varModifiesLines = pkb.getModifies().getWszystkieModifies();
+			//				List<int> variableIds;
 			//				if (withMap.count(selectValue) > 0) variableIds = withMap[selectValue];
 
-			//				if (!isUses && isModifies) // Czy występuje tylko relacja -> Modifies
+			//				if (!isUses && isModifies) // Czy występuje tylko relacja . Modifies
 			//				{
 
-			//					for (map<int, vector<int>>::iterator it = varModifiesLines.begin(); it != varModifiesLines.end(); ++it)
+			//					for (map<int, List<int>>::iterator it = varModifiesLines.begin(); it != varModifiesLines.end(); ++it)
 			//					{
-			//						vector<int> tmp = (*it).second;
+			//						List<int> tmp = (*it).second;
 			//						if (find(tmp.begin(), tmp.end(), lines[i]) != tmp.end())
 			//						{
-			//							string name = pkb->getTablicaZmiennych()->getNazwaZmiennej((*it).first);
+			//							string name = pkb.getTablicaZmiennych().getNazwaZmiennej((*it).first);
 			//							if (find(result.begin(), result.end(), name) == result.end() && (find(variableIds.begin(), variableIds.end(), (*it).first) != variableIds.end() || variableIds.empty()))
-			//								result.push_back(name);
+			//								result.Add(name);
 			//						}
 			//					}
 			//				}
 			//				else if (isUses && isModifies) // Wystapienie obu relacji (Uses i Modifies)
 			//				{
-			//					vector<string> resultUses;
-			//					for (map<int, vector<int>>::iterator it = varUsesLines.begin(); it != varUsesLines.end(); ++it)
+			//					List<string> resultUses;
+			//					for (map<int, List<int>>::iterator it = varUsesLines.begin(); it != varUsesLines.end(); ++it)
 			//					{
-			//						vector<int> tmp = (*it).second;
+			//						List<int> tmp = (*it).second;
 			//						if (find(tmp.begin(), tmp.end(), lines[i]) != tmp.end())
 			//						{
-			//							string name = pkb->getTablicaZmiennych()->getNazwaZmiennej((*it).first);
+			//							string name = pkb.getTablicaZmiennych().getNazwaZmiennej((*it).first);
 			//							if (find(resultUses.begin(), resultUses.end(), name) == resultUses.end() && (find(variableIds.begin(), variableIds.end(), (*it).first) != variableIds.end() || variableIds.empty()))
-			//								resultUses.push_back(name);
+			//								resultUses.Add(name);
 			//						}
 			//					}
 
-			//					vector<string> resultModifies;
-			//					for (map<int, vector<int>>::iterator it = varModifiesLines.begin(); it != varModifiesLines.end(); ++it)
+			//					List<string> resultModifies;
+			//					for (map<int, List<int>>::iterator it = varModifiesLines.begin(); it != varModifiesLines.end(); ++it)
 			//					{
-			//						vector<int> tmp = (*it).second;
+			//						List<int> tmp = (*it).second;
 			//						if (find(tmp.begin(), tmp.end(), lines[i]) != tmp.end())
 			//						{
-			//							string name = pkb->getTablicaZmiennych()->getNazwaZmiennej((*it).first);
+			//							string name = pkb.getTablicaZmiennych().getNazwaZmiennej((*it).first);
 			//							if (find(resultModifies.begin(), resultModifies.end(), name) == resultModifies.end() && (find(variableIds.begin(), variableIds.end(), (*it).first) != variableIds.end() || variableIds.empty()))
-			//								resultModifies.push_back(name);
+			//								resultModifies.Add(name);
 			//						}
 			//					}
 
@@ -252,7 +252,7 @@ namespace Core.PQLo.QueryEvaluator
 			//						{
 			//							if (resultUses[iU] == resultModifies[iM] && find(result.begin(), result.end(), resultUses[iU]) == result.end())
 			//							{
-			//								result.push_back(resultUses[iU]);
+			//								result.Add(resultUses[iU]);
 			//							}
 			//						}
 			//					}
@@ -264,7 +264,7 @@ namespace Core.PQLo.QueryEvaluator
 			//				stringstream ss;
 			//				ss << lines[i];
 			//				if (find(result.begin(), result.end(), ss.str()) >= result.begin())
-			//					result.push_back(ss.str());
+			//					result.Add(ss.str());
 			//			}
 			//		}
 			//	}
@@ -273,11 +273,11 @@ namespace Core.PQLo.QueryEvaluator
 			//{
 			//	if (wynikType == "boolean")
 			//	{
-			//		result.push_back("false");
+			//		result.Add("false");
 			//	}
 			//	else
 			//	{
-			//		//result.push_back("NONE");
+			//		//result.Add("NONE");
 			//	}
 			//}
 
