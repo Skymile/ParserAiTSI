@@ -47,10 +47,13 @@
     <Compile Include="Interfaces\AST\IExpressionNode.cs" />
     <Compile Include="Interfaces\AST\ILoopNode.cs" />
     <Compile Include="Interfaces\AST\INode.cs" />
+    <Compile Include="Interfaces\AST\IProcedureNode.cs" />
     <Compile Include="Interfaces\AST\IStatementListNode.cs" />
     <Compile Include="Interfaces\AST\ITree.cs" />
     <Compile Include="Interfaces\AST\IValueNode.cs" />
     <Compile Include="Interfaces\AST\IVariableNode.cs" />
+    <Compile Include="Interfaces\PQL\ICalls.cs" />
+    <Compile Include="Interfaces\PQL\INext.cs" />
     <Compile Include="PQLo\Field.cs" />
     <Compile Include="Interfaces\PQL\IFollows.cs" />
     <Compile Include="Interfaces\PQL\IModifies.cs" />
@@ -68,8 +71,11 @@
     <Compile Include="Node.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExtensions.cs" />
+    <Compile Include="ProcedureNode.cs" />
+    <Compile Include="Tables\CallsTable.cs" />
     <Compile Include="Tables\FollowsTable.cs" />
     <Compile Include="Tables\ModifiesTable.cs" />
+    <Compile Include="Tables\NextTable.cs" />
     <Compile Include="Tables\ParentTable.cs" />
     <Compile Include="Tables\UsesTable.cs" />
     <Compile Include="Unused.cs" />
