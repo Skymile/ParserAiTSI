@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -130,72 +131,60 @@ namespace Core.PQLo.QueryPreProcessor
                 }
             }
             // TODO: POPRAWIC TWORZENIE DRZEWA
-            //Node<PQLNode> iter;
-            //PQLNode node;
-            //Node<PQLNode> treeNode;
-            //node = new PQLNode("queryNode");
-            //treeNode = new Node<PQLNode>(node);
+            ITree<PQLNode> tree = NodeTree<PQLNode>.NewTree();
+            var node = tree.AddChild(new PQLNode("queryNode"));
+            PQLNode treeNode; 
 
-            //iter = treeNode;
+            if (this.selectNodes.Count > 0)
+            {
+                treeNode = new PQLNode("resultMainNode");
+                node = node.AddChild(treeNode);
 
-            //if (this.selectNodes.Count > 0)
-            //{
-            //    node = new PQLNode("resultMainNode");
-            //    treeNode = new Node<PQLNode>(node);
-            //    iter.AddFirstChild(treeNode);
+                treeNode = this.selectNodes[0];
+                
+                node = node.AddChild(treeNode);
 
-            //    node = this.selectNodes[0];
-            //    treeNode = new Node<PQLNode>(node);
-            //    iter.Add(treeNode);
+                for (int i = 1; i < this.selectNodes.Count; i++)
+                {
+                    treeNode = this.selectNodes[i];
+                    node.InsertNext(treeNode);
+                }
+            }
+            
+            if (this.withNodes.Count > 0)
+            {
+                node = tree.Root;
 
-            //    for (int i = 1; i < this.selectNodes.Count; i++)
-            //    {
-            //        node = this.selectNodes[i];
-            //        treeNode = new Node<PQLNode>(node);
-            //        iter.AddFirstSibling(treeNode);
-            //    }
-            //}
+                treeNode = new PQLNode("withMainNode");
+                node = node.AddChild(treeNode);
 
-            //if (this.withNodes.Count > 0)
-            //{
-            //    iter = iter.Root;
+                treeNode = this.withNodes[0];
+                node = node.AddChild(treeNode);
 
-            //    node = new PQLNode("withMainNode");
-            //    treeNode = new Node<PQLNode>(node);
-            //    iter.AddFirstChild(treeNode);
+                for (int i = 1; i < this.withNodes.Count; i++)
+                {
+                    treeNode = this.withNodes[i];
+                    node.InsertNext(treeNode);
+                }
+            }
 
-            //    node = this.withNodes[0];
-            //    treeNode = new Node<PQLNode>(node);
-            //    iter.Add(treeNode);
+            if (this.suchNodes.Count > 0)
+            {
+                node = tree.Root;
 
-            //    for (int i = 1; i < this.withNodes.Count; i++)
-            //    {
-            //        node = this.withNodes[i];
-            //        treeNode = new Node<PQLNode>(node);
-            //        iter.AddFirstSibling(treeNode);
-            //    }
-            //}
+                treeNode = new PQLNode("suchMainNode");
+                node = node.AddChild(treeNode);
 
-            //if (this.suchNodes.Count > 0)
-            //{
-            //    iter = iter.Root;
+                treeNode = suchNodes[0];
+                node = node.AddChild(treeNode);
 
-            //    node = new PQLNode("suchMainNode");
-            //    treeNode = new Node<PQLNode>(node);
-            //    iter.AddFirstChild(treeNode);
-
-            //    node = suchNodes[0];
-            //    treeNode = new Node<PQLNode>(node);
-            //    iter.Add(treeNode);
-
-            //    for (int i = 1; i < this.suchNodes.Count; i++)
-            //    {
-            //        node = suchNodes[i];
-            //        treeNode = new Node<PQLNode>(node);
-            //        iter.AddFirstSibling(treeNode);
-            //    }
-            //}
-            //this.PqlTree = iter;
+                for (int i = 1; i < this.suchNodes.Count; i++)
+                {
+                    treeNode = suchNodes[i];
+                    node.InsertNext(treeNode);
+                }
+            }
+            this.PqlTree = iter;
         }
 
         private void MakeSuchNode(string item)
