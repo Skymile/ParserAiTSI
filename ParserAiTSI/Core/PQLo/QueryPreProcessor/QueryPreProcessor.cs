@@ -82,7 +82,7 @@ namespace Core.PQLo.QueryPreProcessor
 
             return fieldDeclars;
         }
-        private Node<PQLNode> PqlTree;
+        public ITree<PQLNode> PqlTree;
         public void CreatePQLTree(List<string> elems)
         {
             if (elems.Count > 1) throw new Exception();
@@ -130,7 +130,6 @@ namespace Core.PQLo.QueryPreProcessor
                         break;
                 }
             }
-            // TODO: POPRAWIC TWORZENIE DRZEWA
             ITree<PQLNode> tree = NodeTree<PQLNode>.NewTree();
             var node = tree.AddChild(new PQLNode("queryNode"));
             PQLNode treeNode; 
@@ -184,7 +183,7 @@ namespace Core.PQLo.QueryPreProcessor
                     node.InsertNext(treeNode);
                 }
             }
-            this.PqlTree = iter;
+            this.PqlTree = tree;
         }
 
         private void MakeSuchNode(string item)
