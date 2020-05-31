@@ -1,5 +1,6 @@
 ﻿using System;
 using Core;
+using Core.PQLo.QueryPreProcessor;
 
 namespace Terminal
 {
@@ -11,6 +12,9 @@ namespace Terminal
 
 			parser.Load("../../input/1.txt");
 
+			var a = new QueryPreProcessor();
+			a.GetQuery();
+			a.ProcessQuery();
 			Console.ReadLine();
 		}
 	}
