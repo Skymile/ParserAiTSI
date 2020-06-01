@@ -1,13 +1,18 @@
-﻿using Core.Interfaces.PQL;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using Core.Interfaces.PQL;
+
 namespace Core
 {
-	[DebuggerDisplay("{Id}|{Nodes?.Count??0}: {Instruction}")]
+	[DebuggerDisplay("{Level}|{Id}|{Nodes?.Count??0}: {Instruction}")]
 	public class Node : INode
 	{
+		public Node() { }
+		public Node(IEnumerable<Node> nodes) =>
+			this.Nodes.AddRange(nodes);
+
 		public readonly List<Node> Nodes = new List<Node>();
 
 		public int Id { get; set; }

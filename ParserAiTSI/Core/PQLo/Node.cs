@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Core.PQLo
 {
@@ -10,20 +9,14 @@ namespace Core.PQLo
     {
         public Node<T> Parent { get; private set; }
         public T Value { get; set; }
+
         private readonly List<Node<T>> _children = new List<Node<T>>();
 
-        public Node(T value)
-        {
-            Value = value;
-        }
+        public Node(T value) => 
+            this.Value = value;
 
-        public Node<T> this[int index]
-        {
-            get
-            {
-                return _children[index];
-            }
-        }
+        public Node<T> this[int index] => 
+            this._children[index];
 
         public Node<T> Add(T value, int index = -1)
         {
@@ -46,24 +39,23 @@ namespace Core.PQLo
             {
                 throw new ArgumentException("The child node with value [{0}] can not be added because it is not a root node.".FormatInvariant(childNode.Value));
             }
-
             if (Root == childNode)
             {
                 throw new ArgumentException("The child node with value [{0}] is the rootnode of the parent.".FormatInvariant(childNode.Value));
             }
-
             if (childNode.SelfAndDescendants.Any(n => this == n))
             {
                 throw new ArgumentException("The childnode with value [{0}] can not be added to itself or its descendants.".FormatInvariant(childNode.Value));
             }
+
             childNode.Parent = this;
             if (index == -1)
             {
-                _children.Add(childNode);
+                this._children.Add(childNode);
             }
             else
             {
-                _children.Insert(index, childNode);
+                this._children.Insert(index, childNode);
             }
         }
 
@@ -126,136 +118,49 @@ namespace Core.PQLo
                 {
                     return Enumerable.Empty<Node<T>>();
                 }
-                return Parent.ToIEnumarable().Concat(Parent.Ancestors);
+                return Parent.ToIEnumerable().Concat(Parent.Ancestors);
             }
         }
 
-        public IEnumerable<Node<T>> Descendants
-        {
-            get
-            {
-                return SelfAndDescendants.Skip(1);
-            }
-        }
+        public IEnumerable<Node<T>> Descendants => SelfAndDescendants.Skip(1);
 
-        public IEnumerable<Node<T>> Children
-        {
-            get
-            {
-                return _children;
-            }
-        }
+        public IEnumerable<Node<T>> Children => _children;
 
-        public IEnumerable<Node<T>> Siblings
-        {
-            get
-            {
-                return SelfAndSiblings.Where(Other);
-
-            }
-        }
+        public IEnumerable<Node<T>> Siblings => SelfAndSiblings.Where(Other);
 
         private bool Other(Node<T> node)
         {
             return !ReferenceEquals(node, this);
         }
 
-        public IEnumerable<Node<T>> SelfAndChildren
-        {
-            get
-            {
-                return this.ToIEnumarable().Concat(Children);
-            }
-        }
+        public IEnumerable<Node<T>> SelfAndChildren => this.ToIEnumerable().Concat(Children);
 
-        public IEnumerable<Node<T>> SelfAndAncestors
-        {
-            get
-            {
-                return this.ToIEnumarable().Concat(Ancestors);
-            }
-        }
+        public IEnumerable<Node<T>> SelfAndAncestors => this.ToIEnumerable().Concat(Ancestors);
 
-        public IEnumerable<Node<T>> SelfAndDescendants
-        {
-            get
-            {
-                return this.ToIEnumarable().Concat(Children.SelectMany(c => c.SelfAndDescendants));
-            }
-        }
+        public IEnumerable<Node<T>> SelfAndDescendants => this.ToIEnumerable().Concat(Children.SelectMany(c => c.SelfAndDescendants));
 
-        public IEnumerable<Node<T>> SelfAndSiblings
-        {
-            get
-            {
-                if (IsRoot)
-                {
-                    return this.ToIEnumarable();
-                }
-                return Parent.Children;
+        public IEnumerable<Node<T>> SelfAndSiblings => this.IsRoot ? this.ToIEnumerable() : Parent.Children;
 
-            }
-        }
-
-        public IEnumerable<Node<T>> All
-        {
-            get
-            {
-                return Root.SelfAndDescendants;
-            }
-        }
+        public IEnumerable<Node<T>> All => this.Root.SelfAndDescendants;
 
 
-        public IEnumerable<Node<T>> SameLevel
-        {
-            get
-            {
-                return SelfAndSameLevel.Where(Other);
+        public IEnumerable<Node<T>> SameLevel => this.SelfAndSameLevel.Where(Other);
 
-            }
-        }
+        public int Level => this.Ancestors.Count();
 
-        public int Level
-        {
-            get
-            {
-                return Ancestors.Count();
-            }
-        }
+        public IEnumerable<Node<T>> SelfAndSameLevel => GetNodesAtLevel(this.Level);
 
-        public IEnumerable<Node<T>> SelfAndSameLevel
-        {
-            get
-            {
-                return GetNodesAtLevel(Level);
-            }
-        }
+        public IEnumerable<Node<T>> GetNodesAtLevel(int level) => Root.GetNodesAtLevelInternal(level);
 
-        public IEnumerable<Node<T>> GetNodesAtLevel(int level)
-        {
-            return Root.GetNodesAtLevelInternal(level);
-        }
+        private IEnumerable<Node<T>> GetNodesAtLevelInternal(int level) => level == Level 
+            ? this.ToIEnumerable() 
+            : this.Children.SelectMany(c => c.GetNodesAtLevelInternal(level));
 
-        private IEnumerable<Node<T>> GetNodesAtLevelInternal(int level)
-        {
-            if (level == Level)
-            {
-                return this.ToIEnumarable();
-            }
-            return Children.SelectMany(c => c.GetNodesAtLevelInternal(level));
-        }
-
-        public Node<T> Root
-        {
-            get
-            {
-                return SelfAndAncestors.Last();
-            }
-        }
+        public Node<T> Root => this.SelfAndAncestors.Last();
 
         public void Disconnect()
         {
-            if (IsRoot)
+            if (this.IsRoot)
             {
                 throw new InvalidOperationException("The root node [{0}] can not get disconnected from a parent.".FormatInvariant(Value));
             }
@@ -263,30 +168,15 @@ namespace Core.PQLo
             Parent = null;
         }
 
-        public bool IsRoot
-        {
-            get { return Parent == null; }
-        }
+        public bool IsRoot => Parent == null;
 
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            return _children.Values().GetEnumerator();
-        }
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => _children.Values().GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _children.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
 
-        public IEnumerator<Node<T>> GetEnumerator()
-        {
-            return _children.GetEnumerator();
-        }
+        public IEnumerator<Node<T>> GetEnumerator() => _children.GetEnumerator();
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
+        public override string ToString() => Value.ToString();
 
         public static IEnumerable<Node<T>> CreateTree<TId>(IEnumerable<T> values, Func<T, TId> idSelector, Func<T, TId?> parentIdSelector)
             where TId : struct
@@ -330,72 +220,33 @@ namespace Core.PQLo
                     throw new ArgumentException("A value has the parent ID [{0}] but no other nodes has this ID".FormatInvariant(parentId.Value));
                 }
             }
-            var result = rootNodesCache.Where(n => n.IsRoot);
-            return result;
+            return rootNodesCache.Where(n => n.IsRoot);
         }
 
 
         private static bool IsSameId<TId>(TId id, TId? parentId)
-            where TId : struct
-        {
-            return parentId != null && id.Equals(parentId.Value);
-        }
+            where TId : struct => 
+            parentId != null && id.Equals(parentId.Value);
 
         #region Equals en ==
+        public static bool operator ==(Node<T> value1, Node<T> value2) => 
+            (object)(value1) == null && (object)value2 == null ? true : ReferenceEquals(value1, value2);
 
-        public static bool operator ==(Node<T> value1, Node<T> value2)
-        {
-            if ((object)(value1) == null && (object)value2 == null)
-            {
-                return true;
-            }
-            return ReferenceEquals(value1, value2);
-        }
+        public static bool operator !=(Node<T> value1, Node<T> value2) => !(value1 == value2);
 
-        public static bool operator !=(Node<T> value1, Node<T> value2)
-        {
-            return !(value1 == value2);
-        }
+        public override bool Equals(object anderePeriode) => this == anderePeriode as Node<T>;
 
-        public override bool Equals(Object anderePeriode)
-        {
-            var valueThisType = anderePeriode as Node<T>;
-            return this == valueThisType;
-        }
+        public bool Equals(Node<T> value) => this == value;
+        public bool Equals(Node<T> value1, Node<T> value2) => value1 == value2;
 
-        public bool Equals(Node<T> value)
-        {
-            return this == value;
-        }
+        bool IEqualityComparer.Equals(object value1, object value2) => 
+            Equals(value1 as Node<T>, value2 as Node<T>);
 
-        public bool Equals(Node<T> value1, Node<T> value2)
-        {
-            return value1 == value2;
-        }
+        public int GetHashCode(object obj) => GetHashCode(obj as Node<T>);
 
-        bool IEqualityComparer.Equals(object value1, object value2)
-        {
-            var valueThisType1 = value1 as Node<T>;
-            var valueThisType2 = value2 as Node<T>;
+        public override int GetHashCode() => GetHashCode(this);
 
-            return Equals(valueThisType1, valueThisType2);
-        }
-
-        public int GetHashCode(object obj)
-        {
-            return GetHashCode(obj as Node<T>);
-        }
-
-        public override int GetHashCode()
-        {
-            return GetHashCode(this);
-        }
-
-        public int GetHashCode(Node<T> value)
-        {
-            return base.GetHashCode();
-        }
+        public int GetHashCode(Node<T> value) => base.GetHashCode();
         #endregion
-
     }
 }

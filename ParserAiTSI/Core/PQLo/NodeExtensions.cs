@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.PQLo
 {
     public static class NodeExtensions
     {
-        public static IEnumerable<T> Values<T>(this IEnumerable<Node<T>> nodes)
-        {
-            return nodes.Select(n => n.Value);
-        }
+        public static IEnumerable<T> Values<T>(this IEnumerable<Node<T>> nodes) => 
+            nodes.Select(n => n.Value);
     }
 
     public static class OtherExtensions
@@ -20,9 +16,9 @@ namespace Core.PQLo
         public static IEnumerable<TSource> Duplicates<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> selector)
         {
             var grouped = source.GroupBy(selector);
-            var moreThen1 = grouped.Where(i => i.IsMultiple());
+            var moreThan1 = grouped.Where(i => i.IsMultiple());
 
-            return moreThen1.SelectMany(i => i);
+            return moreThan1.SelectMany(i => i);
         }
 
         public static bool IsMultiple<T>(this IEnumerable<T> source)
@@ -31,7 +27,7 @@ namespace Core.PQLo
             return enumerator.MoveNext() && enumerator.MoveNext();
         }
 
-        public static IEnumerable<T> ToIEnumarable<T>(this T item)
+        public static IEnumerable<T> ToIEnumerable<T>(this T item)
         {
             yield return item;
         }

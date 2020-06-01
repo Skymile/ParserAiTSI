@@ -1,6 +1,6 @@
 ﻿namespace Core.Interfaces.PQL
 {
-    interface IAssignNode : INode
+	interface IAssignNode : INode
 	{
 		IVariableNode Left { get; }
 		IValueNode Right { get; }

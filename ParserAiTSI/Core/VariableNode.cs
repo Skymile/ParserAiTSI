@@ -1,14 +1,14 @@
-﻿using Core.Interfaces.PQL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
+using Core.Interfaces.PQL;
 
 namespace Core
 {
-    public class VariableNode : IVariableNode
+    public class VariableNode : Node, IVariableNode
     {
-        public string Name { get; set; }
+        public VariableNode() { }
+        public VariableNode(IEnumerable<Node> nodes) : base(nodes) { }
+
+        public string Name  { get; set; }
     }
 }

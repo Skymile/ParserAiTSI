@@ -1,14 +1,11 @@
-﻿using Common;
-using Core.Interfaces.PQL;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using Common;
 
 namespace Core.PQLo.QueryEvaluator
 {
-    public class QueryEvaluator
+	public class QueryEvaluator
     {
 		private bool firstUses;
 		private string resultType;

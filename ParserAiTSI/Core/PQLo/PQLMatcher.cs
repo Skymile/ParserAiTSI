@@ -1,18 +1,12 @@
-﻿using Core.Interfaces.PQL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+
+using Core.Interfaces.PQL;
 
 namespace Core.PQLo
 {
     public class PQLMatcher : IPQLMatcher
     {
-        public PQLMatcher()
-        {
-
-        }
+        public PQLMatcher() { }
 
         public bool CheckAll(string element)
             => !this.CheckToken(element, ".varName") && !this.CheckToken(element, ".procedureName")
@@ -83,7 +77,7 @@ namespace Core.PQLo
         }
 
         public bool IsUnderscore(string element)
-            => (element.IndexOf("_") < element.Length);
+            => element.IndexOf("_") < element.Length;
 
 
         public bool IsElementNumber(string element)
@@ -112,6 +106,5 @@ namespace Core.PQLo
 
             return position1 < position2 && position1 + 1 != position2 && position3 == -1;
         }
-
     }
 }

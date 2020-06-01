@@ -13,6 +13,8 @@ namespace Terminal
 
 			parser.Load("../../input/1.txt");
 
+			PKB pkb = new PKB(parser);
+
 			var a = new QueryPreProcessor();
 			a.GetQuery();
 			a.ProcessQuery();

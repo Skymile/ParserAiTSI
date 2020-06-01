@@ -1,13 +1,14 @@
-﻿using Core.Interfaces.AST;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
+using Core.Interfaces.AST;
 
 namespace Core
 {
     public class ProcedureNode : Node, IProcedureNode
     {
+        public ProcedureNode() { }
+        public ProcedureNode(IEnumerable<Node> nodes) : base(nodes) { }
+
+        public string Name { get; set; }
     }
 }

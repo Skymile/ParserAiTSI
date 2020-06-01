@@ -1,17 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Core
 {
 	public class Parser
 	{
-		public static Node LoadRoot(string filename)
-		{
-			var r = new Node();
-			r.Nodes.AddRange(LoadNodes(filename));
-			return r;
-		}
-
 		public Parser Load(string filename)
 		{
 			this.Root.Nodes.Clear();
@@ -19,15 +13,27 @@ namespace Core
 			return this;
 		}
 
-		private static IEnumerable<Node> LoadNodes(string filename) =>
-			LoadScript(filename)
-				.ToNormalized()
-				.ToArrayForm()
-				.ToRolledUpForm();
-
-		private static IEnumerable<string> LoadScript(string filename) =>
-			File.ReadAllText(filename).Replace('\t', '\n').Replace('\r', '\n').Replace(';', '\n').Split('\n');
+		public IEnumerable<string> NormalizedForm { get; private set; }
+		public IEnumerable<Node  > ArrayForm      { get; private set; }
 
 		public readonly Node Root = new Node();
+
+		private IEnumerable<Node> LoadNodes(string filename) => 
+			(
+				this.ArrayForm = 
+				(
+					this.NormalizedForm = LoadScript(filename)
+						.ToNormalized()
+						.ToList()
+				).ToArrayForm()
+				 .ToList()
+			).ToRolledUpForm();
+
+		private static IEnumerable<string> LoadScript(string filename) =>
+			File.ReadAllText(filename)
+				.Replace('\t', '\n')
+				.Replace('\r', '\n')
+				.Replace(';', '\n')
+				.Split('\n');
 	}
 }

@@ -1,13 +1,10 @@
-﻿namespace Core.PQLo
-{
-    using System;
+﻿using System;
 
+namespace Core.PQLo
+{
     public class Field
     {
-        public Field()
-        {
-
-        }
+        public Field() { }
 
         public Field(string type, string value)
         {
@@ -25,11 +22,12 @@
             this.Statement = statement;
         }
 
-        public string Type { get; set; }
-        public string Value { get; set; }
+        public string Type        { get; set; }
+        public string Value       { get; set; }
+
         public bool ProcedureName { get; set; } = false;
-        public bool VariableName { get; set; } = false;
-        public bool Value2 { get; set; } = false;
-        public bool Statement { get; set; } = false;
+        public bool VariableName  { get; set; } = false;
+        public bool Value2        { get; set; } = false;
+        public bool Statement     { get; set; } = false;
     }
 }

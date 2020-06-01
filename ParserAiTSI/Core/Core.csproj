@@ -57,6 +57,7 @@
     <Compile Include="Interfaces\AST\IVariableNode.cs" />
     <Compile Include="Interfaces\PQL\ICalls.cs" />
     <Compile Include="Interfaces\PQL\INext.cs" />
+    <Compile Include="PKB.cs" />
     <Compile Include="PQLo\Field.cs" />
     <Compile Include="Interfaces\PQL\IFollows.cs" />
     <Compile Include="Interfaces\PQL\IModifies.cs" />
