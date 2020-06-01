@@ -1,10 +1,7 @@
-﻿using Core.Interfaces.AST;
+﻿using System.Collections.Generic;
+
+using Core.Interfaces.AST;
 using Core.Interfaces.PQL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Tables
 {

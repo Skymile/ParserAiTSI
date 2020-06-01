@@ -12,7 +12,8 @@ namespace Core
 		public PKB(Parser parser)
 		{
 			this.Root = parser.Root;
-			Compute(parser);
+			this.ArrayForm = new NodeCollection(parser.ArrayForm);
+			Compute();
 		}
 
 		public readonly FollowsTable  Follows  = new FollowsTable ();
@@ -25,12 +26,13 @@ namespace Core
 		public readonly List<IVariableNode > Variables  = new List<IVariableNode >();
 		public readonly List<IProcedureNode> Procedures = new List<IProcedureNode>();
 
+		public readonly NodeCollection ArrayForm;
 		public readonly Node Root;
 
-		private void Compute(Parser p)
+		private void Compute()
 		{
-			var arrayForm = p.ArrayForm.ToList();
-			var root = p.Root;
+			var arrayForm = this.ArrayForm;
+			var root = this.Root;
 			
 			SetVariables (arrayForm);
 			SetProcedures(root);
@@ -43,7 +45,7 @@ namespace Core
 			SetUses    (arrayForm);
 		}
 
-		private void SetVariables(List<Node> arrayForm) =>
+		private void SetVariables(NodeCollection arrayForm) =>
 			this.Variables.AddRange(
 				from i in arrayForm
 				where i.Token == Instruction.Assign || i.Token == Instruction.Expression
@@ -71,7 +73,7 @@ namespace Core
 				}
 			);
 
-		private void SetFollows(List<Node> arrayForm)
+		private void SetFollows(NodeCollection arrayForm)
 		{
 			for (int i = 0; i < arrayForm.Count - 1; i++)
 				if (arrayForm[i].Level == arrayForm[i + 1].Level)
@@ -88,7 +90,7 @@ namespace Core
 			}
 		}
 
-		private void SetCalls(List<Node> arrayForm)
+		private void SetCalls(NodeCollection arrayForm)
 		{
 			int p = -1;
 			foreach (var i in arrayForm)
@@ -109,7 +111,7 @@ namespace Core
 				}
 		}
 
-		private void SetModifies(List<Node> arrayForm)
+		private void SetModifies(NodeCollection arrayForm)
 		{
 			foreach (var i in arrayForm)
 				if (i.Token == Instruction.Expression)
@@ -145,7 +147,7 @@ namespace Core
 				this.Next.SetNext(parent, nodes[nodes.Count - 1]);
 		}
 
-		private void SetUses(List<Node> arrayForm)
+		private void SetUses(NodeCollection arrayForm)
 		{
 			foreach (var i in arrayForm)
 			{
@@ -160,7 +162,9 @@ namespace Core
 						vars = i.Instruction.Substring(ind).Trim().Split(' ');
 				}
 
-				if (!(vars is null) && this.Variables.FirstOrDefault(j => vars.Any(k => k == j.Name)) is var used && !(used is null))
+				if (!(vars is null) && 
+					this.Variables.FirstOrDefault(j => vars.Any(k => k == j.Name)) is var used && 
+					!(used is null))
 					this.Uses.SetUses(i, used);
 			}
 		}

@@ -57,14 +57,17 @@ namespace Core
 		}
 	}
 
+	[Flags]
 	public enum Instruction : byte
 	{
-		If,
-		Else,
-		Assign,
-		Expression,
-		Loop,
-		Call,
-		Procedure,
+		None       = 0,
+		If         = 1 << 0,
+		Else       = 1 << 1,
+		Assign     = 1 << 2,
+		Expression = 1 << 3,
+		Loop       = 1 << 4,
+		Call       = 1 << 5,
+		Procedure  = 1 << 6,
+		All        = (1 << 7) - 1,
 	}
 }

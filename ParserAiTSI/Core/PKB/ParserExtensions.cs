@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Core
 {
-	public static class ParserExtensions
+	internal static class ParserExtensions
 	{
 		public static IEnumerable<string> ToNormalized(this IEnumerable<string> lines)
 		{
