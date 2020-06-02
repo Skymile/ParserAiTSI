@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Core;
 using Core.PQLo.QueryEvaluator;
 using Core.PQLo.QueryPreProcessor;
@@ -11,7 +12,7 @@ namespace Terminal
 		{
 			var parser = new Parser();
 
-			parser.Load("../../input/1.txt");
+			parser.Load("../../input/2.txt");
 
 			PKB pkb = new PKB(parser);
 

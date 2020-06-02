@@ -34,6 +34,9 @@ namespace Core
 				.Replace('\t', '\n')
 				.Replace('\r', '\n')
 				.Replace(';', '\n')
-				.Split('\n');
+				.Replace("}", "}\n")
+				.Replace("{", "{\n")
+				.Split('\n')
+				.Select(i => i.Trim());
 	}
 }
