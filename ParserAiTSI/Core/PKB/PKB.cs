@@ -103,7 +103,7 @@ namespace Core
 						string name = i.Instruction.Substring("CALL ".Length);
 
 						this.Calls.SetCall(
-							this.Procedures.Single(j => j.Name == name),
+							this.Procedures.Single(j => j.Name.Equals(name, System.StringComparison.InvariantCultureIgnoreCase)),
 							this.Procedures[p]
 						);
 						// proc1 calls proc2

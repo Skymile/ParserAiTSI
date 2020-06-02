@@ -13,7 +13,7 @@ namespace Core
 		public Node(IEnumerable<Node> nodes) =>
 			this.Nodes.AddRange(nodes);
 
-		public readonly List<Node> Nodes = new List<Node>();
+		public List<Node> Nodes { get; } = new List<Node>();
 
 		public int Id { get; set; }
 		public int Level { get; set; }
