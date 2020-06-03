@@ -40,7 +40,7 @@ namespace Core.PQLo.QueryPreProcessor
 
         public void GetQuery()
         {
-            string rawQuery = "assign a; Select a such that Modifies(a,\"x\")"; // zmienic na wczytywanie z konsoli/pliku
+            string rawQuery = "variable v; Select v such that Modifies(7, v)"; // zmienic na wczytywanie z konsoli/pliku
             this.ProccesedQuery = rawQuery.ToLower();
         }
 
@@ -241,6 +241,7 @@ namespace Core.PQLo.QueryPreProcessor
                     }
                     else
                     {
+                        attributes[i] = attributes[i].Trim();
                         Field field = this.FindField(attributes[i]);
                         if (field == null)
                         {

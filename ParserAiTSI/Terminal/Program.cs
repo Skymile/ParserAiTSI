@@ -20,7 +20,7 @@ namespace Terminal
 			a.GetQuery();
 			a.ProcessQuery();
 			var tree = a.PqlTree;
-			var evaluator = new QueryEvaluator();
+			var evaluator = new QueryEvaluator(pkb);
 			var results = evaluator.ResultQuery(tree);
 			Console.ReadLine();
 		}

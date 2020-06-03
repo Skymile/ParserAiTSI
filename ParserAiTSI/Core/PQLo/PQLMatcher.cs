@@ -58,7 +58,7 @@ namespace Core.PQLo
         }
 
         public bool IsStar(string element, int pos)
-            => element.IndexOf("*", pos) < element.Length && element.IndexOf("*", pos) == pos;
+            => element.IndexOf("*", pos) != -1 && element.IndexOf("*", pos) == pos;
 
         public bool HasTwoElem(string element)
         {
@@ -77,7 +77,7 @@ namespace Core.PQLo
         }
 
         public bool IsUnderscore(string element)
-            => element.IndexOf("_") < element.Length;
+            => element.IndexOf("_") != -1;
 
 
         public bool IsElementNumber(string element)
