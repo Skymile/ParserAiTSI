@@ -1,28 +1,41 @@
 ﻿using System;
-using System.Linq;
+
 using Core;
 using Core.PQLo.QueryEvaluator;
 using Core.PQLo.QueryPreProcessor;
 
 namespace Terminal
 {
-	class Program
+	internal class Program
 	{
-		static void Main()
+		private static void Main(string[] args)
 		{
-			var parser = new Parser();
-
-			parser.Load("../../input/2.txt");
-
-			PKB pkb = new PKB(parser);
+			var pkb = new PKB(
+				new Parser()
+					.Load(
+						args.Length > 0
+						? !string.IsNullOrWhiteSpace(args[0]) 
+							? args[0] 
+							: throw new ArgumentException("Pusta ścieżka do pliku. Ustaw poprawną ścieżkę w zakładce \"Configuration\".")
+						: "../../input/2.txt"
+					)
+				);
 
 			var a = new QueryPreProcessor();
-			a.GetQuery();
-			a.ProcessQuery();
-			var tree = a.PqlTree;
-			var evaluator = new QueryEvaluator(pkb);
-			var results = evaluator.ResultQuery(tree);
-			Console.ReadLine();
+
+			Console.WriteLine("Ready");
+			//var results = evaluator.ResultQuery(tree);
+
+			while (true)
+			{
+				a.GetQuery(Console.ReadLine(), Console.ReadLine());
+
+				//TODO
+				var tree = a.PqlTree;
+				var evaluator = new QueryEvaluator(pkb);
+
+				Console.WriteLine(a.ProcessQuery());
+			}
 		}
 	}
 }

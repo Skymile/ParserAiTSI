@@ -1,7 +1,7 @@
-﻿namespace Core.Interfaces.PQL
-{
-    using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+namespace Core.Interfaces.PQL
+{
     internal interface IUses
     {
         void SetUses(INode statement, IVariableNode var);
@@ -10,6 +10,6 @@
 
         IEnumerable<INode> GetUsedBy(IVariableNode statement);
 
-        bool isUses(INode statement, IVariableNode var);
+        bool IsUses(INode statement, IVariableNode var);
     }
 }

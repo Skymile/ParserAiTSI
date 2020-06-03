@@ -1,9 +1,6 @@
-﻿using Core.Interfaces.AST;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
+using Core.Interfaces.AST;
 
 namespace Core.Interfaces.PQL
 {
@@ -15,6 +12,7 @@ namespace Core.Interfaces.PQL
 
         IEnumerable<IProcedureNode> GetCalledFrom(IProcedureNode proc);
 
-        bool isCall(IProcedureNode proc1, IProcedureNode proc2);
+        bool IsCall(IProcedureNode proc1, IProcedureNode proc2);
     }
 }
+ 

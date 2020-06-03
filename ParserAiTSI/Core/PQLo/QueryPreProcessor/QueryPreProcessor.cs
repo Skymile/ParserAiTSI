@@ -38,11 +38,9 @@ namespace Core.PQLo.QueryPreProcessor
             return fields;
         }
 
-        public void GetQuery()
-        {
-            string rawQuery = "variable v; Select v such that Modifies(7, v)"; // zmienic na wczytywanie z konsoli/pliku
-            this.ProccesedQuery = rawQuery.ToLower();
-        }
+        public void GetQuery(params string[] queries) => 
+            this.ProccesedQuery = string.Concat(queries).ToLower();
+            //"variable v; Select v such that Modifies(7, v)"
 
         public string ProcessQuery()
         {
