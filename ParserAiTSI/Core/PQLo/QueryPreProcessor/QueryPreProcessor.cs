@@ -8,7 +8,6 @@ namespace Core.PQLo.QueryPreProcessor
 {
     public class QueryPreProcessor : IQueryPreProcessor
     {
-
         public string ProccesedQuery { get; private set; }
         public List<Field> Fields { get; private set; }
         private PQLMatcher matcher { get; } = new PQLMatcher();
@@ -499,6 +498,5 @@ namespace Core.PQLo.QueryPreProcessor
         private readonly List<string> TokensList
             = new List<string> { "assign", "stmtlst", "stmt", "while", "variable", "constant", "prog_line", "if", "call", "procedure" };
         private readonly Dictionary<int, string> queryTypes = new Dictionary<int, string>() { { 0, "null" }, { 1, "Select" }, { 2, "such that" }, { 3, "with" } };
-
     }
 }

@@ -31,7 +31,7 @@ namespace Core.PQLo
             {
                 throw new ArgumentException("The index can not be lower then -1");
             }
-            if (index > Children.Count() - 1)
+            if (index > this.Children.Count() - 1)
             {
                 throw new ArgumentException("The index ({0}) can not be higher then index of the last iten. Use the AddChild() method without an index to add at the end".FormatInvariant(index));
             }
@@ -39,7 +39,7 @@ namespace Core.PQLo
             {
                 throw new ArgumentException("The child node with value [{0}] can not be added because it is not a root node.".FormatInvariant(childNode.Value));
             }
-            if (Root == childNode)
+            if (this.Root == childNode)
             {
                 throw new ArgumentException("The child node with value [{0}] is the rootnode of the parent.".FormatInvariant(childNode.Value));
             }
@@ -66,10 +66,7 @@ namespace Core.PQLo
             return childNode;
         }
 
-        public void AddFirstChild(Node<T> childNode)
-        {
-            Add(childNode, 0);
-        }
+        public void AddFirstChild(Node<T> childNode) => Add(childNode, 0);
 
         public Node<T> AddFirstSibling(T value)
         {
@@ -78,10 +75,8 @@ namespace Core.PQLo
             return childNode;
         }
 
-        public void AddFirstSibling(Node<T> childNode)
-        {
-            Parent.AddFirstChild(childNode);
-        }
+        public void AddFirstSibling(Node<T> childNode) => Parent.AddFirstChild(childNode);
+
         public Node<T> AddLastSibling(T value)
         {
             var childNode = new Node<T>(value);
@@ -89,10 +84,7 @@ namespace Core.PQLo
             return childNode;
         }
 
-        public void AddLastSibling(Node<T> childNode)
-        {
-            Parent.Add(childNode);
-        }
+        public void AddLastSibling(Node<T> childNode) => Parent.Add(childNode);
 
         public Node<T> AddParent(T value)
         {
@@ -103,24 +95,14 @@ namespace Core.PQLo
 
         public void AddParent(Node<T> parentNode)
         {
-            if (!IsRoot)
+            if (!this.IsRoot)
             {
                 throw new ArgumentException("This node [{0}] already has a parent".FormatInvariant(Value), "parentNode");
             }
             parentNode.Add(this);
         }
 
-        public IEnumerable<Node<T>> Ancestors
-        {
-            get
-            {
-                if (IsRoot)
-                {
-                    return Enumerable.Empty<Node<T>>();
-                }
-                return Parent.ToIEnumerable().Concat(Parent.Ancestors);
-            }
-        }
+        public IEnumerable<Node<T>> Ancestors => IsRoot ? Enumerable.Empty<Node<T>>() : Parent.ToIEnumerable().Concat(Parent.Ancestors);
 
         public IEnumerable<Node<T>> Descendants => SelfAndDescendants.Skip(1);
 
@@ -128,10 +110,7 @@ namespace Core.PQLo
 
         public IEnumerable<Node<T>> Siblings => SelfAndSiblings.Where(Other);
 
-        private bool Other(Node<T> node)
-        {
-            return !ReferenceEquals(node, this);
-        }
+        private bool Other(Node<T> node) => !ReferenceEquals(node, this);
 
         public IEnumerable<Node<T>> SelfAndChildren => this.ToIEnumerable().Concat(Children);
 
@@ -164,8 +143,8 @@ namespace Core.PQLo
             {
                 throw new InvalidOperationException("The root node [{0}] can not get disconnected from a parent.".FormatInvariant(Value));
             }
-            Parent._children.Remove(this);
-            Parent = null;
+            this.Parent._children.Remove(this);
+            this.Parent = null;
         }
 
         public bool IsRoot => Parent == null;
@@ -192,12 +171,10 @@ namespace Core.PQLo
 
             var nodes = valuesCache.Select(v => new Node<T>(v));
             return CreateTree(nodes, idSelector, parentIdSelector);
-
         }
 
         public static IEnumerable<Node<T>> CreateTree<TId>(IEnumerable<Node<T>> rootNodes, Func<T, TId> idSelector, Func<T, TId?> parentIdSelector)
             where TId : struct
-
         {
             var rootNodesCache = rootNodes.ToList();
             var duplicates = rootNodesCache.Duplicates(n => n).ToList();
@@ -223,14 +200,13 @@ namespace Core.PQLo
             return rootNodesCache.Where(n => n.IsRoot);
         }
 
-
         private static bool IsSameId<TId>(TId id, TId? parentId)
             where TId : struct => 
             parentId != null && id.Equals(parentId.Value);
 
         #region Equals en ==
         public static bool operator ==(Node<T> value1, Node<T> value2) => 
-            (object)(value1) == null && (object)value2 == null ? true : ReferenceEquals(value1, value2);
+            value1 is null && value2 is null ? true : ReferenceEquals(value1, value2);
 
         public static bool operator !=(Node<T> value1, Node<T> value2) => !(value1 == value2);
 
@@ -246,7 +222,7 @@ namespace Core.PQLo
 
         public override int GetHashCode() => GetHashCode(this);
 
-        public int GetHashCode(Node<T> value) => base.GetHashCode();
+        public int GetHashCode(Node<T> _) => base.GetHashCode();
         #endregion
     }
 }
