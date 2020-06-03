@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Core.Interfaces.PQL
 {
@@ -14,8 +10,8 @@ namespace Core.Interfaces.PQL
 
         IEnumerable<INode> GetChildren(INode parent);
 
-        bool isParent(INode child, INode parent);
+        bool IsParent(INode child, INode parent);
 
-        bool isChild(INode child, INode parent);
+        bool IsChild(INode child, INode parent);
     }
 }

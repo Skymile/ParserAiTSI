@@ -38,11 +38,9 @@ namespace Core.PQLo.QueryPreProcessor
             return fields;
         }
 
-        public void GetQuery()
-        {
-            string rawQuery = "assign a; Select a such that Modifies(a,\"x\")"; // zmienic na wczytywanie z konsoli/pliku
-            this.ProccesedQuery = rawQuery.ToLower();
-        }
+        public void GetQuery(params string[] queries) => 
+            this.ProccesedQuery = string.Concat(queries).ToLower();
+            //"assign a; Select a such that Modifies(a,\"x\")";
 
         public string ProcessQuery()
         {

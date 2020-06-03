@@ -101,7 +101,7 @@ namespace Core
 		public bool IsRelation(int id1, int id2, Relation relation)
 		{
 			if (relation == Relation.Calls)
-				return this.PKB.Calls.isCall(
+				return this.PKB.Calls.IsCall(
 					this.PKB.Procedures.FirstOrDefault(i => i.Id == id1), 
 					this.PKB.Procedures.FirstOrDefault(i => i.Id == id2)
 				);
@@ -111,9 +111,9 @@ namespace Core
 
 			switch (relation)
 			{
-				case Relation.Follows: return this.PKB.Follows.isFollows(n1, n2);
-				case Relation.Next   : return this.PKB.Next   .isNext   (n1, n2);
-				case Relation.Parent : return this.PKB.Parent .isParent (n1, n2);
+				case Relation.Follows: return this.PKB.Follows.IsFollows(n1, n2);
+				case Relation.Next   : return this.PKB.Next   .IsNext   (n1, n2);
+				case Relation.Parent : return this.PKB.Parent .IsParent (n1, n2);
 				default: throw new InvalidEnumArgumentException();
 			}
 		}
@@ -128,8 +128,8 @@ namespace Core
 
 			switch (relation)
 			{
-				case Relation.Modifies: return this.PKB.Modifies.isModifies(n1, n2);
-				case Relation.Uses    : return this.PKB.Uses    .isUses    (n1, n2);
+				case Relation.Modifies: return this.PKB.Modifies.IsModifies(n1, n2);
+				case Relation.Uses    : return this.PKB.Uses    .IsUses    (n1, n2);
 				default: throw new InvalidEnumArgumentException();
 			}
 		}

@@ -5,7 +5,7 @@ namespace Core.PQLo.QueryPreProcessor
     public interface IQueryPreProcessor
     {
         string ProcessQuery();
-        void GetQuery();
+        void GetQuery(params string[] queries);
         List<Field> CreateFields(List<string> elements);
         List<Field> CreateFieldType(string type, string declaration);
         void CreatePQLTree(List<string> elems);

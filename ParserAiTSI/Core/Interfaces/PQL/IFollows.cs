@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Core.Interfaces.PQL
 {
@@ -14,6 +10,6 @@ namespace Core.Interfaces.PQL
 
         IEnumerable<INode> GetFollowed(INode statement);
 
-        bool isFollows(INode statement1, INode statement2);
+        bool IsFollows(INode statement1, INode statement2);
     }
 }
