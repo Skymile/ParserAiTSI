@@ -39,7 +39,7 @@ namespace Core.PQLo.QueryPreProcessor
 
         public void GetQuery(params string[] queries) => 
             this.ProccesedQuery = string.Concat(queries).ToLower();
-            //"assign a; Select a such that Modifies(a,\"x\")";
+            //"variable v; Select v such that Modifies(7, v)"
 
         public string ProcessQuery()
         {
@@ -238,6 +238,7 @@ namespace Core.PQLo.QueryPreProcessor
                     }
                     else
                     {
+                        attributes[i] = attributes[i].Trim();
                         Field field = this.FindField(attributes[i]);
                         if (field == null)
                         {

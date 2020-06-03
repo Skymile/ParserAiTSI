@@ -32,7 +32,7 @@ namespace Terminal
 
 				//TODO
 				var tree = a.PqlTree;
-				var evaluator = new QueryEvaluator();
+				var evaluator = new QueryEvaluator(pkb);
 
 				Console.WriteLine(a.ProcessQuery());
 			}

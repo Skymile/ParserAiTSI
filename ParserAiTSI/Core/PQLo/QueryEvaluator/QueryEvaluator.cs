@@ -1,20 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Common;
-
+using Core.Interfaces.PQL;
 namespace Core.PQLo.QueryEvaluator
 {
 	public class QueryEvaluator
     {
+		public QueryEvaluator(PKB pkb)
+		{
+			this.pkb = pkb;
+			this.pkbApi = new PKBApi(pkb);
+		}
 		private bool firstUses;
 		private string resultType;
-
+		private PKBApi pkbApi;
+		private PKB pkb;
 		public List<string> ResultQuery(ITree<PQLNode> Tree)
         {
 			List<string> result = new List<string>();
-			List<int> lines = new List<int>();
-			SortedSet<int> setLines;
+			List<Node> lines = new List<Node>();
+			SortedSet<Core.Node> setLines = new SortedSet<Core.Node>();
 			string selectValue = null;
 			
 			var beginNode = Tree.Root;
@@ -29,48 +35,37 @@ namespace Core.PQLo.QueryEvaluator
 				if (item.Type == "resultNode")
 				{
 					this.resultType = item.Field1.Type;
-					if (this.resultType == "assign")
+					if (this.resultType == "assign" || this.resultType == "procedure")
 					{
-						//lines = pkb.getTablicaLiniiKodu().getLinieAssign();
+						lines = pkbApi.GetNodes(Instruction.Assign, false).ToList();
 						selectValue = item.Field1.Value;
 					}
 					else if (this.resultType == "while")
 					{
-						//lines = pkb.getTablicaLiniiKodu().getLinieWhile();
+						lines = pkbApi.GetNodes(Instruction.Loop, false).ToList();
 						selectValue = item.Field1.Value;
 					}
-					else if (this.resultType == "variable")
+					else if (this.resultType == "variable" || this.resultType == "prog_line")
 					{
-						//lines = pkb.getTablicaLiniiKodu().getLines();
+						var variables = pkb.Variables;
 						selectValue = item.Field1.Value;
-					}
-					else if (this.resultType == "prog_line")
-					{
-						//lines = pkb.getTablicaLiniiKodu().getLines();
-						selectValue = item.Field1.Value;
-					}
-					else if (this.resultType == "procedure")
-					{
-						//lines = pkbApi.getProceduresLines();
-						selectValue = item.Field1.Value;
-					}
+					}	
 					else if (this.resultType == "stmt" || this.resultType == "boolean")
 					{
-						List<int> tmp2;
-						//tmp2 = pkb.getTablicaLiniiKodu().getLinieAssign();
-						//setLines.insert(tmp2.begin(), tmp2.end());
-						//tmp2 = pkb.getTablicaLiniiKodu().getLinieWhile();
-						//setLines.insert(tmp2.begin(), tmp2.end());
-						//tmp2 = pkb.getTablicaLiniiKodu().getLinieCall();
-						//setLines.insert(tmp2.begin(), tmp2.end());
-						//tmp2 = pkb.getTablicaLiniiKodu().getLinieIf();
-						//setLines.insert(tmp2.begin(), tmp2.end());
-						//std::copy(setLines.begin(), setLines.end(), std::inserter(lines, lines.end()));
+						var tmp2 = pkbApi.GetNodes(Instruction.Assign, false);
+						setLines.UnionWith(tmp2);
+						tmp2 = pkbApi.GetNodes(Instruction.Loop, false).ToList();
+						setLines.UnionWith(tmp2);
+						tmp2 = pkbApi.GetNodes(Instruction.Call, false).ToList();
+						setLines.UnionWith(tmp2);
+						tmp2 = pkbApi.GetNodes(Instruction.If, false).ToList();
+						setLines.UnionWith(tmp2);
+						lines.AddRange(setLines);
 						selectValue = item.Field1.Value;
 					}
 					else if (this.resultType == "if")
 					{
-						//lines = pkb.getTablicaLiniiKodu().getLinieIf();
+						lines = pkbApi.GetNodes(Instruction.If, false).ToList();
 						selectValue = item.Field1.Value;
 					}
 				}
@@ -80,83 +75,9 @@ namespace Core.PQLo.QueryEvaluator
 					//Zweryfikowanie wystapienia relacji Modifies
 					if (item.NodeType == "modifies")
 					{
-						lines = this.ModifiesResult(item.Field1,
+						var linesa = this.ModifiesResult(item.Field1,
 								item.Field2, lines, selectValue);
 						isModifies = true;
-					}
-					//Zweryfikowanie wystąpienia relacji Parent lub Parent*
-					if (item.NodeType == "parent")
-					{
-						//Pareznt z *
-						if (item.IsStar)
-						{
-							lines = this.ParentStarResult(item.Field1,
-									item.Field2, lines,
-									selectValue);
-						}
-						//Parent bez *
-						else
-						{
-							lines = this.ParentResult(item.Field1,
-									item.Field2, lines,
-									selectValue);
-						}
-					}
-					//Zweryfikowanie wystąpienia relacji Follows lub Follows*
-					if (item.NodeType == "follows")
-					{
-						//Follows *
-						if (item.IsStar)
-						{
-							lines = this.FollowsStarResult(item.Field1,
-									item.Field2, lines,
-									selectValue);
-						}
-						//Follows bez *
-						else
-						{
-							lines = this.FollowsResult(item.Field1,
-									item.Field2, lines,
-									selectValue);
-						}
-					}
-					//Zweryfikowanie wystąpienia relacji Uses lub Uses*
-					if (item.NodeType == "uses")
-					{
-						//Uses z *
-						if (item.IsStar)
-						{
-						}
-						//Uses bez *
-						else
-						{
-							lines = this.UsesResult(item.Field1, item.Field2, lines, selectValue);
-							isUses = true;
-						}
-					}
-					// Zweryfikowanie wystąpienia relacji Calls lub Calls*
-					if (item.NodeType == "calls")
-					{
-						//Calls z *
-						if (item.IsStar)
-						{
-							lines = this.CallStarResult(item.Field1,
-									item.Field2, lines,
-									selectValue);
-						}
-						//Calls bez *
-						else
-						{
-							lines = this.CallResult(item.Field1,
-									item.Field2, lines,
-									selectValue);
-						}
-					}
-
-					if (item.NodeType == "affects" || item.NodeType == "next")
-					{
-						List<int> empty = new List<int>();
-						lines = empty;
 					}
 				}
 
@@ -169,126 +90,37 @@ namespace Core.PQLo.QueryEvaluator
 			result.Clear();
 
 
-			//if (!lines.empty())
-			//{
-			//	if (wynikType == "boolean")
-			//	{
-			//		result.Add("true");
-			//	}
-			//	else
-			//	{
-			//		for (size_t i = 0; i < lines.size(); i++)
-			//		{
-			//			if (wynikType == "procedure")
-			//			{
-			//				string name = pkbApi.getNazwaProcedury(pkbApi.getIdProcedury(lines[i]));
-			//				if (find(result.begin(), result.end(), name) >= result.begin())
-			//					result.Add(name);
-			//			}
-			//			else if (wynikType == "variable")
-			//			{
-			//				if (isUses && !isModifies) // Czy występuje tylko relacja . Uses
-			//				{
-			//					for (set<std::pair<string, int>>::iterator it = usesPairs.begin(); it != usesPairs.end(); ++it)
-			//					{
-			//						if ((*it).second == lines[i] && find(result.begin(), result.end(), (*it).first) == result.end())
-			//						{
-			//							result.Add((*it).first);
-			//						}
-			//					}
-			//				}
-
-			//				SortedDictionary<int, List<int>> varUsesLines = pkb.getUses().getAllUses();
-			//				SortedDictionary<int, List<int>> varModifiesLines = pkb.getModifies().getWszystkieModifies();
-			//				List<int> variableIds;
-			//				if (withMap.count(selectValue) > 0) variableIds = withMap[selectValue];
-
-			//				if (!isUses && isModifies) // Czy występuje tylko relacja . Modifies
-			//				{
-
-			//					for (map<int, List<int>>::iterator it = varModifiesLines.begin(); it != varModifiesLines.end(); ++it)
-			//					{
-			//						List<int> tmp = (*it).second;
-			//						if (find(tmp.begin(), tmp.end(), lines[i]) != tmp.end())
-			//						{
-			//							string name = pkb.getTablicaZmiennych().getNazwaZmiennej((*it).first);
-			//							if (find(result.begin(), result.end(), name) == result.end() && (find(variableIds.begin(), variableIds.end(), (*it).first) != variableIds.end() || variableIds.empty()))
-			//								result.Add(name);
-			//						}
-			//					}
-			//				}
-			//				else if (isUses && isModifies) // Wystapienie obu relacji (Uses i Modifies)
-			//				{
-			//					List<string> resultUses;
-			//					for (map<int, List<int>>::iterator it = varUsesLines.begin(); it != varUsesLines.end(); ++it)
-			//					{
-			//						List<int> tmp = (*it).second;
-			//						if (find(tmp.begin(), tmp.end(), lines[i]) != tmp.end())
-			//						{
-			//							string name = pkb.getTablicaZmiennych().getNazwaZmiennej((*it).first);
-			//							if (find(resultUses.begin(), resultUses.end(), name) == resultUses.end() && (find(variableIds.begin(), variableIds.end(), (*it).first) != variableIds.end() || variableIds.empty()))
-			//								resultUses.Add(name);
-			//						}
-			//					}
-
-			//					List<string> resultModifies;
-			//					for (map<int, List<int>>::iterator it = varModifiesLines.begin(); it != varModifiesLines.end(); ++it)
-			//					{
-			//						List<int> tmp = (*it).second;
-			//						if (find(tmp.begin(), tmp.end(), lines[i]) != tmp.end())
-			//						{
-			//							string name = pkb.getTablicaZmiennych().getNazwaZmiennej((*it).first);
-			//							if (find(resultModifies.begin(), resultModifies.end(), name) == resultModifies.end() && (find(variableIds.begin(), variableIds.end(), (*it).first) != variableIds.end() || variableIds.empty()))
-			//								resultModifies.Add(name);
-			//						}
-			//					}
-
-			//					for (size_t iU = 0; iU < resultUses.size(); iU++)
-			//					{
-			//						for (size_t iM = 0; iM < resultModifies.size(); iM++)
-			//						{
-			//							if (resultUses[iU] == resultModifies[iM] && find(result.begin(), result.end(), resultUses[iU]) == result.end())
-			//							{
-			//								result.Add(resultUses[iU]);
-			//							}
-			//						}
-			//					}
-			//				}
-
-			//			}
-			//			else
-			//			{
-			//				stringstream ss;
-			//				ss << lines[i];
-			//				if (find(result.begin(), result.end(), ss.str()) >= result.begin())
-			//					result.Add(ss.str());
-			//			}
-			//		}
-			//	}
-			//}
-			//else
-			//{
-			//	if (wynikType == "boolean")
-			//	{
-			//		result.Add("false");
-			//	}
-			//	else
-			//	{
-			//		//result.Add("NONE");
-			//	}
-			//}
-
 			return result;
 		}
 
-		private List<int> ModifiesResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> ParentStarResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> ParentResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> FollowsStarResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> FollowsResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> UsesResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> CallResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> CallStarResult(Field field1, Field field2, List<int> lines, string selectValue) => throw new NotImplementedException();
-		private void WithResults(Field field1, Field field2, List<int> lines) => throw new NotImplementedException();
+		private List<int> ModifiesResult(Field field1, Field field2, List<Node> lines, string selectValue)
+		{
+			SortedSet<int> setLines1 = new SortedSet<int>();
+			SortedSet<int> setLines2 = new SortedSet<int>();
+
+			if (field1.Type == "constant" && field2.Type != "constant")
+			{
+				int param1 = int.Parse(field1.Value);
+				List<int> a = pkbApi.GetNodes(Instruction.Call, false).Select(x => x.Id).ToList();
+				if (param1 != a[a.Count - 1])
+				{
+					string name = pkb.Procedures.FirstOrDefault(x => x.Id == param1).Name;
+					List<int> b = pkbApi.GetProcedure(name).Nodes.Select(x => x.Id).ToList();
+					setLines1.UnionWith(b);
+				}
+			}
+			return new List<int>()/*resultPart*/;
+		}
+
+		private List<int> ParentStarResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> ParentResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> FollowsStarResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> FollowsResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> UsesResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> CallResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> CallStarResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
+		private void WithResults(Field field1, Field field2, List<Core.Node> lines) => throw new NotImplementedException();
+
+
 	}
 }
