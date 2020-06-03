@@ -44,16 +44,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interfaces\AST\IAssignNode.cs" />
-    <Compile Include="Interfaces\AST\IBinaryNode.cs" />
-    <Compile Include="Interfaces\AST\IConditionalNode.cs" />
-    <Compile Include="Interfaces\AST\IExpressionNode.cs" />
-    <Compile Include="Interfaces\AST\ILoopNode.cs" />
     <Compile Include="Interfaces\AST\INode.cs" />
     <Compile Include="Interfaces\AST\IProcedureNode.cs" />
-    <Compile Include="Interfaces\AST\IStatementListNode.cs" />
-    <Compile Include="Interfaces\AST\ITree.cs" />
-    <Compile Include="Interfaces\AST\IValueNode.cs" />
     <Compile Include="Interfaces\AST\IVariableNode.cs" />
     <Compile Include="Interfaces\PQL\ICalls.cs" />
     <Compile Include="Interfaces\PQL\INext.cs" />

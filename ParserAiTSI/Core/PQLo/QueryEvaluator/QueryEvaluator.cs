@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common;
-using Core.Interfaces.PQL;
 namespace Core.PQLo.QueryEvaluator
 {
 	public class QueryEvaluator
@@ -12,23 +11,15 @@ namespace Core.PQLo.QueryEvaluator
 			this.pkb = pkb;
 			this.pkbApi = new PKBApi(pkb);
 		}
-		private bool firstUses;
 		private string resultType;
 		private PKBApi pkbApi;
 		private PKB pkb;
 		public List<string> ResultQuery(ITree<PQLNode> Tree)
         {
-			List<string> result = new List<string>();
-			List<Node> lines = new List<Node>();
-			SortedSet<Core.Node> setLines = new SortedSet<Core.Node>();
+			var result = new List<string>();
+			var lines = new List<Node>();
+			var setLines = new SortedSet<Core.Node>();
 			string selectValue = null;
-			
-			var beginNode = Tree.Root;
-			bool isModifies = false;
-			bool isUses = false;
-
-			this.firstUses = true;
-
 			//WYSZUKIWANIE ODPOWIEDZI
 			foreach (var item in Tree.All.Values)
 			{
@@ -77,7 +68,6 @@ namespace Core.PQLo.QueryEvaluator
 					{
 						var linesa = this.ModifiesResult(item.Field1,
 								item.Field2, lines, selectValue);
-						isModifies = true;
 					}
 				}
 
@@ -88,39 +78,27 @@ namespace Core.PQLo.QueryEvaluator
 			}
 
 			result.Clear();
-
-
 			return result;
 		}
 
 		private List<int> ModifiesResult(Field field1, Field field2, List<Node> lines, string selectValue)
 		{
-			SortedSet<int> setLines1 = new SortedSet<int>();
-			SortedSet<int> setLines2 = new SortedSet<int>();
+			var setLines1 = new SortedSet<int>();
+			var setLines2 = new SortedSet<int>();
 
 			if (field1.Type == "constant" && field2.Type != "constant")
-			{
-				int param1 = int.Parse(field1.Value);
-				List<int> a = pkbApi.GetNodes(Instruction.Call, false).Select(x => x.Id).ToList();
-				if (param1 != a[a.Count - 1])
+				if (int.Parse(field1.Value) != this.pkbApi.GetNodes(Instruction.Call, false).Select(x => x.Id).Last())
 				{
-					string name = pkb.Procedures.FirstOrDefault(x => x.Id == param1).Name;
-					List<int> b = pkbApi.GetProcedure(name).Nodes.Select(x => x.Id).ToList();
-					setLines1.UnionWith(b);
+					string name = this.pkb.Procedures.FirstOrDefault(x => x.Id == int.Parse(field1.Value)).Name;
+					setLines1.UnionWith(this.pkbApi.GetProcedure(name).Nodes.Select(x => x.Id).ToList());
 				}
-			}
 			return new List<int>()/*resultPart*/;
 		}
 
-		private List<int> ParentStarResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
 		private List<int> ParentResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> FollowsStarResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
 		private List<int> FollowsResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
 		private List<int> UsesResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
 		private List<int> CallResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> CallStarResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
 		private void WithResults(Field field1, Field field2, List<Core.Node> lines) => throw new NotImplementedException();
-
-
 	}
 }

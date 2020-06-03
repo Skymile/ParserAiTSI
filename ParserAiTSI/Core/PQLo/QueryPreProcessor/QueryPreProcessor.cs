@@ -106,7 +106,6 @@ namespace Core.PQLo.QueryPreProcessor
                 }
             }
 
-
             List<string> elements = this.SplitQuery(elems[0], queryMainTokens);
             if (this.queryParts.Count < 0) throw new Exception();
             foreach (var item in this.queryParts)
@@ -341,14 +340,11 @@ namespace Core.PQLo.QueryPreProcessor
             string type = "with";
             int startPos = item.IndexOf(type);
             item = item.Substring(startPos + type.Length);
-            List<string> items = item.Split(new string[] { "and" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-
-            List<Field> attr = new List<Field>();
+            var items = item.Split(new string[] { "and" }, StringSplitOptions.RemoveEmptyEntries).ToList();
             foreach (var elem in items)
             {
                 elem.Trim(' ');
-                attr = this.CreateWithNodeAttributes(elem);
+                List<Field> attr = CreateWithNodeAttributes(elem);
 
                 if (attr.Count == 2)
                 {
@@ -420,11 +416,8 @@ namespace Core.PQLo.QueryPreProcessor
                                 attr.Add(new Field(field.Type, field.Value));
                             }
                         }
-
                     }
-
                 }
-
             }
             else
             {
@@ -487,7 +480,6 @@ namespace Core.PQLo.QueryPreProcessor
         private List<PQLNode> selectNodes = new List<PQLNode>();
         private List<PQLNode> suchNodes   = new List<PQLNode>();
         private List<PQLNode> withNodes   = new List<PQLNode>();
-
 
         private int aktPos;
         private int lastPos;
