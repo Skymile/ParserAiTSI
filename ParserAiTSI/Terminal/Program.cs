@@ -31,10 +31,14 @@ namespace Terminal
 				a.GetQuery(Console.ReadLine(), Console.ReadLine());
 
 				//TODO
-				var tree = a.PqlTree;
-				var evaluator = new QueryEvaluator(pkb);
-
 				Console.WriteLine(a.ProcessQuery());
+				var tree = a.PqlTree;
+
+				var evaluator = new QueryEvaluator(pkb).ResultQuery(tree);
+				for (int i = 0; i < evaluator.Count; i++, Console.Write(", "))
+				{
+					Console.WriteLine(evaluator[i]);
+				}
 			}
 		}
 	}

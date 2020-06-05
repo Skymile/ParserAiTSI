@@ -38,8 +38,8 @@ namespace Core.PQLo.QueryPreProcessor
         }
 
         public void GetQuery(params string[] queries) => 
-            this.ProccesedQuery = string.Concat(queries).ToLower();
-            //"variable v; Select v such that Modifies(7, v)"
+            //this.ProccesedQuery = string.Concat(queries).ToLower();
+            this.ProccesedQuery = "variable v; Select v such that Modifies(7, v)".ToLower();
 
         public string ProcessQuery()
         {
@@ -56,7 +56,7 @@ namespace Core.PQLo.QueryPreProcessor
 
             if (queryPart.Count == 0)
             {
-                throw new Exception("Zapytanie jest puste.");
+                throw new Exception("#Zapytanie jest puste.");
             }
 
             this.Fields = this.CreateFields(resultPart);

@@ -37,7 +37,7 @@ namespace Core.Interfaces.PQL
                 calls.Add(p1);
         }
 
-        protected readonly Dictionary<U, List<T>> dict;
+        public readonly Dictionary<U, List<T>> dict = new Dictionary<U, List<T>>();
     }
 }
  

@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using Common;
+using Core.Interfaces.AST;
+using Core.Interfaces.PQL;
+
 namespace Core.PQLo.QueryEvaluator
 {
 	public class QueryEvaluator
@@ -14,8 +18,12 @@ namespace Core.PQLo.QueryEvaluator
 		private string resultType;
 		private PKBApi pkbApi;
 		private PKB pkb;
+		private bool isModifies;
+		private bool isUses;
+
 		public List<string> ResultQuery(ITree<PQLNode> Tree)
         {
+			var temporary = new List<int>();
 			var result = new List<string>();
 			var lines = new List<Node>();
 			var setLines = new SortedSet<Core.Node>();
@@ -66,8 +74,83 @@ namespace Core.PQLo.QueryEvaluator
 					//Zweryfikowanie wystapienia relacji Modifies
 					if (item.NodeType == "modifies")
 					{
-						var linesa = this.ModifiesResult(item.Field1,
+						temporary = this.ModifiesResult(item.Field1,
 								item.Field2, lines, selectValue);
+						isModifies = true;
+					}
+
+					//Zweryfikowanie wystąpienia relacji Parent lub Parent*
+					if (item.NodeType == "parent")
+					{
+						//Pareznt z *
+						if (item.IsStar)
+						{
+							temporary = this.ParentStarResult(item.Field1,
+									item.Field2, lines,
+									selectValue);
+						}
+						//Parent bez *
+						else
+						{
+							temporary = this.ParentResult(item.Field1,
+									item.Field2, lines,
+									selectValue);
+						}
+					}
+					//Zweryfikowanie wystąpienia relacji Follows lub Follows*
+					if (item.NodeType == "follows")
+					{
+						//Follows *
+						if (item.IsStar)
+						{
+							temporary = this.FollowsStarResult(item.Field1,
+									item.Field2, lines,
+									selectValue);
+						}
+						//Follows bez *
+						else
+						{
+							temporary = this.FollowsResult(item.Field1,
+									item.Field2, lines,
+									selectValue);
+						}
+					}
+					//Zweryfikowanie wystąpienia relacji Uses lub Uses*
+					if (item.NodeType == "uses")
+					{
+						//Uses z *
+						if (item.IsStar)
+						{
+						}
+						//Uses bez *
+						else
+						{
+							temporary = this.UsesResult(item.Field1, item.Field2, lines, selectValue);
+							isUses = true;
+						}
+					}
+					// Zweryfikowanie wystąpienia relacji Calls lub Calls*
+					if (item.NodeType == "calls")
+					{
+						//Calls z *
+						if (item.IsStar)
+						{
+							temporary = this.CallStarResult(item.Field1,
+									item.Field2, lines,
+									selectValue);
+						}
+						//Calls bez *
+						else
+						{
+							temporary = this.CallResult(item.Field1,
+									item.Field2, lines,
+									selectValue);
+						}
+					}
+
+					if (item.NodeType == "affects" || item.NodeType == "next")
+					{
+						temporary = new List<int>();
 					}
 				}
 
@@ -78,27 +161,113 @@ namespace Core.PQLo.QueryEvaluator
 			}
 
 			result.Clear();
-			return result;
+
+			if (temporary.Count != 0)
+			{
+				foreach (var item in temporary)
+				{
+					if(this.resultType == "variable")
+					{
+						List<int> variableIds = new List<int>();
+						if (isModifies) // Czy występuje tylko relacja -> Modifies
+						{
+
+							foreach (var dict in pkb.Modifies.dict)
+							{
+								List<int> tmp = dict.Value.Select(x => x.Id).ToList();
+								if (tmp.IndexOf(item) != -1)
+								{
+									string name = dict.Key.Name;
+									if (result.FirstOrDefault(i => i == name) == null && variableIds.FirstOrDefault(x => x == dict.Key.Id) == null || variableIds.Count == 0)
+										result.Add(name);
+								}
+
+							}
+						}
+					}
+				}
+			}
+				return result;
 		}
+
+		private List<int> CallResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> CallStarResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> UsesResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> FollowsResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> FollowsStarResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> ParentResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+		private List<int> ParentStarResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
 
 		private List<int> ModifiesResult(Field field1, Field field2, List<Node> lines, string selectValue)
 		{
 			var setLines1 = new SortedSet<int>();
-			var setLines2 = new SortedSet<int>();
+			var setLines2 = new SortedSet<INode>();
 
 			if (field1.Type == "constant" && field2.Type != "constant")
-				if (int.Parse(field1.Value) != this.pkbApi.GetNodes(Instruction.Call, false).Select(x => x.Id).Last())
+			{
+				var a = this.pkbApi.GetNodes(Instruction.Call, false).Select(x => x.Id);
+				var b = a.Last();
+				var param1 = int.Parse(field1.Value);
+				if (int.Parse(field1.Value) != b)
 				{
-					string name = this.pkb.Procedures.FirstOrDefault(x => x.Id == int.Parse(field1.Value)).Name;
-					setLines1.UnionWith(this.pkbApi.GetProcedure(name).Nodes.Select(x => x.Id).ToList());
+					setLines1.Add(param1);
+					//var node = (this.pkbApi.GetNodes(Instruction.Call, false).FirstOrDefault(x => x.Id == int.Parse(field1.Value)) as IProcedureNode);
+					//setLines1.UnionWith(this.pkbApi.GetProcedure(node.Name).Nodes.Select(x => x.Id).ToList());
 				}
-			return new List<int>()/*resultPart*/;
+
+				if (field2.Type == "variable" || field2.Type == "any")
+				{
+
+					setLines2.UnionWith(pkb.Variables);
+				}
+			}
+
+			List<int> resultPart = new List<int>();
+			//Sprawdzenie czy wszystkie parametry były dobre przy parsowaniu lub walidacji. Jeżeli nie to zwracana jest pusta lista
+			if (setLines1.Count != 0 && setLines2.Count != 0)
+			{
+				foreach (var l1 in setLines1)
+				{
+					foreach (var l2 in setLines2)
+					{
+						var xd = pkb.Modifies.dict.FirstOrDefault(a => a.Key.Id == l1 && a.Key.Name == ((IVariableNode)l2).Name).Key;
+						if (xd != null)
+						{
+							if (selectValue == field1.Value && selectValue == field2.Value && selectValue != "boolean")
+							{
+								//Jeżeli oba parametry śa takie same, a nie są to constant, znaczy to że nie ma odpowiedzi
+								return resultPart;
+							}
+							else if (selectValue == field1.Value && selectValue != "boolean")
+							{
+								//Jeśli parametr pierwszy jest tym, którego szukamy to wybieramy z listy pierwszej
+								if (resultPart.FirstOrDefault(x=> x == l1) >= resultPart.Last())
+								{
+									resultPart.Add(l1);
+								}
+							}
+							else if (selectValue == field2.Value && selectValue != "boolean")
+							{
+								//Jeśli parametr drugi jest tym, którego szukamy to wybieramy z listy drugiej
+								if (resultPart.FirstOrDefault(x => x == l2.Id) >= (resultPart.Count == 0 ? 0 : resultPart.Last()))
+								{
+									resultPart.Add(l1);
+								}
+							}
+							else
+							{
+								Console.WriteLine("wESZŁO");
+								//Jeśli żaden parametr nie jest szukany to zwracane są wszystkie wartości
+								return lines.Select(x => x.Id).ToList();
+							}
+						}
+					}
+				}
+			}
+
+			return resultPart;
 		}
 
-		private List<int> ParentResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> FollowsResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> UsesResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
-		private List<int> CallResult(Field field1, Field field2, List<Core.Node> lines, string selectValue) => throw new NotImplementedException();
 		private void WithResults(Field field1, Field field2, List<Core.Node> lines) => throw new NotImplementedException();
 	}
 }

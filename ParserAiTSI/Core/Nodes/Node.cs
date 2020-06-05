@@ -7,7 +7,7 @@ using Core.Interfaces.PQL;
 namespace Core
 {
 	[DebuggerDisplay("{Level}|{Id}|{Nodes?.Count??0}: {Instruction}")]
-	public class Node : INode, IComparable<Node>
+	public class Node : INode
 	{
 		public Node() { }
 		public Node(IEnumerable<Node> nodes) =>
@@ -56,7 +56,7 @@ namespace Core
 			throw new NotImplementedException($"Unrecognized instruction: \"{instruction}\"");
 		}
 
-		public int CompareTo(Node other) 
+		public int CompareTo(INode other) 
 			=> other == null ? 1 : this.Id.CompareTo(other.Id);
 	}
 
