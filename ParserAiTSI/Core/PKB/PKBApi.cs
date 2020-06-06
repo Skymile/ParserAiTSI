@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Tables;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -133,6 +134,18 @@ namespace Core
 				default: throw new InvalidEnumArgumentException();
 			}
 		}
+		///// <summary>
+		///// Zwraca indeksy linii wywołanej procedury
+		///// </summary>
+		///// <param name="line">Linia wywołanej procedury</param>
+		//public IEnumerable<int> GetInvokedProceduresLines(int line)
+		//{
+		//	foreach (var item in PKB.Calls.dict)
+		//	{
+				
+		//	}
+		//	return new List<int>();
+		//}
 
 		private IEnumerable<Node> GetArrayForm(Instruction instruction) =>
 			this.PKB.ArrayForm.Where(i => instruction.HasFlag(i.Token));
