@@ -26,7 +26,7 @@ namespace Core
 		/// </summary>
 		/// <param name="instruction">Węzły tego typu instrukcji zostaną zwrócone</param>
 		/// <param name="rollUp">Jeśli prawda, zwróci w formie zwiniętej, rekurencyjnej w przeciwnym razie zwraca formę tablicową</param>
-		public IEnumerable<Node> GetNodes(Instruction instruction, bool rollUp) => 
+		public IEnumerable<Node> GetNodes(Instruction instruction, bool rollUp = false) => 
 			rollUp ? GetRolledUp(instruction) : GetArrayForm(instruction);
 
 		/// <summary>
