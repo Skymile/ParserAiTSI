@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 using Core.Interfaces.PQL;
 
@@ -8,57 +9,24 @@ namespace Core.PQLo
     {
         public PQLMatcher() { }
 
-        public bool CheckAll(string element)
-            => !this.CheckToken(element, ".varName") && !this.CheckToken(element, ".procedureName")
-            && !this.CheckToken(element, ".stmt#") && !this.CheckToken(element, ".value") && !this.CheckToken(element, "BOOLEAN");
-        public string CheckSuchThatType(string suchThatPart)
-            =>
-            CheckToken(suchThatPart, "parent") ? "parent" :
-            CheckToken(suchThatPart, "follows") ? "follows" :
-            CheckToken(suchThatPart, "modifies") ? "modifies" :
-            CheckToken(suchThatPart, "uses") ? "uses" :
-            CheckToken(suchThatPart, "calls") ? "calls" :
-            CheckToken(suchThatPart, "next") ? "next" :
-            CheckToken(suchThatPart, "affects") ? "affects" : "";
+        public bool CheckAll(string element) =>
+            this.tokensCheckAll.All(i => !CheckToken(element, i));
 
+        public string CheckSuchThatType(string suchThatPart) =>
+            this.tokens.FirstOrDefault(i => CheckToken(suchThatPart, i)) ?? string.Empty;
 
-        public bool CheckToken(string element, string token)
-           =>  element.IndexOf(token) < element.Length && element.IndexOf(token) != -1;
+        public bool CheckToken(string element, string token) => element.Contains(token);
 
         public bool CheckWithAttributes(Field field1, Field field2)
         {
-            string type1 = "error";
-            if (field1.Type == "procedure" && field1.ProcedureName
-                || field1.Type == "variable" && field1.VariableName
-                || field1.Type == "string")
-                type1 = "string";
+            string type1 = FindType(field1);
+            string type2 = FindType(field2);
 
-            if (field1.Type == "constant"
-                || (field1.Type == "stmt"
-                    || field1.Type == "assign"
-                    || field1.Type == "while"
-                    || field1.Type == "if"
-                    || field1.Type == "call"
-                    || field1.Type == "prog_line") && field1.Statement)
-                type1 = "integer";
-
-            string type2 = "error";
-            if (field2.Type == "procedure" && field2.ProcedureName
-                || field2.Type == "variable" && field2.VariableName
-                || field2.Type == "string")
-                type2 = "string";
-            if (field2.Type == "constant"
-                || (field2.Type == "stmt"
-                    || field2.Type == "assign"
-                    || field2.Type == "while"
-                    || field2.Type == "if"
-                    || field2.Type == "call"
-                    || field2.Type == "prog_line") && field2.Statement) type2 = "integer";
-            return type1 == "string" && type2 == "string" || type1 == "integer" && type2 == "integer";
+            return type1 == "string" || type1 == "integer" && type1 == type2;
         }
 
-        public bool IsStar(string element, int pos)
-            => element.IndexOf("*", pos) != -1 && element.IndexOf("*", pos) == pos;
+        public bool IsStar(string element, int pos) => 
+            element.Length > pos && element[pos] == '*';
 
         public bool HasTwoElem(string element)
         {
@@ -76,19 +44,10 @@ namespace Core.PQLo
             return pos1 == 0 && pos2 == element.Length - 1;
         }
 
-        public bool IsUnderscore(string element)
-            => element.IndexOf("_") != -1;
+        public bool IsUnderscore(string element) => 
+            element.IndexOf("_") != -1;
 
-
-        public bool IsElementNumber(string element)
-        {
-            foreach (var item in element)
-            {
-                if (!Char.IsDigit(item))
-                    return false;
-            }
-            return true;
-        }
+        public bool IsElementNumber(string element) => element.All(char.IsDigit);
 
         public bool WithHasTwoElem(string element)
         {
@@ -106,5 +65,17 @@ namespace Core.PQLo
 
             return position1 < position2 && position1 + 1 != position2 && position3 == -1;
         }
+
+        private static string FindType(Field field) =>
+            (field.Type == "procedure" && field.ProcedureName
+                || field.Type == "variable" && field.VariableName
+                || field.Type == "string") ?
+                "string" :
+            (field.Type == "constant" || hash.Contains(field.Type) && field.Statement) ?
+                "integer" : "error";
+
+        private static readonly HashSet<string> hash = new HashSet<string>(new[] { "stmt", "assign", "while", "if", "call", "prog_line" });
+        private readonly string[] tokensCheckAll = { ".varName",".stmt#", ".procedureName", ".value", "BOOLEAN" };
+        private readonly string[] tokens = { "parent", "follows", "modifies", "uses", "calls", "next", "affects" };
     }
 }
