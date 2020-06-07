@@ -1,5 +1,4 @@
-﻿using Core.Tables;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,8 +7,11 @@ namespace Core
 {
 	public class PKBApi
 	{
-		public PKBApi(PKB pkb) => 
+		public PKBApi(PKB pkb)
+		{
 			this.PKB = pkb;
+			this.Procedures = GetProcedureIds();
+		}
 
 		/// <summary>
 		/// Zwraca ilość wszystkich linii przetwarzanego kodu
@@ -20,6 +22,30 @@ namespace Core
 		/// Zwraca węzły w formie tablicy
 		/// </summary>
 		public NodeCollection ArrayForm => this.PKB.ArrayForm;
+
+		/// <summary>
+		/// Słownik id procedury do id wszystkich węzłów należących do niej.
+		/// </summary>
+		public IDictionary<int, List<int>> Procedures { get; }
+
+		private IDictionary<int, List<int>> GetProcedureIds()
+		{
+			return GetNodes(Instruction.Procedure, false)
+				.ToDictionary(
+					i => i.Id,
+					i => Gather(i.Nodes, new List<int>())
+				);
+
+			List<int> Gather(List<Node> nodes, List<int> ids)
+			{
+				foreach (var i in nodes)
+				{
+					ids.Add(i.Id);
+					Gather(i.Nodes, ids);
+				}
+				return ids;
+			}
+		}
 
 		/// <summary>
 		/// Zwraca węzły danego typu instrukcji
