@@ -7,8 +7,7 @@ namespace Core
 {
 	public class PKBApi
 	{
-		public PKBApi(PKB pkb) => 
-			this.PKB = pkb;
+		public PKBApi(PKB pkb) => this.PKB = pkb;
 
 		/// <summary>
 		/// Zwraca ilość wszystkich linii przetwarzanego kodu
@@ -19,6 +18,11 @@ namespace Core
 		/// Zwraca węzły w formie tablicy
 		/// </summary>
 		public NodeCollection ArrayForm => this.PKB.ArrayForm;
+
+		/// <summary>
+		/// Zwraca enumerator węzłów specjalizujący się w pełnym wyszukiwaniu danych.
+		/// </summary>
+		public NodeEnumerator ToNodeEnumerator() => new NodeEnumerator(this.PKB.Root.Nodes);
 
 		/// <summary>
 		/// Zwraca słownik id danej instrukcji do id wszystkich węzłów należących do niej.

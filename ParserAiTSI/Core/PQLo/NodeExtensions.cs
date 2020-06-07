@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
+using Core.Interfaces.PQL;
+
 namespace Core.PQLo
 {
     public static class NodeExtensions
     {
+        public static NodeEnumerator ToNodeEnumerator<T>(this IEnumerable<T> nodes)
+            where T : INode => new NodeEnumerator((IEnumerable<INode>)nodes);
+
         public static IEnumerable<T> Values<T>(this IEnumerable<Node<T>> nodes) => 
             nodes.Select(n => n.Value);
     }
