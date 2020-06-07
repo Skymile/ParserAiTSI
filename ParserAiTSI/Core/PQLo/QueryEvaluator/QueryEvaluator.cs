@@ -169,27 +169,90 @@ namespace Core.PQLo.QueryEvaluator
 
             if (temporary.Count != 0)
             {
-                foreach (var item in temporary)
+                if (resultType == "boolean")
                 {
-                    if (this.resultType == "variable")
+                    result.Add("true");
+                }
+                else
+                {
+                    foreach (var item in temporary)
                     {
-                        List<int> variableIds = new List<int>();
-                        if (isModifies) // Czy występuje tylko relacja . Modifies
+                        if (resultType == "procedure")
                         {
-
-                            foreach (var dict in pkb.Modifies.dict)
+                            string name = pkb.Procedures.FirstOrDefault(x => x.Id == item).Name;
+                            if (!result.Exists(x => x == name))
+                                result.Add(name);
+                        }
+                        else if (this.resultType == "variable")
+                        {
+                            if (isUses && !isModifies) // Czy występuje tylko relacja -> Uses
                             {
-                                List<int> tmp = dict.Value.Select(x => x.Id).ToList();
-                                if (tmp.IndexOf(item) != -1)
+                                foreach (var uses in UsesPairs)
                                 {
-                                    string name = dict.Key.Name;
-                                    if (result.FirstOrDefault(i => i == name) == null && variableIds.FirstOrDefault(x => x == dict.Key.Id) == null || variableIds.Count == 0)
-                                        result.Add(name);
+                                    if (uses.Item2 == item && result.Exists(x => x == uses.Item1))
+                                    {
+                                        result.Add(uses.Item1);
+                                    }
+                                }
+                            }
+                            var varUsesLines = pkb.Uses.dict;
+                            var varModifiesLines = pkb.Modifies.dict;
+                            List<int> variableIds = new List<int>();
+                            //
+                            if (!isUses && isModifies) // Czy występuje tylko relacja . Modifies
+                            {
+
+                                foreach (var dict in pkb.Modifies.dict)
+                                {
+                                    List<int> tmp = dict.Value.Select(x => x.Id).ToList();
+                                    if (tmp.Exists(x => x == item))
+                                    {
+                                        string name = dict.Key.Name;
+                                        if (result.Exists(i => i == name) && (variableIds.Exists(i => i == dict.Key.Id) || variableIds.Count == 0))
+                                            result.Add(name);
+                                    }
+
+                                }
+                            }
+                            else if (isUses && isModifies) // Wystapienie obu relacji (Uses i Modifies)
+                            {
+                                List<string> resultUses = new List<string>();
+                                foreach (var varUses in varUsesLines)
+                                {
+                                    if (varUses.Value.Exists(x => x.Id == item))
+                                    {
+                                        string name = pkb.Variables.FirstOrDefault(x => x.Id == varUses.Key.Id).Name;
+                                        if (!resultUses.Exists(x => x == name) && (variableIds.Exists(i => i == varUses.Key.Id) || variableIds.Count == 0))
+                                            resultUses.Add(name);
+                                    }
                                 }
 
+                                List<string> resultModifies = new List<string>();
+                                foreach (var varModifies in varModifiesLines)
+                                {
+                                    if (varModifies.Value.Exists(x => x.Id == item))
+                                    {
+                                        string name = pkb.Variables.FirstOrDefault(x => x.Id == varModifies.Key.Id).Name;
+                                        if (!resultModifies.Exists(x => x == name) && (variableIds.Exists(i => i == varModifies.Key.Id) || variableIds.Count == 0))
+                                            resultModifies.Add(name);
+                                    }
+                                }
+                                
+                                foreach (var used in resultUses)
+                                {
+                                    foreach (var modified in resultModifies)
+                                    {
+                                        if (used == modified && !result.Exists(x => x == used))
+                                        {
+                                            result.Add(used);
+                                        }
+
+                                    }
+                                }
                             }
                         }
                     }
+
                 }
             }
             return result;
@@ -383,14 +446,14 @@ namespace Core.PQLo.QueryEvaluator
                         }
                     }
                 }
-                
+
 
                 if (firstUses != true)
                 {
                     SortedSet<string> usesPairsName = new SortedSet<string>();
-                    SortedSet<string> actPairsName  = new SortedSet<string>();
-                    SortedSet<int> usesPairsLines   = new SortedSet<int>();
-                    SortedSet<int> actPairsLines    = new SortedSet<int>();
+                    SortedSet<string> actPairsName = new SortedSet<string>();
+                    SortedSet<int> usesPairsLines = new SortedSet<int>();
+                    SortedSet<int> actPairsLines = new SortedSet<int>();
 
                     Console.WriteLine();
                     foreach (var item in tmpUsesPairs)
@@ -420,8 +483,6 @@ namespace Core.PQLo.QueryEvaluator
                             UsesPairs.Remove(item);
                         }
                     }
-
-
                     foreach (var item in UsesPairs)
                     {
                         Console.WriteLine($"PAIR -->: {item.Item1} {item.Item2}");
