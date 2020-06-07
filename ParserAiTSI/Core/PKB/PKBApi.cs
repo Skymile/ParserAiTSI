@@ -7,11 +7,8 @@ namespace Core
 {
 	public class PKBApi
 	{
-		public PKBApi(PKB pkb)
-		{
+		public PKBApi(PKB pkb) => 
 			this.PKB = pkb;
-			this.Procedures = GetProcedureIds();
-		}
 
 		/// <summary>
 		/// Zwraca ilość wszystkich linii przetwarzanego kodu
@@ -24,13 +21,11 @@ namespace Core
 		public NodeCollection ArrayForm => this.PKB.ArrayForm;
 
 		/// <summary>
-		/// Słownik id procedury do id wszystkich węzłów należących do niej.
+		/// Zwraca słownik id danej instrukcji do id wszystkich węzłów należących do niej.
 		/// </summary>
-		public IDictionary<int, List<int>> Procedures { get; }
-
-		private IDictionary<int, List<int>> GetProcedureIds()
+		public IDictionary<int, List<int>> GetNodesDictionary(Instruction instruction)
 		{
-			return GetNodes(Instruction.Procedure, false)
+			return GetNodes(instruction, false)
 				.ToDictionary(
 					i => i.Id,
 					i => Gather(i.Nodes, new List<int>())
