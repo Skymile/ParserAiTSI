@@ -1,5 +1,4 @@
-﻿using Core.Tables;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,8 +7,7 @@ namespace Core
 {
 	public class PKBApi
 	{
-		public PKBApi(PKB pkb) => 
-			this.PKB = pkb;
+		public PKBApi(PKB pkb) => this.PKB = pkb;
 
 		/// <summary>
 		/// Zwraca ilość wszystkich linii przetwarzanego kodu
@@ -22,11 +20,38 @@ namespace Core
 		public NodeCollection ArrayForm => this.PKB.ArrayForm;
 
 		/// <summary>
+		/// Zwraca enumerator węzłów specjalizujący się w pełnym wyszukiwaniu danych.
+		/// </summary>
+		public NodeEnumerator ToNodeEnumerator() => new NodeEnumerator(this.PKB.Root.Nodes);
+
+		/// <summary>
+		/// Zwraca słownik id danej instrukcji do id wszystkich węzłów należących do niej.
+		/// </summary>
+		public IDictionary<int, List<int>> GetNodesDictionary(Instruction instruction)
+		{
+			return GetNodes(instruction, false)
+				.ToDictionary(
+					i => i.Id,
+					i => Gather(i.Nodes, new List<int>())
+				);
+
+			List<int> Gather(List<Node> nodes, List<int> ids)
+			{
+				foreach (var i in nodes)
+				{
+					ids.Add(i.Id);
+					Gather(i.Nodes, ids);
+				}
+				return ids;
+			}
+		}
+
+		/// <summary>
 		/// Zwraca węzły danego typu instrukcji
 		/// </summary>
 		/// <param name="instruction">Węzły tego typu instrukcji zostaną zwrócone</param>
 		/// <param name="rollUp">Jeśli prawda, zwróci w formie zwiniętej, rekurencyjnej w przeciwnym razie zwraca formę tablicową</param>
-		public IEnumerable<Node> GetNodes(Instruction instruction, bool rollUp) => 
+		public IEnumerable<Node> GetNodes(Instruction instruction, bool rollUp = false) => 
 			rollUp ? GetRolledUp(instruction) : GetArrayForm(instruction);
 
 		/// <summary>

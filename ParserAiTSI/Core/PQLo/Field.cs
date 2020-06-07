@@ -8,18 +8,18 @@ namespace Core.PQLo
 
         public Field(string type, string value)
         {
-            this.Type = type ?? throw new ArgumentNullException(nameof(type));
+            this.Type  = type  ?? throw new ArgumentNullException(nameof(type));
             this.Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         public Field(string type, string value, bool procedureName, bool variableName, bool value2, bool statement)
         {
-            this.Type = type ?? throw new ArgumentNullException(nameof(type));
-            this.Value = value ?? throw new ArgumentNullException(nameof(value));
+            this.Type          = type  ?? throw new ArgumentNullException(nameof(type));
+            this.Value         = value ?? throw new ArgumentNullException(nameof(value));
             this.ProcedureName = procedureName;
-            this.VariableName = variableName;
-            this.Value2 = value2;
-            this.Statement = statement;
+            this.VariableName  = variableName;
+            this.Value2        = value2;
+            this.Statement     = statement;
         }
 
         public string Type        { get; set; }

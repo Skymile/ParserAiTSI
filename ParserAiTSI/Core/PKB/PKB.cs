@@ -22,7 +22,7 @@ namespace Core
 		public readonly ModifiesTable Modifies = new ModifiesTable();
 		public readonly NextTable     Next     = new NextTable    ();
 		public readonly UsesTable     Uses     = new UsesTable    ();
-
+		
 		public readonly List<IVariableNode > Variables  = new List<IVariableNode >();
 		public readonly List<IProcedureNode> Procedures = new List<IProcedureNode>();
 
