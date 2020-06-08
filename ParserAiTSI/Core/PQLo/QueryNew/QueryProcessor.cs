@@ -6,6 +6,9 @@ namespace Core.PQLo.QueryPreProcessor
 {
 	public class QueryProcessor
 	{
+		public QueryProcessor(PKBApi api) => 
+			this.Api = api;
+
 		public string ProcessQuery(string query) =>
 			SplitQuery(BreakdownQuery(query));
 
@@ -36,9 +39,31 @@ namespace Core.PQLo.QueryPreProcessor
 
 			if (split.Count > 0 && split[0] == "SELECT")
 			{
-				string variable = split[1];
+				string variable      = split[1];
+				string such          = split[2];
+				string modifies      = split[3];
+				string leftModified  = split[4];
+				string rightModified = split[5];
 
-				;
+				if (such == "SUCH_THAT")
+				{
+					if (modifies == "MODIFIES")
+					{
+						var en = this.Api.PKB.Modifies.dict;
+						var f = en.Keys.FirstOrDefault(
+							i => i.Name.Equals(rightModified, StringComparison.InvariantCultureIgnoreCase
+						));
+						return string.Join(", ", en[f].Select(i => i.LineNumber));
+					} 
+					else if (modifies == "USES")
+					{
+						var en = this.Api.PKB.Uses.dict;
+						var f = en.Keys.FirstOrDefault(
+							i => i.Name.Equals(rightModified, StringComparison.InvariantCultureIgnoreCase
+						));
+						return string.Join(", ", en[f].Select(i => i.LineNumber));
+					}
+				}
 			}
 			return string.Empty;
 		}
@@ -50,7 +75,7 @@ namespace Core.PQLo.QueryPreProcessor
 			if (i == -1)
 				return new List<string> { query };
 
-			List<string> split = new List<string> { query.Substring(0, i) };
+			var split = new List<string> { query.Substring(0, i) };
 
 			int j;
 			while ((j = query.IndexOfAny(this.characters, i)) != -1)
@@ -91,8 +116,6 @@ namespace Core.PQLo.QueryPreProcessor
 		};
 
 		private readonly char[] characters = { ' ', ')', '(', ',', '\"' };
-
-		private readonly string[] joinTypes      = { "OR", "AND" };
-		private readonly string[] queryTypes     = { "SELECT", "SUCH THAT", "WITH" };
+		public PKBApi Api { get; }
 	}
 }

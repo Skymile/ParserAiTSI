@@ -5,48 +5,66 @@ namespace Core
 {
 	internal static class ParserExtensions
 	{
-		public static IEnumerable<string> ToNormalized(this IEnumerable<string> lines)
+		public static IEnumerable<(int LineNumber, string line)> ToNormalized(this IEnumerable<string> lines)
 		{
+			int count = 1;
 			foreach (string j in lines)
-				if (!string.IsNullOrWhiteSpace(j))
-				{
-					string i = j;
+			{
+				string[] ii = j
+					.Replace('\t', '\n')
+					.Replace('\r', '\n')
+					.Replace(';', '\n')
+					.Replace("}", "}\n")
+					.Replace("{", "{\n")
+					.Split('\n')
+					.Select(i => i.Trim())
+					.Where(i => !string.IsNullOrWhiteSpace(i))
+					.ToArray();
 
-					int start = j.Count(ch => ch == '{');
-					int close = j.Count(ch => ch == '}');
+				foreach (var k in ii)
+					if (!string.IsNullOrWhiteSpace(k))
+					{
+						string i = k;
 
-					if (start > 0)
-						i = i.Replace("{", string.Empty).Trim();
-					if (close > 0)
-						i = i.Replace("}", string.Empty).Trim();
+						int start = k.Count(ch => ch == '{');
+						int close = k.Count(ch => ch == '}');
 
-					if (!string.IsNullOrWhiteSpace(i))
-						yield return i;
-					for (int k = 0; k < start; k++)
-						yield return "{";
-					for (int k = 0; k < close; k++)
-						yield return "}";
-				}
+						if (start > 0)
+							i = i.Replace("{", string.Empty).Trim();
+						if (close > 0)
+							i = i.Replace("}", string.Empty).Trim();
+
+						if (!string.IsNullOrWhiteSpace(i))
+							yield return (count, i);
+						for (int m = 0; m < start; m++)
+							yield return (count, "{");
+						for (int m = 0; m < close; m++)
+							yield return (count, "}");
+
+					}
+				++count;
+			}
 
 		}
 
-		public static IEnumerable<Node> ToArrayForm(this IEnumerable<string> ins)
+		public static IEnumerable<Node> ToArrayForm(this IEnumerable<(int LineNumber, string Line)> ins)
 		{
 			int nestLevel = 0;
 			int id = 0;
 
-			foreach (string i in ins)
+			foreach (var (LineNumber, Line) in ins)
 			{
-				if (i == "{")
+				if (Line == "{")
 					++nestLevel;
-				else if (i == "}")
+				else if (Line == "}")
 					--nestLevel;
 				else
 					yield return new Node
 					{
 						Id = id++,
+						LineNumber = LineNumber,
 						Level = nestLevel,
-						Instruction = i
+						Instruction = Line
 					};
 			}
 		}
