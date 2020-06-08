@@ -26,7 +26,7 @@ namespace Core.PQLo.QueryPreProcessor
 				string[] split = i.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
 				if (split.Length == 2)
-					yield return this.statementsList[split[0]](split[1]);
+					yield return this.statementsList[split[0]](split[1].Trim('\"'));
 			}
 		}
 

@@ -1,5 +1,8 @@
-﻿namespace Core.PQLo.QueryPreProcessor
+﻿using System.Diagnostics;
+
+namespace Core.PQLo.QueryPreProcessor
 {
+	[DebuggerDisplay("{Type} {Value}")]
 	public class QueryNode
 	{
 		public QueryNode(StatementType type, string value)
