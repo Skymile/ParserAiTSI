@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.IO;
 using Core;
 using Core.PQLo.QueryEvaluator;
 using Core.PQLo.QueryPreProcessor;
@@ -21,25 +21,36 @@ namespace Terminal
 					)
 				);
 
+			var lines = File.ReadAllLines("../../input/tests.txt");
+
 			var a = new QueryPreProcessor();
 
 			Console.WriteLine("Ready");
 			//var results = evaluator.ResultQuery(tree);
 
-			while (true)
-			{
-				a.GetQuery(Console.ReadLine(), Console.ReadLine());
-
-				//TODO
-				Console.WriteLine(a.ProcessQuery());
-				var tree = a.PqlTree;
-
-				var evaluator = new QueryEvaluator(pkb).ResultQuery(tree);
-				for (int i = 0; i < evaluator.Count; i++, Console.Write(", "))
+			//while (true)
+			for (int k = 0; k < lines.Length; k += 3)
+				//try
 				{
-					Console.WriteLine(evaluator[i]);
+					var b = new QueryProcessor();
+					b.ProcessQuery(lines[k] + ";" + lines[k + 1]);
+					a.GetQuery(lines[k], lines[k + 1]);
+					
+					//TODO
+					string processed = a.ProcessQuery();
+					Console.WriteLine(processed);
+					var tree = a.PqlTree;
+					
+					var evaluator = new QueryEvaluator(pkb).ResultQuery(tree);
+					for (int i = 0; i < evaluator.Count; i++, Console.Write(", "))
+					{
+						Console.WriteLine(evaluator[i]);
+					}
 				}
-			}
+				//catch (Exception ex)
+				{
+					//Console.Error.WriteLine(ex.Message);
+				}
 		}
 	}
 }

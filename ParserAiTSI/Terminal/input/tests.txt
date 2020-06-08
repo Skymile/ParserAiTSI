@@ -1,0 +1,5 @@
+assign a; procedure z; assign x;
+Select a such that Modifies(a, "x");
+106, 116
+Select b such that Uses(b, "x1");
+Select a such that Modifies(x, 'v') and Parent(x,z) with Follows( x,10)
