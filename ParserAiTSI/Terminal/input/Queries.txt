@@ -1,0 +1,66 @@
+variable v; 
+Select v such that Modifies(7, v)
+x1
+variable v;
+Select v such that Modifies (191, v)
+asterick,dx,dy,left,marking,pct,peak,range,right,trim
+variable v;
+Select v such that Modifies (79, v)
+asterick,blue,depth,dx,dy,edge,factor,green,height,I,j,left,line,marking,notmove,p1,p2,pct,peak,pink,pixel,range,right,s,semi,temporary,tmp,total,trim,width,x1,x2,y1,y2
+variable v;
+Select v such that Modifies (136, v)
+tmp,weight,x1,x2,y1,y2
+variable v;
+Select v such that Modifies (160, v)
+decrement,factor,incre,x1,x2,y1
+variable v;
+Select v such that Modifies (218, v)
+blue,depth,edge,green,line,notmove,pink,semi,temporary
+stmt s;
+Select s such that Modifies (s, "tmp")
+105,107,108,12,133,136,137,14,149,15,16,17,180,181,187,188,29,33,34,38,4,42,47,48,59,6,60,63,66,76,78,79,80,81,89,90,95,96
+stmt s;
+Select s such that Modifies (s, "temporary")
+12,14,15,16,18,216,217,218,224,226,59,6,62,79,80,89,92
+assign a;
+Select a such that Modifies (a, "incre")
+110,128,134,162,65
+assign a;
+Select a such that Modifies (a, "temporary")
+226
+if ifs;
+Select ifs such that Modifies (ifs, "x1")
+107,14,15,159,160,163,173,250,34,38,66,76,80
+if ifs;
+Select ifs such that Modifies (ifs, "line")
+14,15,216,80
+while w;
+Select w such that Modifies (w, "x2")
+105,12,136,16,180,181,29,6,69,79,83
+while w;
+Select w such that Modifies (w, "x1")
+105,12,136,16,180,181,251,29,6,79,83
+call c;
+Select c such that Modifies (c, "x1")
+1,108,119,22,33,41,42,63,78,84
+call c;
+Select c such that Modifies (c, "unknown")
+none
+variable v;
+Select v such that Modifies ("Init", v)
+bottom,decrement,incre,left,right,top,x1,x2,y1,y2
+variable v;
+Select v such that Modifies ("Draw", v)
+asterick,blue,dx,dy,green,left,marking,p1,p2,pct,peak,pink,range,right,s,trim
+variable v;
+Select v such that Modifies ("Shrink", v)
+asterick,blue,dx,dy,factor,green,I,j,left,marking,p1,p2,pct,peak,pink,range,right,s,trim,x1,x2,y1,y2
+procedure p;
+Select p such that Modifies (p, "factor")
+Main,Move,Shear,Shrink,Translate
+procedure p;
+Select p such that Modifies (p, "temporary")
+Enlarge,Main
+procedure p;
+Select p such that Modifies (p, "cs1")
+PP,QQ,RR,TT

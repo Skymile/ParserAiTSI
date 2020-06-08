@@ -13,6 +13,7 @@ namespace Core.PQLo.QueryEvaluator
 {
     public class QueryEvaluator
     {
+        
         public QueryEvaluator(PKB pkb)
         {
             this.pkb = pkb;
@@ -213,7 +214,7 @@ namespace Core.PQLo.QueryEvaluator
                                     if (tmp.Exists(x => x == item))
                                     {
                                         string name = dict.Key.Name;
-                                        if (result.Exists(i => i == name) && (variableIds.Exists(i => i == dict.Key.Id) || variableIds.Count == 0))
+                                        if (!result.Exists(i => i == name) && (variableIds.Exists(i => i == dict.Key.Id) || variableIds.Count == 0))
                                             result.Add(name);
                                     }
 
@@ -988,11 +989,11 @@ namespace Core.PQLo.QueryEvaluator
                     setLines1.UnionWith(procedureLines.Value);
 
                 }
-                //else if (pkb.Procedures.Count - 1 >= param1)
-                //{
-                //    var tmp = pkbApi.GetNodes(Instruction.Procedure, false).FirstOrDefault(x => x.Id == param1);
-                //    setLines1.UnionWith(pkb.Procedures.FirstOrDefault(x => x.Id == param1)?.Nodes?.Select(x => x.Id));
-                //}
+                else if (pkb.Procedures.Count - 1 >= param1)
+                {
+                    var tmp = pkbApi.GetNodes(Instruction.Procedure, false).FirstOrDefault(x => x.Id == param1);
+                    setLines1.UnionWith(pkb.Procedures.FirstOrDefault(x => x.Id == param1)?.Nodes?.Select(x => x.Id));
+                }
                 else
                     setLines1.Add(param1);
 
@@ -1077,8 +1078,8 @@ namespace Core.PQLo.QueryEvaluator
             if (field1.Type != "constant" && field1.Type != "any")
                 setLines1 = CutSetLines(field1.Value, setLines1);
             //Biorąc pod uwagę części zapytanie z "with" następuje skrócenie listy parametru 2
-            if (field2.Type != "constant" && field2.Type != "any")
-                CutSetLines(field2.Value, new SortedSet<int>(setLines2.Select(x => x.Id))); // naprawic
+            //if (field2.Type != "constant" && field2.Type != "any")
+            //    setLines2 = CutSetLines(field2.Value, new SortedSet<int>(setLines2.Select(x => x.Id))); // naprawic
 
 
             List<int> resultPart = new List<int>();
@@ -1100,7 +1101,7 @@ namespace Core.PQLo.QueryEvaluator
                             else if (selectValue == field1.Value && selectValue != "boolean")
                             {
                                 //Jeśli parametr pierwszy jest tym, którego szukamy to wybieramy z listy pierwszej
-                                if (resultPart.IndexOf(l1) != -1)
+                                if (!resultPart.Exists(x => x == l2.Id))
                                 {
                                     resultPart.Add(l1);
                                 }
@@ -1108,7 +1109,7 @@ namespace Core.PQLo.QueryEvaluator
                             else if (selectValue == field2.Value && selectValue != "boolean")
                             {
                                 //Jeśli parametr drugi jest tym, którego szukamy to wybieramy z listy drugiej
-                                if (resultPart.IndexOf(l2.Id) != -1)
+                                if (!resultPart.Exists( x => x == l2.Id))
                                 {
                                     resultPart.Add(l1);
                                 }
