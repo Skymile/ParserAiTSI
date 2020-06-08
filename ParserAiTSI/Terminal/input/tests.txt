@@ -1,9 +1,9 @@
 assign a; procedure z; assign x;
 Select a such that Modifies(a, "x");
-119 | x = x + 1 ,  130 | x = x + 1
+106, 116
 assign b;
 Select b such that Uses(b, "x1");
-8 | x2 = x1 + incre + right ,  19 | radius = x1 * 3 + difference ,  31 | width = x1 * x2 + incre * left ,  37 | x3 = radius + x1 ,  38 | difference = x4 + x1 - incre ,  46 | distance = length + x1 ,  52 | width = x2 + x1 - left ,  69 | x5 = x1 + y2 - 3 ,  76 | x6 = x2 + x1 - x3 * I ,  91 | width = x2 - x1 ,  161 | weight = x2 - x1 ,  168 | y2 = x1 * (height - bottom) ,  171 | top = x2 - x1 * incre ,  173 | x3 = x1 + x2 * y1 + y2 * left + right ,  174 | x4 = x1 * x2 + y1 * y2 + left - right ,  175 | x5 = x1 + x2 + y1 + y2 * (left - right) ,  176 | x6 = x1 * x2 * y1 - y2 + left * right ,  177 | x7 = x1 * x2 * y1 * y2 * left * right ,  179 | x9 = x1 + x2 * y1 * y2 * left - right ,  181 | if x1 then ,  184 | incre = x2 - x1 ,  188 | x1 = decrement + x1 ,  215 | I = x1 + decrement ,  240 | asterick = x1 * x1 + y1 * x2 ,  289 | x1 = x1 - 10 ,  293 | factor = y2 - y1 + x2 - x1 ,  296 | x1 = x1 - I ,  298 | x2 = I * x1 - factor
+8, 19, 30, 36, 37, 43, 49, 64, 71, 82, 142, 148, 150, 152, 153, 154, 155, 156, 158, 159, 162, 165, 185, 206, 245, 249, 252, 254
 Select a such that Modifies(x, 'v') and Parent(x,z) with Follows( x,10)
 None
 None
