@@ -65,7 +65,7 @@ namespace Core.PQLo.QueryPreProcessor
 					}
 				}
 			}
-			return string.Empty;
+			return "none";
 		}
 
 		private List<string> QuerySplit(string query)
