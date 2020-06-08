@@ -39,7 +39,7 @@ namespace Core.PQLo.QueryEvaluator
                 if (item.Type == "resultNode")
                 {
                     this.resultType = item.Field1.Type;
-                    if (this.resultType == "assign" || this.resultType == "procedure")
+                    if (this.resultType == "assign")
                     {
                         lines = pkbApi.GetNodes(Instruction.Assign, false).ToList();
                         selectValue = item.Field1.Value;
@@ -52,6 +52,11 @@ namespace Core.PQLo.QueryEvaluator
                     else if (this.resultType == "variable" || this.resultType == "prog_line")
                     {
                         lines = pkb.Variables.Select(x => (Node)x).ToList();
+                        selectValue = item.Field1.Value;
+                    }
+                    else if (this.resultType == "procedure")
+                    {
+                        lines = pkbApi.GetNodes(Instruction.Procedure, false).ToList();
                         selectValue = item.Field1.Value;
                     }
                     else if (this.resultType == "stmt" || this.resultType == "boolean")
@@ -237,7 +242,7 @@ namespace Core.PQLo.QueryEvaluator
                                             resultModifies.Add(name);
                                     }
                                 }
-                                
+
                                 foreach (var used in resultUses)
                                 {
                                     foreach (var modified in resultModifies)
@@ -258,8 +263,329 @@ namespace Core.PQLo.QueryEvaluator
             return result;
         }
 
-        private List<int> CallResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
-        private List<int> CallStarResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+        private List<int> CallResult(Field field1, Field field2, List<Node> lines, string selectValue)
+        {
+            SortedSet<int> candidatesForParameter1 = new SortedSet<int>();
+            SortedSet<int> candidatesForParameter2 = new SortedSet<int>();
+            SortedSet<int> resultPart = new SortedSet<int>();
+            List<int> returnIt = new List<int>();
+            if (field1 == null || field2 == null)
+            {
+                return returnIt;
+            }
+            string firstParameterType = field1.Type;
+            string secondParameterType = field2.Type;
+            int firstProcedureId = -1;
+            int secondProcedureId = -1;
+
+            //Dla parametru pierwszego tworzy się lista z możliwymi wartościami dla tego parametru
+            if (firstParameterType == "string")
+            {
+                var procedure = pkbApi.GetProcedure(field1.Value);
+                firstProcedureId = procedure != null ? procedure.Id : -1;
+                if (firstProcedureId == -1)
+                {
+                    return returnIt;
+                }
+
+                candidatesForParameter1.Add(firstProcedureId);
+            }
+            else if (firstParameterType == "constant")
+            {
+                var procedure = pkb.Procedures.FirstOrDefault(x => x.Id == int.Parse(field1.Value));
+                firstProcedureId = procedure != null ? procedure.Id : -1;
+                if (firstProcedureId == -1)
+                {
+                    return returnIt;
+                }
+
+                candidatesForParameter1.Add(firstProcedureId);
+            }
+            else
+            {
+                for (int i = 0; i <= pkb.Procedures.Count; i++)
+                {
+                    candidatesForParameter1.Add(i);
+                }
+            }
+
+            //Dla parametru drugiego tworzy się lista z możliwymi wartościami dla tego parametru
+            if (secondParameterType == "string")
+            {
+                var procedure = pkbApi.GetProcedure(field2.Value);
+                secondProcedureId = procedure != null ? procedure.Id : -1;
+                if (secondProcedureId == -1)
+                {
+                    return returnIt;
+                }
+                candidatesForParameter2.Add(secondProcedureId);
+            }
+            else if (secondParameterType == "constant")
+            {
+
+                var procedure = pkb.Procedures.FirstOrDefault(x => x.Id == int.Parse(field2.Value));
+                secondProcedureId = procedure != null ? procedure.Id : -1;
+                if (secondProcedureId == -1)
+                {
+                    return returnIt;
+                }
+
+                candidatesForParameter2.Add(secondProcedureId);
+            }
+            else
+            {
+                for (int i = 0; i <= pkb.Procedures.Count; i++)
+                {
+                    candidatesForParameter1.Add(i);
+                }
+            }
+
+            //Biorąc pod uwage części zapytania z "with", skracana jest lista parametru pierwszego
+            if (field1.Type != "constant" && field1.Type != "any")
+            {
+                candidatesForParameter1 = CutSetLines(field1.Value, candidatesForParameter1);
+            }
+            //Biorąc pod uwage części zapytania z "with", skracana jest lista parametru drugiego
+            if (field2.Type != "constant" && field2.Type != "any")
+            {
+                candidatesForParameter2 = CutSetLines(field2.Value, candidatesForParameter2);
+            }
+
+            if (firstParameterType == "constant" && secondParameterType == "constant")
+            {
+                if (pkb.Calls.IsCall(firstProcedureId, secondProcedureId))
+                {
+                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == firstProcedureId).Id);
+                }
+                return new List<int>(resultPart);
+            }
+            else if (firstParameterType == "string" && secondParameterType == "string")
+            {
+                if (pkb.Calls.IsCall(firstProcedureId, secondProcedureId))
+                {
+                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == firstProcedureId).Id);
+                }
+
+                return new List<int>(resultPart);
+            }
+            else if (firstParameterType == "any" && secondParameterType == "any")
+            {
+                //Jesli "any" spełnia wymagania to wszystkie linie są dobre
+                if (pkb.Calls.IsCall(firstProcedureId, secondProcedureId))
+                {
+                    resultPart.UnionWith(pkb.Procedures.Select(x => x.Id));
+                }
+                //Jeśli "any" nie spełnia wymagań to wszystkie linie są złe (nie ma procedur w programie)
+                returnIt = new List<int>(resultPart);
+                return returnIt;
+            }
+            else if (selectValue == field1.Value && selectValue == field2.Value && selectValue != "boolean")
+            {
+                //Jeśli w zapytaniu sa dwie takie same wartości, a nie jest to "any" to zwraca pusty wynik, ponieważ nie można wywołać rekurencyjnie
+                return new List<int>(resultPart);
+            }
+            else
+            {
+                foreach (var parameter1 in candidatesForParameter1)
+                {
+                    foreach (var parameter2 in candidatesForParameter2)
+                    {
+                        if (pkb.Calls.IsCall(parameter1, parameter2) && parameter1 != parameter2)
+                        {
+                            if (selectValue == field1.Value && selectValue != "boolean")
+                            {
+                                //Dodaje możliwość z parameter1 do wyniku, gdy call(parmeter1,*) gdzie * = 'any','const','var'
+                                if (!resultPart.Contains(pkb.Procedures.FirstOrDefault(x => x.Id == parameter1).Id))// find(resultPart.begin(), resultPart.end(), pkbApi.getPierwszaLiniaProcedury(*parameter1)) == resultPart.end())
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter1).Id);
+                            }
+                            else if (selectValue == field2.Value && selectValue != "boolean")
+                            {
+                                //Dodaje możliwość z parameter2 do wyniku, gdy call(parmeter2,*) gdzie * = 'any','const','var'
+                                if (!resultPart.Contains(pkb.Procedures.FirstOrDefault(x => x.Id == parameter2).Id))
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter2).Id);
+                            }
+                            else
+                            {
+                                //Zwraca wszystko, czy call(1,_) lub call(_,1)
+                                if (field1.Type != "constant" && field1.Type != "string")
+                                {
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter1).Id);
+                                }
+                                if (field2.Type != "constant" && field2.Type != "string")
+                                {
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter2).Id);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            return new List<int>(resultPart);
+        }
+
+        private List<int> CallStarResult(Field field1, Field field2, List<Node> lines, string selectValue)
+        {
+            SortedSet<int> candidatesForParameter1 = new SortedSet<int>();
+            SortedSet<int> candidatesForParameter2 = new SortedSet<int>();
+            SortedSet<int> resultPart = new SortedSet<int>();
+            List<int> returnIt = new List<int>();
+            if (field1 == null || field2 == null)
+            {
+                return returnIt;
+            }
+            string firstParameterType = field1.Type;
+            string secondParameterType = field2.Type;
+            int firstProcedureId = -1;
+            int secondProcedureId = -1;
+
+            //Dla parametru pierwszego tworzy się lista z możliwymi wartościami dla tego parametru
+            if (firstParameterType == "string")
+            {
+                var procedure = pkbApi.GetProcedure(field1.Value);
+                firstProcedureId = procedure != null ? procedure.Id : -1;
+                if (firstProcedureId == -1)
+                {
+                    return returnIt;
+                }
+
+                candidatesForParameter1.Add(firstProcedureId);
+            }
+            else if (firstParameterType == "constant")
+            {
+                var procedure = pkb.Procedures.FirstOrDefault(x => x.Id == int.Parse(field1.Value));
+                firstProcedureId = procedure != null ? procedure.Id : -1;
+                if (firstProcedureId == -1)
+                {
+                    return returnIt;
+                }
+
+                candidatesForParameter1.Add(firstProcedureId);
+            }
+            else
+            {
+                for (int i = 0; i <= pkb.Procedures.Count; i++)
+                {
+                    candidatesForParameter1.Add(i);
+                }
+            }
+
+            //Dla parametru drugiego tworzy się lista z możliwymi wartościami dla tego parametru
+            if (secondParameterType == "string")
+            {
+                var procedure = pkbApi.GetProcedure(field2.Value);
+                secondProcedureId = procedure != null ? procedure.Id : -1;
+                if (secondProcedureId == -1)
+                {
+                    return returnIt;
+                }
+                candidatesForParameter2.Add(secondProcedureId);
+            }
+            else if (secondParameterType == "constant")
+            {
+
+                var procedure = pkb.Procedures.FirstOrDefault(x => x.Id == int.Parse(field2.Value));
+                secondProcedureId = procedure != null ? procedure.Id : -1;
+                if (secondProcedureId == -1)
+                {
+                    return returnIt;
+                }
+
+                candidatesForParameter2.Add(secondProcedureId);
+            }
+            else
+            {
+                for (int i = 0; i <= pkb.Procedures.Count; i++)
+                {
+                    candidatesForParameter1.Add(i);
+                }
+            }
+
+            //Biorąc pod uwage części zapytania z "with", skracana jest lista parametru pierwszego
+            if (field1.Type != "constant" && field1.Type != "any")
+            {
+                candidatesForParameter1 = CutSetLines(field1.Value, candidatesForParameter1);
+            }
+            //Biorąc pod uwage części zapytania z "with", skracana jest lista parametru drugiego
+            if (field2.Type != "constant" && field2.Type != "any")
+            {
+                candidatesForParameter2 = CutSetLines(field2.Value, candidatesForParameter2);
+            }
+
+            if (firstParameterType == "constant" && secondParameterType == "constant")
+            {
+
+                if (pkb.Calls.IsCall(firstProcedureId, secondProcedureId)) // TODO:: dać to star
+                {
+                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == firstProcedureId).Id);
+                }
+                return new List<int>(resultPart);
+            }
+            else if (firstParameterType == "string" && secondParameterType == "string")
+            {
+                if (pkb.Calls.IsCall(firstProcedureId, secondProcedureId))
+                {
+                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == firstProcedureId).Id);
+                }
+
+                return new List<int>(resultPart);
+            }
+            else if (firstParameterType == "any" && secondParameterType == "any")
+            {
+                //Jesli "any" spełnia wymagania to wszystkie linie są dobre
+                if (pkb.Calls.IsCall(firstProcedureId, secondProcedureId))
+                {
+                    resultPart.UnionWith(pkb.Procedures.Select(x => x.Id));
+                }
+                //Jeśli "any" nie spełnia wymagań to wszystkie linie są złe (nie ma procedur w programie)
+                returnIt = new List<int>(resultPart);
+                return returnIt;
+            }
+            else if (selectValue == field1.Value && selectValue == field2.Value && selectValue != "boolean")
+            {
+                //Jeśli w zapytaniu sa dwie takie same wartości, a nie jest to "any" to zwraca pusty wynik, ponieważ nie można wywołać rekurencyjnie
+                return new List<int>(resultPart);
+            }
+            else
+            {
+                foreach (var parameter1 in candidatesForParameter1)
+                {
+                    foreach (var parameter2 in candidatesForParameter2)
+                    {
+                        if (pkb.Calls.IsCall(parameter1, parameter2) && parameter1 != parameter2)// TODO:: dać to star
+                        {
+                            if (selectValue == field1.Value && selectValue != "boolean")
+                            {
+                                //Dodaje możliwość z parameter1 do wyniku, gdy call(parmeter1,*) gdzie * = 'any','const','var'
+                                if (!resultPart.Contains(pkb.Procedures.FirstOrDefault(x => x.Id == parameter1).Id))// find(resultPart.begin(), resultPart.end(), pkbApi.getPierwszaLiniaProcedury(*parameter1)) == resultPart.end())
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter1).Id);
+                            }
+                            else if (selectValue == field2.Value && selectValue != "boolean")
+                            {
+                                //Dodaje możliwość z parameter2 do wyniku, gdy call(parmeter2,*) gdzie * = 'any','const','var'
+                                if (!resultPart.Contains(pkb.Procedures.FirstOrDefault(x => x.Id == parameter2).Id))
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter2).Id);
+                            }
+                            else
+                            {
+                                //Zwraca wszystko, czy call(1,_) lub call(_,1)
+                                if (field1.Type != "constant" && field1.Type != "string")
+                                {
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter1).Id);
+                                }
+                                if (field2.Type != "constant" && field2.Type != "string")
+                                {
+                                    resultPart.Add(pkb.Procedures.FirstOrDefault(x => x.Id == parameter2).Id);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            return new List<int>(resultPart);
+        }
+
         private List<int> UsesResult(Field field1, Field field2, List<Node> lines, string selectValue)
         {
             SortedSet<int> setLines1 = new SortedSet<int>();
@@ -322,49 +648,26 @@ namespace Core.PQLo.QueryEvaluator
                 }
                 else if (field1.Type == "procedure")
                 {
-                    var dict = pkbApi.GetNodes(Instruction.Procedure, true);
-                    // TODO: zrobic linie procedury
-                    foreach (var item in dict)
+                    foreach (var item in pkbApi.GetNodesDictionary(Instruction.Procedure))
                     {
-                        int procParam = item.Id;
-                        foreach (var node in item.Nodes)
-                        {
-
-                        }
+                        setLines1.Add(item.Key);
+                        setLines1.UnionWith(item.Value);
                     }
-
-
                 }
-                else if (field1.Type == "call") // TODO::
+                else if (field1.Type == "call")
                 {
-                    //List<int> callLinesStart = pkb.getTablicaLiniiKodu().getLinieCall();
-                    //for (int i = 0; i < callLinesStart.Count; i++)
-                    //{
-                    //    string nazwaProcedury = pkb.getTablicaLiniiKodu().getWywolanaNazwaProcedury(callLinesStart[i]);
-                    //    int idProcedury = pkb.getTablicaProcedur().getIdProcedury(nazwaProcedury);
-                    //    if (idProcedury != -1)
-                    //    {
-                    //        List<int> callLines = pkb.getTablicaProcedur().getLinieProcedury(idProcedury);
-
-                    //        for (int j = 0; j < callLines.Count; j++)
-                    //        {
-                    //            setLines1.Add(callLines[j]);
-                    //        }
-                    //    }
-                    //}
+                    foreach (var item in pkbApi.GetNodesDictionary(Instruction.Call))
+                    {
+                        setLines1.UnionWith(item.Value);
+                    }
                 }
                 else if (field1.Type == "string")
                 {
                     var procedure = pkb.Procedures.FirstOrDefault(x => x.Name == field1.Value);
                     if (procedure != null)
                     {
-                        //List<int> procLines = pkb.getTablicaProcedur().getLinieProcedury(idProcedury); // TODO:: zrobic linie procedury
-                        //int j = 0;
-                        //while (j < procLines.Count)
-                        //{
-                        //    setLines1.Add(procLines[j]);
-                        //    j++;
-                        //}
+                        var tmp = pkbApi.GetNodesDictionary(Instruction.Procedure).FirstOrDefault(x => x.Key == procedure.Id).Value;
+                        setLines1.UnionWith(tmp);
                     }
                 }
                 else if (field1.Type == "stmt")
@@ -402,7 +705,7 @@ namespace Core.PQLo.QueryEvaluator
 
                     foreach (var l2 in setLines2)
                     {
-                        if (true)//pkb.getUses().uses(*l1, pkb.getTablicaZmiennych().getNazwaZmiennej(*l2)) == true)
+                        if (pkb.Uses.dict.FirstOrDefault(x => x.Key.Id == l1).Value.Exists(x => x.Id == l2))
                         {
                             var addingObj = (pkb.Variables.FirstOrDefault(x => x.Id == l2).Name, l1);
                             if (firstUses == true)
@@ -424,7 +727,7 @@ namespace Core.PQLo.QueryEvaluator
                             else if (selectValue == field1.Value && selectValue != "boolean")
                             {
                                 //Jeśli parametr pierwszy jest tym, którego szukamy to wybieramy z listy pierwszej
-                                if (resultPart.IndexOf(l1) == -1)
+                                if (!resultPart.Exists(x => x == l1))
                                 {
                                     resultPart.Add(l1);
                                 }
@@ -432,7 +735,7 @@ namespace Core.PQLo.QueryEvaluator
                             else if (selectValue == field2.Value && selectValue != "boolean")
                             {
                                 //Jeśli parametr drugi jest tym, którego szukamy to wybieramy z listy drugiej
-                                if (resultPart.IndexOf(l2) == -1)
+                                if (!resultPart.Exists(x => x == l2))
                                 {
                                     resultPart.Add(l2);
                                 }
@@ -495,10 +798,177 @@ namespace Core.PQLo.QueryEvaluator
             return resultPart;
         }
 
-        private List<int> FollowsResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
-        private List<int> FollowsStarResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
-        private List<int> ParentResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
-        private List<int> ParentStarResult(Field field1, Field field2, List<Node> lines, string selectValue) => throw new NotImplementedException();
+        private List<int> FollowsResult(Field field1, Field field2, List<Node> lines, string selectValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        private List<int> FollowsStarResult(Field field1, Field field2, List<Node> lines, string selectValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        private List<int> ParentResult(Field field1, Field field2, List<Node> lines, string selectValue)
+        {
+            SortedSet<int> setLines1 = new SortedSet<int>();
+            SortedSet<int> setLines2 = new SortedSet<int>();
+            //Pierwszy parametr (Field1) sprawdzany w relacji Parent
+            if (field1.Type == "constant" && field2.Type != "constant")
+            {
+                int param = int.Parse(field1.Value);
+                setLines1.Add(param);
+                if (field2.Type == "stmt" || field2.Type == "any")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Assign).Select(x => x.Id));
+                    SortedSet<int> tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                    setLines2.UnionWith(tmp);
+                    tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                    setLines2.UnionWith(tmp);
+                    tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.Call).Select(x => x.Id));
+                    setLines2.UnionWith(tmp);
+                }
+                else if (field2.Type == "while")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                }
+                else if (field2.Type == "if")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                }
+                else if (field2.Type == "call")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Call).Select(x => x.Id));
+                }
+                else if (field2.Type == "assign")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Assign).Select(x => x.Id));
+                }
+            }
+            else if (field1.Type != "constant" && field2.Type == "constant")
+            {
+                int param = int.Parse(field2.Value);
+                setLines2.Add(param);
+                if (field1.Type == "stmt" || field1.Type == "any")
+                {
+                    setLines1 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                    SortedSet<int> tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                    setLines1.UnionWith(tmp);
+                }
+                else if (field1.Type == "while")
+                {
+                    setLines1 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                }
+                else if (field1.Type == "if")
+                {
+                    setLines1 = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                }
+            }
+            else if (field1.Type == "constant" && field2.Type == "constant")
+            {
+                int param1 = int.Parse(field1.Value);
+                int param2 = int.Parse(field2.Value);
+                if (pkb.Parent.dict.FirstOrDefault(x => x.Key.Id == param1).Value.Exists(x => x.Id == param2))
+                {
+                    return lines.Select(x => x.Id).ToList();
+                }
+            }
+            else
+            {
+                if (field1.Type == "stmt" || field1.Type == "any")
+                {
+                    setLines1 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                    SortedSet<int> tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                    setLines1.UnionWith(tmp);
+                }
+                else if (field1.Type == "while")
+                {
+                    setLines1 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                }
+                else if (field1.Type == "if")
+                {
+                    setLines1 = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                }
+                if (field2.Type == "stmt" || field2.Type == "prog_line" || field2.Type == "any")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Assign).Select(x => x.Id));
+                    SortedSet<int> tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                    setLines2.UnionWith(tmp);
+                    tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                    setLines2.UnionWith(tmp);
+                    tmp = new SortedSet<int>(pkbApi.GetNodes(Instruction.Call).Select(x => x.Id));
+                    setLines2.UnionWith(tmp);
+                }
+                else if (field2.Type == "while")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Loop).Select(x => x.Id));
+                }
+                else if (field2.Type == "if")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.If).Select(x => x.Id));
+                }
+                else if (field2.Type == "call")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Call).Select(x => x.Id));
+                }
+                else if (field2.Type == "assign")
+                {
+                    setLines2 = new SortedSet<int>(pkbApi.GetNodes(Instruction.Assign).Select(x => x.Id));
+                }
+            }
+
+            //Biorąc pod uwage części zapytania z "with", skracana jest lista parametru pierwszego
+            if (field1.Type != "constant" && field1.Type != "any")
+                setLines1 = CutSetLines(field1.Value, setLines1);
+
+            //Biorąc pod uwage części zapytania z "with", skracana jest lista parametru drugiego
+            if (field2.Type != "constant" && field2.Type != "any")
+                setLines2 = CutSetLines(field2.Value, setLines2);
+
+            List<int> resultPart = new List<int>();
+            //Dla pobranych parametrow setLines1 oraz setLines2 sprawdzane są zależności, a następnie porównanie ich z wartościami na lines (szukana wartość)
+            if (setLines1.Count != 0 && setLines2.Count != 0)
+            {
+                foreach (var l1 in setLines1)
+                {
+                    foreach (var l2 in setLines2)
+                    {
+                        if (pkb.Parent.dict.FirstOrDefault(x => x.Key.Id == l1).Value.Exists(x => x.Id == l2))
+                        {
+                            if (selectValue == field1.Value && selectValue == field2.Value && selectValue != "boolean")
+                            {
+                                //Jeżeli oba parametry śa takie same, a nie są to constant, znaczy to że nie ma odpowiedzi 
+                                return resultPart;
+                            }
+                            else if (selectValue == field1.Value && selectValue != "boolean" && lines.Exists(x => x.Id == l1))
+                            {
+                                //Jeśli parametr pierwszy jest tym, którego szukamy to wybieramy z listy pierwszej
+                                if (!resultPart.Exists(x => x == l1))
+                                    resultPart.Add(l1);
+                            }
+                            else if (selectValue == field2.Value && selectValue != "boolean" && lines.Exists(x => x.Id == l2))
+                            {
+                                //Jeśli parametr drugi jest tym, którego szukamy to wybieramy z listy drugiej
+                                if (!resultPart.Exists(x => x == l2))
+                                    resultPart.Add(l2);
+                            }
+                            else
+                            {
+                                //Jeśli żaden parametr nie jest szukany to zwracane są wszystkie wartości
+                                return lines.Select(x => x.Id).ToList();
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            return resultPart;
+        }
+
+        private List<int> ParentStarResult(Field field1, Field field2, List<Node> lines, string selectValue)
+        {
+            throw new NotImplementedException();
+        }
 
         private List<int> ModifiesResult(Field field1, Field field2, List<Node> lines, string selectValue)
         {
@@ -507,20 +977,21 @@ namespace Core.PQLo.QueryEvaluator
 
             if (field1.Type == "constant" && field2.Type != "constant")
             {
-                var a = this.pkbApi.GetNodes(Instruction.Call, false).Select(x => x.Id).ToList();
+                var a = this.pkbApi.GetNodes(Instruction.Call).Select(x => x.Id).ToList();
 
                 var param1 = int.Parse(field1.Value);
-                if (a.IndexOf(param1) != -1)
+                if (a.Exists(x => x == param1))
                 {
                     var name = this.pkbApi.GetNodes(Instruction.Call, false).FirstOrDefault(x => x.Id == param1).Instruction;
                     name = name.Substring(4, name.Length);
-                    setLines1.UnionWith(this.pkb.Procedures.FirstOrDefault(x => x.Name == name).Nodes.Select(x => x.Id));
+                    var procedureLines = this.pkbApi.GetNodesDictionary(Instruction.Procedure).FirstOrDefault(x => x.Key == this.pkbApi.GetProcedure(name).Id);
+                    setLines1.UnionWith(procedureLines.Value);
 
                 }
                 //else if (pkb.Procedures.Count - 1 >= param1)
                 //{
-                //	var tmp = pkbApi.GetNodes(Instruction.Procedure, false).ToList();
-                //	setLines1.UnionWith(pkb.Procedures.FirstOrDefault(x => x.Id == param1)?.Nodes?.Select(x => x.Id));
+                //    var tmp = pkbApi.GetNodes(Instruction.Procedure, false).FirstOrDefault(x => x.Id == param1);
+                //    setLines1.UnionWith(pkb.Procedures.FirstOrDefault(x => x.Id == param1)?.Nodes?.Select(x => x.Id));
                 //}
                 else
                     setLines1.Add(param1);
@@ -561,49 +1032,26 @@ namespace Core.PQLo.QueryEvaluator
                     }
                     else if (field1.Type == "procedure")
                     {
-                        var dict = pkbApi.GetNodes(Instruction.Procedure, true);
-                        // TODO: zrobic linie procedury
-                        foreach (var item in dict)
+                        foreach (var item in pkbApi.GetNodesDictionary(Instruction.Procedure))
                         {
-                            int procParam = item.Id;
-                            foreach (var node in item.Nodes)
-                            {
-
-                            }
+                            setLines1.Add(item.Key);
+                            setLines1.UnionWith(item.Value);
                         }
-
-
                     }
                     else if (field1.Type == "call")
                     {
-                        //List<int> callLinesStart = pkb.getTablicaLiniiKodu().getLinieCall();
-                        //for (int i = 0; i < callLinesStart.Count; i++)
-                        //{
-                        //    string nazwaProcedury = pkb.getTablicaLiniiKodu().getWywolanaNazwaProcedury(callLinesStart[i]);
-                        //    int idProcedury = pkb.getTablicaProcedur().getIdProcedury(nazwaProcedury);
-                        //    if (idProcedury != -1)
-                        //    {
-                        //        List<int> callLines = pkb.getTablicaProcedur().getLinieProcedury(idProcedury);
-
-                        //        for (int j = 0; j < callLines.Count; j++)
-                        //        {
-                        //            setLines1.Add(callLines[j]);
-                        //        }
-                        //    }
-                        //}
+                        foreach (var item in pkbApi.GetNodesDictionary(Instruction.Call))
+                        {
+                            setLines1.UnionWith(item.Value);
+                        }
                     }
                     else if (field1.Type == "string")
                     {
                         var procedure = pkb.Procedures.FirstOrDefault(x => x.Name == field1.Value);
                         if (procedure != null)
                         {
-                            //List<int> procLines = pkb.getTablicaProcedur().getLinieProcedury(idProcedury); // TODO:: zrobic linie procedury
-                            //int j = 0;
-                            //while (j < procLines.Count)
-                            //{
-                            //    setLines1.Add(procLines[j]);
-                            //    j++;
-                            //}
+                            var tmp = pkbApi.GetNodesDictionary(Instruction.Procedure).FirstOrDefault(x => x.Key == procedure.Id).Value;
+                            setLines1.UnionWith(tmp);
                         }
                     }
                     else if (field1.Type == "stmt")
@@ -726,6 +1174,9 @@ namespace Core.PQLo.QueryEvaluator
             return setLines;
         }
 
-        private void WithResults(Field field1, Field field2, List<Core.Node> lines) => throw new NotImplementedException();
+        private void WithResults(Field field1, Field field2, List<Node> lines)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

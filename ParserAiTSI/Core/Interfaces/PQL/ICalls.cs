@@ -13,6 +13,7 @@ namespace Core.Interfaces.PQL
         IEnumerable<IProcedureNode> GetCalledFrom(IProcedureNode proc);
 
         bool IsCall(IProcedureNode proc1, IProcedureNode proc2);
+        bool IsCall(int first, int second);
     }
 }
  
