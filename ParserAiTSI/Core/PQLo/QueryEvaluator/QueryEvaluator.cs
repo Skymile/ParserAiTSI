@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+
 using Common;
-using Core.Interfaces.AST;
+
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryEvaluator
@@ -19,13 +16,6 @@ namespace Core.PQLo.QueryEvaluator
             this.pkb = pkb;
             this.pkbApi = new PKBApi(pkb);
         }
-        private string resultType;
-        private PKBApi pkbApi;
-        private PKB pkb;
-        private bool isModifies;
-        private bool isUses;
-        private bool firstUses;
-        private SortedSet<(string, int)> UsesPairs = new SortedSet<(string, int)>();
 
         public List<string> ResultQuery(ITree<PQLNode> Tree)
         {
@@ -35,6 +25,7 @@ namespace Core.PQLo.QueryEvaluator
             var setLines = new SortedSet<Core.Node>();
             string selectValue = null;
             //WYSZUKIWANIE ODPOWIEDZI
+
             foreach (var item in Tree.All.Values)
             {
                 if (item.Type == "resultNode")
@@ -1129,12 +1120,17 @@ namespace Core.PQLo.QueryEvaluator
 
         SortedSet<int> CutSetLines(string fieldValue, SortedSet<int> setLines)
         {
-            List<int> fieldMap = new List<int>();
-            SortedDictionary<string, List<int>> withMap = new SortedDictionary<string, List<int>>();
-            if (withMap.Count(x => x.Key == fieldValue) > 0) fieldMap = withMap[fieldValue];
-            SortedSet<int> setLines1tmp = new SortedSet<int>();
-            List<int> allMap = new List<int>();
-            if (withMap.Count(x => x.Key == "all") > 0) allMap = withMap["all"];
+            var fieldMap = new List<int>();
+            var withMap = new SortedDictionary<string, List<int>>();
+            
+            if (withMap.Count(x => x.Key == fieldValue) > 0) 
+                fieldMap = withMap[fieldValue];
+            
+            var setLines1tmp = new SortedSet<int>();
+            var allMap = new List<int>();
+            
+            if (withMap.Count(x => x.Key == "all") > 0) 
+                allMap = withMap["all"];
 
             if (withMap.Count != 0)
             {
@@ -1175,9 +1171,17 @@ namespace Core.PQLo.QueryEvaluator
             return setLines;
         }
 
-        private void WithResults(Field field1, Field field2, List<Node> lines)
-        {
+        private void WithResults(Field field1, Field field2, List<Node> lines) => 
             throw new NotImplementedException();
-        }
+
+        private string resultType;
+
+        private bool isModifies;
+        private bool isUses;
+        private bool firstUses;
+
+        private readonly PKBApi pkbApi;
+        private readonly PKB pkb;
+        private readonly SortedSet<(string, int)> UsesPairs = new SortedSet<(string, int)>();
     }
 }

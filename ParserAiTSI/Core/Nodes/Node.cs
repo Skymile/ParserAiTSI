@@ -15,6 +15,7 @@ namespace Core
 
 		public List<Node> Nodes { get; } = new List<Node>();
 
+		public int LineNumber { get; set; }
 		public int Id { get; set; }
 		public int Level { get; set; }
 

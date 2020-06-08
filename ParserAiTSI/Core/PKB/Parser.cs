@@ -13,7 +13,7 @@ namespace Core
 			return this;
 		}
 
-		public IEnumerable<string> NormalizedForm { get; private set; }
+		public IEnumerable<(int LineNumber, string Line)> NormalizedForm { get; private set; }
 		public IEnumerable<Node  > ArrayForm      { get; private set; }
 
 		public readonly Node Root = new Node();
@@ -30,13 +30,6 @@ namespace Core
 			).ToRolledUpForm();
 
 		private static IEnumerable<string> LoadScript(string filename) =>
-			File.ReadAllText(filename)
-				.Replace('\t', '\n')
-				.Replace('\r', '\n')
-				.Replace(';', '\n')
-				.Replace("}", "}\n")
-				.Replace("{", "{\n")
-				.Split('\n')
-				.Select(i => i.Trim());
+			File.ReadLines(filename).Select(i => i.Trim());
 	}
 }

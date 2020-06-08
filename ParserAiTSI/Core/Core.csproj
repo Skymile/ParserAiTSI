@@ -67,12 +67,15 @@
     <Compile Include="PQLo\PQLTree.cs" />
     <Compile Include="PQLo\QueryEvaluator\QueryEvaluator.cs" />
     <Compile Include="PQLo\QueryPreProcessor\IQueryPreProcessor.cs" />
+    <Compile Include="PQLo\QueryNew\QueryNode.cs" />
     <Compile Include="PQLo\QueryPreProcessor\QueryPreProcessor.cs" />
     <Compile Include="Nodes\Node.cs" />
     <Compile Include="PKB\Parser.cs" />
     <Compile Include="PKB\ParserExtensions.cs" />
     <Compile Include="Nodes\ProcedureNode.cs" />
     <Compile Include="PKB\Relation.cs" />
+    <Compile Include="PQLo\QueryNew\QueryProcessor.cs" />
+    <Compile Include="PQLo\QueryNew\StatementType.cs" />
     <Compile Include="Tables\CallsTable.cs" />
     <Compile Include="Tables\FollowsTable.cs" />
     <Compile Include="Tables\ModifiesTable.cs" />
