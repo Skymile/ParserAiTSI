@@ -83,6 +83,8 @@
     <Compile Include="PQLo\Query\Models\SuchData.cs" />
     <Compile Include="PQLo\Query\Models\WithData.cs" />
     <Compile Include="PQLo\Query\Models\WithType.cs" />
+    <Compile Include="PQLo\Query\QueryProcessor.ProcessWith.cs" />
+    <Compile Include="PQLo\Query\QueryProcessor.ProcessSuch.cs" />
     <Compile Include="Tables\CallsTable.cs" />
     <Compile Include="Tables\FollowsTable.cs" />
     <Compile Include="Tables\ModifiesTable.cs" />
