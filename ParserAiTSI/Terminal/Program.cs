@@ -9,10 +9,10 @@ namespace Terminal
 	{
 		private static string[] Query() =>
 			new[] {
-				"assign a;",
-				"Select a such that Modifies (a, \"incre\")"
-				//Console.ReadLine(), 
-				//Console.ReadLine() 
+				//"assign a; procedure z; assign x;",
+				//"Select a such that Modifies(a, \"x\")",
+				Console.ReadLine(), 
+				Console.ReadLine() 
 			};
 
 		private static void Main(string[] args)

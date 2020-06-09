@@ -96,7 +96,11 @@ namespace Core.PQLo.QueryPreProcessor
 			if (command.With is WithData with)
 				second.AddRange(ProcessWith(with, command.Declarations));
 
-			return first.Intersect(second);
+			return second.Count == 0 
+				? first 
+				: first.Count == 0
+				? second
+				: first.Intersect(second);
 		}
 
 		private StatementType Find(Dictionary<string, StatementType> d, string variable) =>
