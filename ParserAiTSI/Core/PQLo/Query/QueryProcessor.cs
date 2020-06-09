@@ -131,13 +131,19 @@ namespace Core.PQLo.QueryPreProcessor
 									.Where(i => i.LineNumber.ToString() == data.Left)
 									.ToArray();
 
-								var calls = f.ToNodeEnumerator()
-									.Where(applyRecursive: true, Instruction.Call);
+								var calls = f
+									.ToNodeEnumerator()
+									.Where(applyRecursive: true, Instruction.Call)
+									.Select(false, i => i)
+									.Distinct();
 
-								var en = f.Concat(calls.Select(false, i => i)).ToNodeEnumerator()
+								var en = f
+									.Concat(calls)
+									.ToNodeEnumerator()
 									.Where(true, i => i.Variable != null)
 									.Select(false, i => i.Variable.ToLowerInvariant())
-									.Distinct();
+									.Distinct()
+									.ToArray();
 
 								return en;
 							}

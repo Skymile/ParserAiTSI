@@ -12,11 +12,7 @@ namespace Terminal
 			new[] {
 #if TEST
 				"variable v;",
-				"Select v such that Modifies (191, v)"
-				// "variable v;",
-				// "Select v such that Modifies (191, v)"
-				//"assign b;",
-				//"Select b such that Uses(b, \"x1\")"
+				"Select v such that Modifies (79, v)"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine() 
