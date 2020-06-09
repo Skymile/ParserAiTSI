@@ -61,9 +61,9 @@ namespace Core
 				else
 					yield return new Node
 					{
-						Id = id++,
-						LineNumber = LineNumber,
-						Level = nestLevel,
+						Id          = id++,
+						LineNumber  = LineNumber,
+						Level       = nestLevel,
 						Instruction = Line
 					};
 			}
@@ -83,6 +83,18 @@ namespace Core
 						list.RemoveAt(i + 1);
 					}
 					else ++i;
+			}
+
+			foreach (var i in list)
+				SetParents(i, i.Nodes);
+
+			void SetParents(Node parent, IEnumerable<Node> children)
+			{
+				foreach (Node i in children)
+				{
+					i.Parent = parent;
+					SetParents(i, i.Nodes);
+				}
 			}
 
 			return list;

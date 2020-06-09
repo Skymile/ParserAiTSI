@@ -65,10 +65,7 @@
     <Compile Include="PQLo\PQLMatcher.cs" />
     <Compile Include="PQLo\PQLNode.cs" />
     <Compile Include="PQLo\PQLTree.cs" />
-    <Compile Include="PQLo\QueryEvaluator\QueryEvaluator.cs" />
-    <Compile Include="PQLo\QueryPreProcessor\IQueryPreProcessor.cs" />
     <Compile Include="PQLo\QueryNew\QueryNode.cs" />
-    <Compile Include="PQLo\QueryPreProcessor\QueryPreProcessor.cs" />
     <Compile Include="Nodes\Node.cs" />
     <Compile Include="PKB\Parser.cs" />
     <Compile Include="PKB\ParserExtensions.cs" />

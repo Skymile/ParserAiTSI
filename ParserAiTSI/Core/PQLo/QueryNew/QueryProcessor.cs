@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
 {
@@ -33,10 +34,33 @@ namespace Core.PQLo.QueryPreProcessor
 			}
 		}
 
+		private enum CommandType
+		{
+			None,
+
+			ModifiesPV,
+			ModifiesSV,
+
+			UsesPV,
+			UsesSV,
+
+			CallsPP,
+			FollowsSS,
+			ParentSS,
+
+			CallsStarPP,
+			FollowsStarSS,
+			ParentStarSS,
+		}
+
 		private string ProcessQuery(string query, IEnumerable<QueryNode> statements)
 		{
 			var split = QuerySplit(query);
 
+			var d = statements.ToDictionary(i => i.Value, i => i.Type);
+
+			var command = CommandType.None;
+			
 			if (split.Count > 0 && split[0] == "SELECT")
 			{
 				string variable      = split[1];
@@ -47,26 +71,78 @@ namespace Core.PQLo.QueryPreProcessor
 
 				if (such == "SUCH_THAT")
 				{
+					var type = d[variable];
+
 					if (modifies == "MODIFIES")
 					{
-						var en = this.Api.PKB.Modifies.dict;
-						var f = en.Keys.FirstOrDefault(
-							i => i.Name.Equals(rightModified, StringComparison.InvariantCultureIgnoreCase
-						));
-						return string.Join(", ", en[f].Select(i => i.LineNumber));
-					} 
+						if (variable == leftModified)
+							if (type == StatementType.Procedure)
+								command = CommandType.ModifiesPV;
+							else if (type == StatementType.Stmt)
+								command = CommandType.ModifiesSV;
+							else throw new NotImplementedException($"Nierozpoznany {type} w Modifies");
+					}
 					else if (modifies == "USES")
 					{
-						var en = this.Api.PKB.Uses.dict;
-						var f = en.Keys.FirstOrDefault(
-							i => i.Name.Equals(rightModified, StringComparison.InvariantCultureIgnoreCase
-						));
-						return string.Join(", ", en[f].Select(i => i.LineNumber));
+						if (variable == leftModified)
+							if (type == StatementType.Procedure)
+								command = CommandType.UsesPV;
+							else if (type == StatementType.Stmt)
+								command = CommandType.UsesSV;
+							else throw new NotImplementedException($"Nierozpoznany {type} w Uses");
 					}
+					else if (this.SimpleCommands.TryGetValue(modifies, out var value))
+						command = value;
+					else
+						throw new NotImplementedException(modifies);
 				}
 			}
+
+			return ProcessCommand(command, d);
+		}
+
+		private static string ProcessCommand(
+				CommandType command, 
+				Dictionary<string, StatementType> statements
+			)
+		{
+
 			return string.Empty;
 		}
+
+		//IEnumerable<INode> GetAssign()
+		//{
+		//	if (modifies == "MODIFIES")
+		//	{
+		//		var en = this.Api.PKB.Modifies.dict;
+		//		var f = en.Keys.FirstOrDefault(
+		//			i => i.Name.Equals(rightModified, StringComparison.InvariantCultureIgnoreCase)
+		//		);
+		//		return en[f];
+		//	}
+		//	else if (modifies == "USES")
+		//	{
+		//		var en = this.Api.PKB.Uses.dict;
+		//		var f = en.Keys.FirstOrDefault(
+		//			i => i.Name.Equals(rightModified, StringComparison.InvariantCultureIgnoreCase)
+		//		);
+		//		return en[f];
+		//	}
+		//	return null;
+		//}
+		//var en = this.Api.PKB.ArrayForm
+		//	.Where(i => i.LineNumber.ToString() == leftModified)
+		//	.ToNodeEnumerator()
+		//	.Where(true, i => i.TryGetVariable(out string var) && var == variable)
+		//	.Select(false, i => i.Id)
+		//	.ToArray();
+		//
+		//return string.Join(", ", en);
+		//var en = this.Api.PKB.Procedures
+		//	.ToNodeEnumerator()
+		//	.Where(true, i => i.Instruction == variable)
+		//	.Select(false, i => i.Id);
+		//return string.Join(", ", en);
 
 		private List<string> QuerySplit(string query)
 		{
@@ -101,6 +177,13 @@ namespace Core.PQLo.QueryPreProcessor
 
 			return split;
 		}
+
+		private readonly Dictionary<string, CommandType> SimpleCommands = new Dictionary<string, CommandType>
+		{
+			{ "CALLS"  , CommandType.CallsPP   },
+			{ "FOLLOWS", CommandType.FollowsSS },
+			{ "PARENT" , CommandType.ParentSS  }
+		};
 
 		private readonly Dictionary<string, Func<string, QueryNode>> statementsList = new Dictionary<string, Func<string, QueryNode>> { 
 			{"ASSIGN"   , t => new QueryNode(StatementType.Assign   , t) }, 

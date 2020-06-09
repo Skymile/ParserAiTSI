@@ -13,6 +13,7 @@ namespace Core
 		public Node(IEnumerable<Node> nodes) =>
 			this.Nodes.AddRange(nodes);
 
+		public Node Parent { get; set; }
 		public List<Node> Nodes { get; } = new List<Node>();
 
 		public int LineNumber { get; set; }
@@ -24,8 +25,8 @@ namespace Core
 			get => this.instruction; 
 			set 
 			{
-				this.instruction = value;
-				this.Token = FindToken(value);
+				this.instruction = value.ToUpperInvariant().Trim();
+				this.Token = FindToken(this.instruction);
 			}
 		}
 
@@ -33,32 +34,61 @@ namespace Core
 
 		public Instruction Token { get; private set; }
 
-		private static Instruction FindToken(string instruction)
+		private static Instruction FindToken(string ins)
 		{
-			string s = instruction.ToUpperInvariant().Trim();
-
-			if (s.Contains("PROCEDURE"))
+			if (ins.StartsWith("PROCEDURE "))
 				return Core.Instruction.Procedure;
-			if (s.Contains("IF"))
+			if (ins.StartsWith("IF "))
 				return Core.Instruction.If;
-			if (s.Contains("ELSE"))
+			if (ins.StartsWith("ELSE"))
 				return Core.Instruction.Else;
 
-			if (s.Contains("+") || s.Contains("-") || s.Contains("*") || s.Contains("/"))
+			if (ins.Contains("+") || ins.Contains("-") || ins.Contains("*") || ins.Contains("/"))
 				return Core.Instruction.Expression;
-			if (s.Contains("="))
+			if (ins.Contains("="))
 				return Core.Instruction.Assign;
 
-			if (s.Contains("WHILE"))
+			if (ins.StartsWith("WHILE "))
 				return Core.Instruction.Loop;
-			if (s.Contains("CALL"))
+			if (ins.StartsWith("CALL "))
 				return Core.Instruction.Call;
 
-			throw new NotImplementedException($"Unrecognized instruction: \"{instruction}\"");
+			throw new NotImplementedException($"Unrecognized instruction: \"{ins}\"");
 		}
 
-		public int CompareTo(INode other) 
-			=> other == null ? 1 : this.Id.CompareTo(other.Id);
+		public bool TryGetVariable(out string variable)
+		{
+			int i = instruction.IndexOf(' ');
+			string var = instruction.Substring(i + 1);
+			switch (this.Token)
+			{
+				case Core.Instruction.If:
+					break;
+				case Core.Instruction.Else:
+					break;
+				case Core.Instruction.Assign:
+					break;
+				case Core.Instruction.Expression:
+					break;
+				case Core.Instruction.Loop:
+					break;
+				case Core.Instruction.Call:
+					break;
+				case Core.Instruction.Procedure:
+					break;
+				case Core.Instruction.All:
+					break;
+				default:
+					variable = null;
+					return false;
+			}
+			variable = var;
+			return true;
+		}
+
+
+		public int CompareTo(INode other) => 
+			other == null ? 1 : this.Id.CompareTo(other.Id);
 	}
 
 	[Flags]
