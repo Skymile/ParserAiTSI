@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Xml.Serialization;
+
+using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
 {
@@ -103,7 +103,7 @@ namespace Core.PQLo.QueryPreProcessor
 				: first.Intersect(second);
 		}
 
-		private StatementType Find(Dictionary<string, StatementType> d, string variable) =>
+		private static StatementType Find(Dictionary<string, StatementType> d, string variable) =>
 			d.TryGetValue(variable, out StatementType value) ? value : StatementType.Constant;
 
 		private IEnumerable<string> ProcessWith(WithData data, Dictionary<string, StatementType> d) => 
@@ -134,13 +134,13 @@ namespace Core.PQLo.QueryPreProcessor
 								var calls = f
 									.ToNodeEnumerator()
 									.Where(applyRecursive: true, Instruction.Call)
-									.Select(false, i => i)
+									.Select(false, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
 									.Distinct();
-
+									
 								var en = f
 									.Concat(calls)
 									.ToNodeEnumerator()
-									.Where(true, i => i.Variable != null)
+									.Where(true, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
 									.Select(false, i => i.Variable.ToLowerInvariant())
 									.Distinct()
 									.ToArray();
