@@ -62,10 +62,12 @@ namespace Core.PQLo.QueryPreProcessor
 			}
 
 			return string.Join(
-				", ", 
+				",", 
 				ProcessCommands(
 					(true, new CommandUnit(d, suchData, withData))
 				)
+				.Distinct()
+				.OrderBy(i => i)
 			);
 		}
 
@@ -133,19 +135,39 @@ namespace Core.PQLo.QueryPreProcessor
 
 								var calls = f
 									.ToNodeEnumerator()
-									.Where(applyRecursive: true, Instruction.Call)
-									.Select(false, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
-									.Distinct();
-									
+									.Where(true, Instruction.Call)
+									.Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
+									.ToArray();
+
+								bool change = false;
+								int callCount = calls.Count();
+								do
+								{
+									calls = calls.Concat(
+											calls
+												.ToNodeEnumerator()
+												.Where(true, Instruction.Call)
+												.Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
+										).Distinct().ToArray();
+									change = callCount != calls.Length;
+									callCount = calls.Length;
+								} while (change);
+								
 								var en = f
-									.Concat(calls)
 									.ToNodeEnumerator()
 									.Where(true, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
-									.Select(false, i => i.Variable.ToLowerInvariant())
+									.Select(false, i => i.Variable.ToUpperInvariant())
 									.Distinct()
 									.ToArray();
 
-								return en;
+								var enC = calls
+									.ToNodeEnumerator()
+									.Where(true, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
+									.Select(false, i => i.Variable.ToUpperInvariant())
+									.Distinct()
+									.ToArray();
+
+								return en.Concat(enC);
 							}
 						case StatementType.Stmt:
 						case StatementType.Assign:
