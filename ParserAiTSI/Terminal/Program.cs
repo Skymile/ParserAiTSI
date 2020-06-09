@@ -9,8 +9,8 @@ namespace Terminal
 	{
 		private static string[] Query() =>
 			new[] {
-				//"assign a; procedure z; assign x;",
-				//"Select a such that Modifies(a, \"x\");"
+				//"assign a;",
+				//"Select a such that Modifies (a, \"incre\")"
 				Console.ReadLine(), 
 				Console.ReadLine() 
 			};
@@ -27,8 +27,7 @@ namespace Terminal
 			)));
 
 			//var lines = File.ReadAllLines("../../input/tests.txt");
-
-			var a = new QueryPreProcessor();
+			//var a = new QueryPreProcessor();
 
             Console.WriteLine("Ready");
             //var results = evaluator.ResultQuery(tree);

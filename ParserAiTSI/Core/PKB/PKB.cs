@@ -114,7 +114,7 @@ namespace Core
 		private void SetModifies(NodeCollection arrayForm)
 		{
 			foreach (var i in arrayForm)
-				if (i.Token == Instruction.Expression)
+				if (i.Token == Instruction.Expression || i.Token == Instruction.Assign)
 				{
 					string varName = i.Instruction.Substring(0, i.Instruction.IndexOf('=')).Trim();
 
