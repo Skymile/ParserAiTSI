@@ -11,8 +11,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"variable v;",
-				"Select v such that Modifies (79, v)"
+				"stmt s;",
+				"Select s such that Modifies (s, \"tmp\")"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine() 
@@ -44,7 +44,7 @@ namespace Terminal
 					var lines = Query();
 					var qp = new QueryProcessor(pkb);
 					string result = qp.ProcessQuery(lines[0] + ";" + lines[1]).ToUpperInvariant();
-					Console.WriteLine(result);
+					Console.WriteLine(string.IsNullOrWhiteSpace(result) ? "NONE" : result);
 				}
 #if !TEST
 				catch (Exception ex)

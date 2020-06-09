@@ -133,6 +133,12 @@ namespace Core.PQLo.QueryPreProcessor
 									.Where(i => i.LineNumber.ToString() == data.Left)
 									.ToArray();
 
+								if (f.Length == 0)
+									f = this.Api.PKB.Procedures
+										.Where(i => i.Name == data.Left)
+										.Select(i => i as Node)
+										.ToArray();
+
 								var calls = f
 									.ToNodeEnumerator()
 									.Where(true, Instruction.Call)
@@ -166,10 +172,57 @@ namespace Core.PQLo.QueryPreProcessor
 									.Select(false, i => i.Variable.ToUpperInvariant())
 									.Distinct()
 									.ToArray();
-
+								
 								return en.Concat(enC);
 							}
 						case StatementType.Stmt:
+							{
+								var f = this.Api.PKB.ArrayForm
+									.Where(i => i.Variable == data.Right)
+									.ToArray();
+
+								if (f.Length == 0)
+									f = this.Api.PKB.Procedures
+										.Where(i => i.Name == data.Right)
+										.Select(i => i as Node)
+										.ToArray();
+
+								var calls = f
+									.ToNodeEnumerator()
+									.Where(true, Instruction.Call)
+									.Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
+									.ToArray();
+
+								bool change = false;
+								int callCount = calls.Count();
+								do
+								{
+									calls = calls.Concat(
+											calls
+												.ToNodeEnumerator()
+												.Where(true, Instruction.Call)
+												.Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
+										).Distinct().ToArray();
+									change = callCount != calls.Length;
+									callCount = calls.Length;
+								} while (change);
+
+								var en = f
+									.ToNodeEnumerator()
+									.Where(true, i => i.Variable != null)
+									.Select(false, i => i.LineNumber)
+									.Distinct()
+									.ToArray();
+
+								var enC = calls
+									.ToNodeEnumerator()
+									.Where(true, i => i.Variable != null)
+									.Select(false, i => i.LineNumber)
+									.Distinct()
+									.ToArray();
+
+								return en.Concat(enC).Select(i => i.ToString());
+							}
 						case StatementType.Assign:
 							{
 								var en = this.Api.PKB.Modifies.dict;
