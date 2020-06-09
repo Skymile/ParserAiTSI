@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-
+using System.Web;
 using Core.Interfaces.PQL;
 
 namespace Core
@@ -15,14 +16,20 @@ namespace Core
 
 		public IEnumerable<T> Select<T>(bool applyRecursive, Func<INode, T> func)
 		{
-			return applyRecursive ? RecSelect(this.Nodes) : this.Nodes.Select(func);
+			if (applyRecursive)
+			{
+				var list = new List<T>();
+				RecSelect(this.Nodes, list);
+				return list;
+			}
+			return this.Nodes.Select(func);
 
-			IEnumerable<T> RecSelect(IEnumerable<INode> nodes)
+			void RecSelect(IEnumerable<INode> nodes, List<T> list)
 			{
 				foreach (var i in nodes)
 				{
-					yield return func(i);
-					RecSelect(i.Nodes);
+					list.Add(func(i));
+					RecSelect(i.Nodes, list);
 				}
 			}
 		}
@@ -35,17 +42,23 @@ namespace Core
 
 		public NodeEnumerator Where(bool applyRecursive, Func<INode, bool> filter)
 		{
-			this.Nodes = applyRecursive ? RecWhere(this.Nodes) : this.Nodes.Where(filter);
+			if (applyRecursive)
+			{
+				var list = new List<INode>();
+				RecWhere(this.Nodes, list);
+				this.Nodes = list;
+			}
+			else this.Nodes = this.Nodes.Where(filter);
 			return this;
 
-			IEnumerable<INode> RecWhere(IEnumerable<INode> nodes)
+			void RecWhere(IEnumerable<INode> nodes, List<INode> list)
 			{
 				foreach (var i in nodes)
+				{
 					if (filter(i))
-					{
-						yield return i;
-						RecWhere(i.Nodes);
-					}
+						list.Add(i);
+					RecWhere(i.Nodes, list);
+				}
 			}
 		}
 	}

@@ -126,13 +126,15 @@ namespace Core.PQLo.QueryPreProcessor
 							}
 						case StatementType.Call:
 						case StatementType.Variable:
-							//var en = this.Api.PKB.ArrayForm
-							//	.Where(i => i.LineNumber.ToString() == leftModified)
-							//	.ToNodeEnumerator()
-							//	.Where(true, i => i.TryGetVariable(out string var) && var == variable)
-							//	.Select(false, i => i.Id)
-							//	.ToArray();
-							//return string.Join(", ", en);
+							{
+								var en = this.Api.PKB.ArrayForm
+									.Where(i => i.LineNumber.ToString() == data.Left)
+									.ToArray().ToNodeEnumerator()
+									.Where(true, i => i.Variable != null)
+									.Select(false, i => i.Variable.ToLowerInvariant())
+									.Distinct();
+								return en;
+							}
 						case StatementType.Stmt:
 						case StatementType.Assign:
 							{

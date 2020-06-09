@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-
+using System.Linq;
 using Core.Interfaces.PQL;
 
 namespace Core
@@ -10,8 +11,7 @@ namespace Core
 	public class Node : INode
 	{
 		public Node() { }
-		public Node(IEnumerable<Node> nodes) =>
-			this.Nodes.AddRange(nodes);
+		public Node(IEnumerable<Node> nodes) => this.Nodes.AddRange(nodes);
 
 		public Node Parent { get; set; }
 		public List<Node> Nodes { get; } = new List<Node>();
@@ -56,21 +56,79 @@ namespace Core
 			throw new NotImplementedException($"Unrecognized instruction: \"{ins}\"");
 		}
 
-		public bool TryGetVariable(out string variable)
+
+		public string Assignment
 		{
-			int i = instruction.IndexOf(' ');
-			string var = instruction.Substring(i + 1);
+			get
+			{
+				if (!this.init)
+					InitVars();
+				return this.assignment;
+			}
+			set => this.assignment = value;
+		}
+		private string assignment;
+
+		public string Variable
+		{
+			get
+			{
+				if (!this.init)
+					InitVars();
+				return this.variable;
+			}
+			set => this.variable = value;
+		}
+		private string variable;
+
+		public List<string> Variables
+		{
+			get
+			{
+				if (!this.init)
+					InitVars();
+				return this.variables;
+			}
+			set => this.variables = value;
+		}
+		private List<string> variables;
+
+
+		private bool init;
+
+		private void InitVars()
+		{
+			this.init = true;
+			if (this.instruction == null)
+				return;
+
+			int i = this.instruction.IndexOf(' ');
+			string var = this.instruction.Substring(i + 1);
+			this.Variable = var;
+
 			switch (this.Token)
 			{
-				case Core.Instruction.If:
+				case Core.Instruction.If: 
+					this.Variable = var.Substring(0, var.Length - " THEN".Length);
 					break;
 				case Core.Instruction.Else:
+					this.Variable = null;
 					break;
 				case Core.Instruction.Assign:
-					break;
 				case Core.Instruction.Expression:
+					this.Variable = this.instruction.Substring(0, this.instruction.IndexOf('=')).Trim();
+					this.Variables = var
+						.Replace("*", " ")
+						.Replace("=", " ")
+						.Replace("-", " ")
+						.Replace("+", " ")
+						.Replace("/", " ")
+						.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+						.Distinct()
+						.ToList();
 					break;
 				case Core.Instruction.Loop:
+					this.Variable = var;
 					break;
 				case Core.Instruction.Call:
 					break;
@@ -78,12 +136,7 @@ namespace Core
 					break;
 				case Core.Instruction.All:
 					break;
-				default:
-					variable = null;
-					return false;
 			}
-			variable = var;
-			return true;
 		}
 
 

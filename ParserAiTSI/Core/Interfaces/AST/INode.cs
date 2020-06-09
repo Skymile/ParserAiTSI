@@ -15,6 +15,8 @@ namespace Core.Interfaces.PQL
         Node       Parent { get; }
         List<Node> Nodes  { get; }
 
-        bool TryGetVariable(out string variable);
+        string Assignment { get; set; }
+        string Variable { get; set; }
+        List<string> Variables { get; set; }
     }
 }
