@@ -29,8 +29,8 @@ namespace Terminal
 			//var lines = File.ReadAllLines("../../input/tests.txt");
 			//var a = new QueryPreProcessor();
 
-			Console.WriteLine("Ready");
-			//var results = evaluator.ResultQuery(tree);
+            Console.WriteLine("Ready");
+            //var results = evaluator.ResultQuery(tree);
 
 			while (true)
 				try
@@ -46,4 +46,32 @@ namespace Terminal
 				}
 		}
 	}
+            //while (true)
+            //{
+            //    try
+            //    {
+            //        a.GetQuery(Console.ReadLine(), Console.ReadLine());
+
+            //        //TODO
+            //        a.ProcessQuery();
+            //        var tree = a.PqlTree;
+
+            //        var evaluator = new QueryEvaluator(pkb).ResultQuery(tree);
+
+            //        for (int i = 0; i < evaluator.Count; i++)
+            //        {
+            //            if (i > 0) Console.Write(", ");
+            //            Console.Write(evaluator[i]);
+            //        }
+            //        if (evaluator.Count == 0)
+            //            Console.Write("none");
+            //        Console.WriteLine();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine(ex.Message);
+            //    }
+            //}
+    //    }
+    //}
 }
