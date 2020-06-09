@@ -127,12 +127,18 @@ namespace Core.PQLo.QueryPreProcessor
 						case StatementType.Call:
 						case StatementType.Variable:
 							{
-								var en = this.Api.PKB.ArrayForm
+								var f = this.Api.PKB.ArrayForm
 									.Where(i => i.LineNumber.ToString() == data.Left)
-									.ToArray().ToNodeEnumerator()
+									.ToArray();
+
+								var calls = f.ToNodeEnumerator()
+									.Where(applyRecursive: true, Instruction.Call);
+
+								var en = f.Concat(calls.Select(false, i => i)).ToNodeEnumerator()
 									.Where(true, i => i.Variable != null)
 									.Select(false, i => i.Variable.ToLowerInvariant())
 									.Distinct();
+
 								return en;
 							}
 						case StatementType.Stmt:
