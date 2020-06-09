@@ -33,6 +33,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Linq, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.4.3.0\lib\net463\System.Linq.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -65,14 +70,19 @@
     <Compile Include="PQLo\PQLMatcher.cs" />
     <Compile Include="PQLo\PQLNode.cs" />
     <Compile Include="PQLo\PQLTree.cs" />
-    <Compile Include="PQLo\QueryNew\QueryNode.cs" />
+    <Compile Include="PQLo\Query\Models\CommandType.cs" />
+    <Compile Include="PQLo\Query\Models\CommandUnit.cs" />
+    <Compile Include="PQLo\Query\Models\QueryNode.cs" />
     <Compile Include="Nodes\Node.cs" />
     <Compile Include="PKB\Parser.cs" />
     <Compile Include="PKB\ParserExtensions.cs" />
     <Compile Include="Nodes\ProcedureNode.cs" />
     <Compile Include="PKB\Relation.cs" />
-    <Compile Include="PQLo\QueryNew\QueryProcessor.cs" />
-    <Compile Include="PQLo\QueryNew\StatementType.cs" />
+    <Compile Include="PQLo\Query\QueryProcessor.cs" />
+    <Compile Include="PQLo\Query\Models\StatementType.cs" />
+    <Compile Include="PQLo\Query\Models\SuchData.cs" />
+    <Compile Include="PQLo\Query\Models\WithData.cs" />
+    <Compile Include="PQLo\Query\Models\WithType.cs" />
     <Compile Include="Tables\CallsTable.cs" />
     <Compile Include="Tables\FollowsTable.cs" />
     <Compile Include="Tables\ModifiesTable.cs" />
@@ -82,6 +92,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Nodes\VariableNode.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

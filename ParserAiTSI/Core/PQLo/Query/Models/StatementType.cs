@@ -2,15 +2,15 @@
 {
 	public enum StatementType
 	{
-		Assign   ,
-		Stmtlst  ,
-		Stmt     ,
-		While    ,
+		Procedure,
+		Call     ,
 		Variable ,
 		Constant ,
+		Stmt     ,
+		Assign   ,
+		Stmtlst  ,
+		While    ,
 		ProgLine,
 		If       ,
-		Call     ,
-		Procedure,
 	}
 }
