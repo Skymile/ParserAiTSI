@@ -204,6 +204,7 @@ namespace Core.PQLo.QueryPreProcessor
 		{
 			{ "MODIFIES", CommandType.Modifies },
 			{ "CALLS"   , CommandType.Calls    },
+			{ "USES"    , CommandType.Uses     },
 			{ "FOLLOWS" , CommandType.Follows  },
 			{ "PARENT"  , CommandType.Parent   },
 		};

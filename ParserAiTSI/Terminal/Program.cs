@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define TEST
+using System;
 
 using Core;
 using Core.PQLo.QueryPreProcessor;
@@ -9,10 +10,13 @@ namespace Terminal
 	{
 		private static string[] Query() =>
 			new[] {
-				//"assign a; procedure z; assign x;",
-				//"Select a such that Modifies(a, \"x\")",
+#if TEST
+				"assign b;",
+				"Select b such that Uses(b, \"x1\")"
+#else
 				Console.ReadLine(), 
 				Console.ReadLine() 
+#endif
 			};
 
 		private static void Main(string[] args)
@@ -20,8 +24,8 @@ namespace Terminal
 			var pkb = new PKBApi(new PKB(new Parser()
 				.Load(
 					args.Length > 0
-					? !string.IsNullOrWhiteSpace(args[0]) 
-						? args[0] 
+					? !string.IsNullOrWhiteSpace(args[0])
+						? args[0]
 						: throw new ArgumentException("Pusta ścieżka do pliku. Ustaw poprawną ścieżkę w zakładce \"Configuration\".")
 					: "../../input/2.txt"
 			)));
@@ -29,49 +33,25 @@ namespace Terminal
 			//var lines = File.ReadAllLines("../../input/tests.txt");
 			//var a = new QueryPreProcessor();
 
-            Console.WriteLine("Ready");
-            //var results = evaluator.ResultQuery(tree);
+			Console.WriteLine("Ready");
+			//var results = evaluator.ResultQuery(tree);
 
 			while (true)
+#if !TEST
 				try
+#endif
 				{
 					var lines = Query();
 					var qp = new QueryProcessor(pkb);
 					string result = qp.ProcessQuery(lines[0] + ";" + lines[1]);
 					Console.WriteLine(result);
 				}
+#if !TEST
 				catch (Exception ex)
 				{
 					Console.Error.WriteLine(ex.Message);
 				}
+#endif
 		}
 	}
-            //while (true)
-            //{
-            //    try
-            //    {
-            //        a.GetQuery(Console.ReadLine(), Console.ReadLine());
-
-            //        //TODO
-            //        a.ProcessQuery();
-            //        var tree = a.PqlTree;
-
-            //        var evaluator = new QueryEvaluator(pkb).ResultQuery(tree);
-
-            //        for (int i = 0; i < evaluator.Count; i++)
-            //        {
-            //            if (i > 0) Console.Write(", ");
-            //            Console.Write(evaluator[i]);
-            //        }
-            //        if (evaluator.Count == 0)
-            //            Console.Write("none");
-            //        Console.WriteLine();
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Console.WriteLine(ex.Message);
-            //    }
-            //}
-    //    }
-    //}
 }
