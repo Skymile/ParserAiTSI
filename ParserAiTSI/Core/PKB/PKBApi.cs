@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Core.Interfaces.PQL;
+
 namespace Core
 {
 	public class PKBApi
@@ -97,7 +99,7 @@ namespace Core
 		/// <summary>
 		/// Zwraca procedurę o podanej nazwie
 		/// </summary>
-		public Node GetProcedure(string name) => this.ArrayForm
+		public INode GetProcedure(string name) => this.ArrayForm
 			.FirstOrDefault(i =>
 				i.Token == Instruction.Procedure &&
 				i.Instruction.Substring("PROCEDURE ".Length)
@@ -107,7 +109,7 @@ namespace Core
 		/// <summary>
 		/// Zwraca procedurę w której jest węzeł o podanym id
 		/// </summary>
-		public Node GetProcedure(int index)
+		public INode GetProcedure(int index)
 		{
 			for (int i = index; i >= 0; i--)
 				if (this.ArrayForm[i].Token == Instruction.Procedure)

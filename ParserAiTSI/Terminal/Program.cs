@@ -11,30 +11,34 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"if ifs;",
-				"Select ifs such that Modifies (ifs, \"x1\")"
+				"assign a;",
+				"Select a such that Modifies (a, \"temporary\")"
+				//"if ifs;",
+				//"Select ifs such that Modifies (ifs, \"x1\")"
+//				"stmt s;",
+//				"Select s such that Modifies (s, \"tmp\")"
+				////"procedure p;",
+				////"Select p such that Modifies (p, \"factor\")"
+				//"stmt s;",
+				//"Select s such that Modifies (s, \"tmp\")"
 #else
 				Console.ReadLine(), 
-				Console.ReadLine() 
+				Console.ReadLine()
 #endif
 			};
 
 		private static void Main(string[] args)
 		{
-			var pkb = new PKBApi(new PKB(new Parser()
-				.Load(
-					args.Length > 0
-					? !string.IsNullOrWhiteSpace(args[0])
-						? args[0]
-						: throw new ArgumentException("Pusta ścieżka do pliku. Ustaw poprawną ścieżkę w zakładce \"Configuration\".")
-					: "../../input/2.txt"
-			)));
-
-			//var lines = File.ReadAllLines("../../input/tests.txt");
-			//var a = new QueryPreProcessor();
+			var parser = new Parser()
+					.Load(
+						args.Length > 0
+						? !string.IsNullOrWhiteSpace(args[0])
+							? args[0]
+							: throw new ArgumentException("Pusta ścieżka do pliku. Ustaw poprawną ścieżkę w zakładce \"Configuration\".")
+						: "../../input/2.txt"
+					);
 
 			Console.WriteLine("Ready");
-			//var results = evaluator.ResultQuery(tree);
 
 			while (true)
 #if !TEST
@@ -42,7 +46,7 @@ namespace Terminal
 #endif
 				{
 					var lines = Query();
-					var qp = new QueryProcessor(pkb);
+					var qp = new QueryProcessor(new PKBApi(new PKB(parser)));
 					string result = qp.ProcessQuery(lines[0] + ";" + lines[1]).ToUpperInvariant();
 					Console.WriteLine(string.IsNullOrWhiteSpace(result) ? "NONE" : result);
 				}

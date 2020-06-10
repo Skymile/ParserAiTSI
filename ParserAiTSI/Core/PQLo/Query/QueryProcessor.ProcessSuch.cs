@@ -71,54 +71,7 @@ namespace Core.PQLo.QueryPreProcessor
 
                                 return en.Concat(enC);
                             }
-                        case StatementType.Stmt:
-                            {
-                                var f = this.Api.PKB.ArrayForm
-                                    .Where(i => i.Variable == data.Right)
-                                    .ToArray();
 
-                                if (f.Length == 0)
-                                    f = this.Api.PKB.Procedures
-                                        .Where(i => i.Name == data.Right)
-                                        .Select(i => i as Node)
-                                        .ToArray();
-
-                                var calls = f
-                                    .ToNodeEnumerator()
-                                    .Where(true, Instruction.Call)
-                                    .Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
-                                    .ToArray();
-
-                                bool change = false;
-                                int callCount = calls.Count();
-                                do
-                                {
-                                    calls = calls.Concat(
-                                            calls
-                                                .ToNodeEnumerator()
-                                                .Where(true, Instruction.Call)
-                                                .Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
-                                        ).Distinct().ToArray();
-                                    change = callCount != calls.Length;
-                                    callCount = calls.Length;
-                                } while (change);
-
-                                var en = f
-                                    .ToNodeEnumerator()
-                                    .Where(true, i => i.Variable != null)
-                                    .Select(false, i => i.LineNumber)
-                                    .Distinct()
-                                    .ToArray();
-
-                                var enC = calls
-                                    .ToNodeEnumerator()
-                                    .Where(true, i => i.Variable != null)
-                                    .Select(false, i => i.LineNumber)
-                                    .Distinct()
-                                    .ToArray();
-
-                                return en.Concat(enC).Select(i => i.ToString());
-                            }
                         case StatementType.Assign:
                             {
                                 var en = this.Api.PKB.Modifies.dict;
@@ -127,33 +80,88 @@ namespace Core.PQLo.QueryPreProcessor
                                 );
                                 return en[f].Select(i => i.LineNumber.ToString());
                             }
+                        case StatementType.Stmt:
+                            {
+                                var en = this.Api.PKB.Modifies.dict;
+                                var f = en.Keys.FirstOrDefault(
+                                    i => i.Name.Equals(data.Right, StringComparison.InvariantCultureIgnoreCase)
+                                );
+                                var main = en[f];
+
+                                for (int i = 0; i < main.Count; i++)
+                                    GatherParents(main[i], main);
+
+                                var procedures = main
+                                    .Select(i => this.Api.GetProcedure(i.Id));
+                                var hash = procedures.Select(i => i.Variable).ToHashSet();
+
+                                var calls = this.Api.PKB.ArrayForm
+                                    .Where(i => i.Token == Instruction.Call && hash.Contains(i.Variable))
+                                    .Select(i => i as INode)
+                                    .ToList();
+
+                                for (int i = 0; i < calls.Count; i++)
+                                    GatherParents(calls[i], calls);
+
+                                return main.Concat(calls)
+                                    .Where(i => i.Token != Instruction.Procedure)
+                                    .Select(i => i.LineNumber.ToString())
+                                    .Distinct();
+
+                                void GatherParents(INode node, List<INode> nodes)
+                                {
+                                    if (node.Parent != null)
+                                    {
+                                        nodes.Add(node.Parent);
+                                        GatherParents(node.Parent, nodes);
+                                    }
+                                }
+                            }
                         case StatementType.Stmtlst:
                         case StatementType.While:
                         case StatementType.ProgLine:
                         case StatementType.If:
-                            var modifiedValues = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
-                            var inProcedure = modifiedValues
-                                .Select(x => new { Node = x, Parents = GetParents(x as Node) })
-                                .ToList();
-                            var result = inProcedure
-                                .Select(x => x.Parents
-                                    .Where(z => z.Token == Instruction.If)
-                                    .Select(z => z.LineNumber)
-                                    .ToList())
-                                .SelectMany(x => x)
-                                .ToList();
-                            var list = new List<INode>();
-                            foreach (var item in inProcedure)
                             {
-                                list.AddRange(this.Api.PKB.Procedures
-                                    .ToNodeEnumerator()
-                                    .Where(true, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
-                                    .Select(false, x => x).ToList());
-                            }
-                            var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
-                            result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == Instruction.If).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
-                            return result.Distinct().Select(x => x.ToString());
+                                var modifiedValues = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
+                                var inProcedure = modifiedValues
+                                    .Select(x => new { Node = x, Parents = GetParents(x as Node) })
+                                    .ToList();
+                                var result = inProcedure
+                                    .Select(x => x.Parents
+                                        .Where(z => z.Token == Instruction.If)
+                                        .Select(z => z.LineNumber)
+                                        .ToList())
+                                    .SelectMany(x => x)
+                                    .ToList();
+                                var list = new List<INode>();
+                                foreach (var item in inProcedure)
+                                {
+                                    list.AddRange(this.Api.PKB.Procedures
+                                        .ToNodeEnumerator()
+                                        .Where(true, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
+                                        .Select(false, x => x).ToList());
+                                }
+                                var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
+                                result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == Instruction.If).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
+                                return result.Distinct().Select(x => x.ToString());
 
+                                IEnumerable<Node> GetParents(Node node)
+                                {
+                                    if (node == null) return new List<Node>();
+                                    var parents = new List<Node>();
+                                    setParent(node.Parent);
+
+                                    return parents;
+                                    void setParent(Node parent)
+                                    {
+                                        parents.Add(parent);
+                                        if (parent.Parent != null)
+                                        {
+                                            setParent(parent.Parent);
+                                        }
+                                    }
+                                }
+                            }
                         case StatementType.Constant:
                             break;
                     }
@@ -168,26 +176,13 @@ namespace Core.PQLo.QueryPreProcessor
                     }
                 case CommandType.Calls:
                 case CommandType.Follows:
+                    return new List<string> {
+                        int.TryParse(data.Right, out int r) ? (r - 1).ToString() : "NONE"
+                    };
                 case CommandType.Parent:
                     break;
             }
             return Enumerable.Empty<string>();
-        }
-        private IEnumerable<Node> GetParents(Node node)
-        {
-            if (node == null) return new List<Node>();
-            var parents = new List<Node>();
-            setParent(node.Parent);
-
-            return parents;
-            void setParent(Node parent)
-            {
-                parents.Add(parent);
-                if (parent.Parent != null)
-                {
-                    setParent(parent.Parent);
-                }
-            }
         }
     }
 }
