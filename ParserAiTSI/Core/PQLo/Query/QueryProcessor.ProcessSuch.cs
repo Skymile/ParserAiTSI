@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -69,27 +70,18 @@ namespace Core.PQLo.QueryPreProcessor
                                 var calls = f
                                     .ToNodeEnumerator()
                                     .Gather(
-                                        Mode.GreedyRecursion, 
+                                        Mode.GreedyRecursion,
                                         Instruction.Call,
                                         i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable)
                                     )
-                                    .ToArray();
+                                    .ToNodeEnumerator()
+                                    .Select(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable);
 
                                 var en = f
                                     .ToNodeEnumerator()
-                                    .Where(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
-                                    .Select(Mode.NoRecursion, i => i.Variable.ToUpperInvariant())
-                                    .Distinct()
-                                    .ToArray();
+                                    .Select(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable);
 
-                                var enC = calls
-                                    .ToNodeEnumerator()
-                                    .Where(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
-                                    .Select(Mode.NoRecursion, i => i.Variable.ToUpperInvariant())
-                                    .Distinct()
-                                    .ToArray();
-
-                                return en.Concat(enC);
+                                return en.Concat(calls).Distinct();
                             }
 
                         case StatementType.Assign:
