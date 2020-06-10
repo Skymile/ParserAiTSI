@@ -11,8 +11,10 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"stmt s;",
-				"Select s such that Modifies (s, \"tmp\")"
+				"procedure p;",
+				"Select p such that Modifies (p, \"factor\")"
+				//"stmt s;",
+				//"Select s such that Modifies (s, \"tmp\")"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine() 

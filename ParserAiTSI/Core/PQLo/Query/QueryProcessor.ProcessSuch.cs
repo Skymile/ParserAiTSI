@@ -17,11 +17,42 @@ namespace Core.PQLo.QueryPreProcessor
 					{
 						case StatementType.Procedure:
 							{
-								var en = this.Api.PKB.Procedures
+								var main = this.Api.PKB.ArrayForm
+									.Where(i => i.Token == Instruction.Procedure)
 									.ToNodeEnumerator()
-									.Where(true, i => i.Instruction == data.Variable)
-									.Select(false, i => i.LineNumber.ToString());
-								return en;
+									.Where(true, Instruction.Assign | Instruction.Expression, i => i.Variable == data.Right)
+									.Select(true, i => this.Api.GetProcedure(i.Id) as INode)
+									.Distinct()
+									.ToArray();
+
+								bool change = false;
+
+								var calls = this.Api.PKB.ArrayForm
+									.ToNodeEnumerator()
+									.Where(true, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
+									.Select(true, i => this.Api.GetProcedure(i.Id) as INode)
+									.ToArray();
+
+								main = main.Concat(calls).Distinct().ToArray();
+
+								int callCount = calls.Length;
+								do
+								{
+									calls = calls.Concat(
+										calls
+											.ToNodeEnumerator()
+											.Where(true, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
+											.Select(true, i => this.Api.GetProcedure(i.Id) as INode)
+											.ToArray()
+										).Distinct().ToArray();
+									
+									main = main.Concat(calls).Distinct().ToArray();
+
+									change = callCount != calls.Length;
+									callCount = calls.Length;
+								} while (change);
+
+								return main.Select(i => i.Variable);
 							}
 						case StatementType.Call:
 						case StatementType.Variable:
@@ -146,6 +177,9 @@ namespace Core.PQLo.QueryPreProcessor
 					}
 				case CommandType.Calls:
 				case CommandType.Follows:
+					return new List<string> { 
+						int.TryParse(data.Right, out int r) ? (r - 1).ToString() : "NONE"
+					};
 				case CommandType.Parent:
 					break;
 			}

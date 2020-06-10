@@ -55,6 +55,7 @@
     <Compile Include="Interfaces\PQL\ICalls.cs" />
     <Compile Include="Interfaces\PQL\INext.cs" />
     <Compile Include="Interfaces\PQL\TableBase.cs" />
+    <Compile Include="PKB\Mode.cs" />
     <Compile Include="PKB\NodeCollection.cs" />
     <Compile Include="PKB\NodeEnumerator.cs" />
     <Compile Include="PKB\PKB.cs" />
