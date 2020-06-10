@@ -6,19 +6,19 @@ Select b such that Uses(b, "x1")
 8, 19, 30, 36, 37, 43, 49, 64, 71, 82, 142, 148, 150, 152, 153, 154, 155, 156, 158, 159, 162, 165, 185, 206, 245, 249, 252, 254
 variable v;
 Select v such that Modifies (191, v)
-asterick,dx,dy,left,marking,pct,peak,range,right,trim
+ASTERICK,DX,DY,LEFT,MARKING,PCT,PEAK,RANGE,RIGHT,TRIM
 variable v;
 Select v such that Modifies (79, v)
-asterick,blue,depth,dx,dy,edge,factor,green,height,I,j,left,line,marking,notmove,p1,p2,pct,peak,pink,pixel,range,right,s,semi,temporary,tmp,total,trim,width,x1,x2,y1,y2
+ASTERICK,BLUE,DEPTH,DX,DY,EDGE,FACTOR,GREEN,HEIGHT,I,J,LEFT,LINE,MARKING,NOTMOVE,P1,P2,PCT,PEAK,PINK,PIXEL,RANGE,RIGHT,S,SEMI,TEMPORARY,TMP,TOTAL,TRIM,WIDTH,X1,X2,Y1,Y2
 variable v;
 Select v such that Modifies (136, v)
-tmp,weight,x1,x2,y1,y2
+TMP,WEIGHT,X1,X2,Y1,Y2
 variable v;
 Select v such that Modifies (160, v)
-decrement,factor,incre,x1,x2,y1
+DECREMENT,FACTOR,INCRE,X1,X2,Y1
 variable v;
 Select v such that Modifies (218, v)
-blue,depth,edge,green,line,notmove,pink,semi,temporary
+BLUE,DEPTH,EDGE,GREEN,LINE,NOTMOVE,PINK,SEMI,TEMPORARY
 stmt s;
 Select s such that Modifies (s, "tmp")
 105,107,108,12,133,136,137,14,149,15,16,17,180,181,187,188,29,33,34,38,4,42,47,48,59,6,60,63,66,76,78,79,80,81,89,90,95,96
@@ -48,28 +48,28 @@ Select c such that Modifies (c, "x1")
 1,108,119,22,33,41,42,63,78,84
 call c;
 Select c such that Modifies (c, "unknown")
-none
+NONE
 variable v;
 Select v such that Modifies ("Init", v)
-bottom,decrement,incre,left,right,top,x1,x2,y1,y2
+BOTTOM,DECREMENT,INCRE,LEFT,RIGHT,TOP,X1,X2,Y1,Y2
 variable v;
 Select v such that Modifies ("Draw", v)
-asterick,blue,dx,dy,green,left,marking,p1,p2,pct,peak,pink,range,right,s,trim
+ASTERICK,BLUE,DX,DY,GREEN,LEFT,MARKING,P1,P2,PCT,PEAK,PINK,RANGE,RIGHT,S,TRIM
 variable v;
 Select v such that Modifies ("Shrink", v)
-asterick,blue,dx,dy,factor,green,I,j,left,marking,p1,p2,pct,peak,pink,range,right,s,trim,x1,x2,y1,y2
+ASTERICK,BLUE,DX,DY,FACTOR,GREEN,I,J,LEFT,MARKING,P1,P2,PCT,PEAK,PINK,RANGE,RIGHT,S,TRIM,X1,X2,Y1,Y2
 procedure p;
 Select p such that Modifies (p, "factor")
-Main,Move,Shear,Shrink,Translate
+MAIN,MOVE,SHEAR,SHRINK,TRANSLATE
 procedure p;
 Select p such that Modifies (p, "temporary")
-Enlarge,Main
+ENLARGE,MAIN
 procedure p;
 Select p such that Modifies (p, "cs1")
 PP,QQ,RR,TT
 stmt s;
 Select s such that Follows (15, s)
-none
+NONE
 stmt s;
 Select s such that Follows (s, 69)
 68
@@ -81,7 +81,7 @@ Select s such that Follows* (s, 116)
 113
 assign a;
 Select a such that Follows* (32, a)
-none
+NONE
 assign a;
 Select a such that Follows (a, 69)
 68
@@ -93,7 +93,7 @@ Select a such that Follows* (a, 55)
 17,19,20,21,46
 if ifs;
 Select ifs such that Follows (66, ifs)
-none
+NONE
 if ifs;
 Select ifs such that Follows (ifs, 196)
 192
@@ -102,13 +102,13 @@ Select ifs such that Follows* (17, ifs)
 23,34,55
 if ifs;
 Select ifs such that Follows* (ifs, 163)
-none
+NONE
 while w;
 Select w such that Follows* (54, w)
 59
 while w;
 Select w such that Follows (w, 62)
-none
+NONE
 while w;
 Select w such that Follows* (14, w)
 101,105,95
@@ -120,13 +120,13 @@ Select c such that Follows (91, c)
 92
 call c;
 Select c such that Follows (c, 78)
-none
+NONE
 call c;
 Select c such that Follows* (34, c)
 45,54
 call c;
 Select c such that Follows* (c, 219)
-none
+NONE
 stmt s;
 Select s such that Follows (_, s)
 10,100,101,103,105,107,109,11,111,112,115,116,118,119,12,121,122,123,124,125,126,127,128,129,131,133,134,135,136,138,139,14,140,143,146,148,149,151,152,153,154,155,156,157,158,162,163,166,169,170,173,18,183,184,186,187,189,19,191,194,196,198,2,20,200,202,203,204,207,208,21,211,212,214,215,22,220,221,222,223,224,227,228,229,23,230,233,234,236,245,246,247,248,249,25,250,253,254,256,258,259,260,262,264,270,271,272,273,275,276,277,28,284,285,286,287,29,291,296,297,299,3,300,301,303,306,307,308,31,32,33,34,36,37,4,40,41,42,44,45,46,47,49,5,50,51,54,55,57,59,6,61,62,63,64,65,66,68,69,71,72,75,8,82,83,85,86,9,91,92,94,95,97
@@ -189,16 +189,16 @@ Select c such that Follows* (c, _)
 1,108,114,18,190,22,221,222,227,259,286,295,296,307,41,45,5,54,63,84
 stmt s;
 Select BOOLEAN such that Follows (51, 54)
-false
+FALSE
 stmt s;
 Select BOOLEAN such that Follows* (14, 104)
-false
+FALSE
 stmt s;
 Select BOOLEAN such that Follows (_, _)
-true
+TRUE
 stmt s;
 Select BOOLEAN such that Follows* (_, 1)
-false
+FALSE
 while w; assign a;
 Select a such that Follows* (w, a)
 116,149,186,207,236,254,46,64,65
@@ -249,7 +249,7 @@ Select w such that Parent* (6, w)
 101,103,105,113,12,16,26,29,47,59,69,79,83,89,95
 if ifs;
 Select ifs such that Parent (ifs, 240)
-none
+NONE
 if ifs;
 Select ifs such that Parent (163, ifs)
 none
@@ -258,7 +258,7 @@ Select ifs such that Parent* (ifs, 71)
 14,15,66
 if ifs;
 Select ifs such that Parent* (17, ifs)
-none
+NONE
 call c;
 Select c such that Parent (230, c)
 231,232
@@ -315,16 +315,16 @@ Select c such that Parent* (_, c)
 108,114,117,118,18,195,22,221,222,227,231,232,235,274,277,292,293,307,33,41,42,44,45,54,62,63,78,84,87,92
 stmt s;
 Select BOOLEAN such that Parent (_, _)
-true
+TRUE
 stmt s;
 Select BOOLEAN such that Parent* (_, _)
-true
+TRUE
 stmt s;
 Select BOOLEAN such that Parent (237, 240)
-false
+FALSE
 stmt s;
 Select BOOLEAN such that Parent* (180, 185)
-true
+TRUE
 while w; call c;
 Select w such that Parent (w, c)
 113,16,218,234,264,29,301,59,6,83,89
@@ -369,64 +369,64 @@ Select ifs1 such that Parent* (ifs1, ifs2)
 107,14,15,159,160,216,266,34,66,80
 variable v;
 Select v such that Uses (191, v)
-asterick,bottom,cover,decrement,dx,dy,incre,lengx,marking,mean,median,mtoggle,pct,range,top,x1,x2,y1,y2
+ASTERICK,BOTTOM,COVER,DECREMENT,DX,DY,INCRE,LENGX,MARKING,MEAN,MEDIAN,MTOGGLE,PCT,RANGE,TOP,X1,X2,Y1,Y2
 variable v;
 Select v such that Uses (79, v)
-asterick,bottom,cover,decrease,decrement,depth,difference,dot,dx,dy,edge,factor,green,half,height,I,incre,increase,j,k,lengx,marking,mean,median,mtoggle,notdone,notmove,pct,pink,pixel,range,s,semi,temporary,tmp,top,width,x1,x2,y1,y2
+ASTERICK,BOTTOM,COVER,DECREASE,DECREMENT,DEPTH,DIFFERENCE,DOT,DX,DY,EDGE,FACTOR,GREEN,HALF,HEIGHT,I,INCRE,INCREASE,J,K,LENGX,MARKING,MEAN,MEDIAN,MTOGGLE,NOTDONE,NOTMOVE,PCT,PINK,PIXEL,RANGE,S,SEMI,TEMPORARY,TMP,TOP,WIDTH,X1,X2,Y1,Y2
 variable v;
 Select v such that Uses (160, v)
-decrement,factor,incre,x1,x2,y1,y2
+DECREMENT,FACTOR,INCRE,X1,X2,Y1,Y2
 variable v;
 Select v such that Uses (97, v)
-tmp
+TMP
 variable v;
 Select v such that Uses (217, v)
-decrease,depth,difference,dot,edge,green,half,increase,notmove,pink,pixel,semi,temporary
+DECREASE,DEPTH,DIFFERENCE,DOT,EDGE,GREEN,HALF,INCREASE,NOTMOVE,PINK,PIXEL,SEMI,TEMPORARY
 stmt s;
 Select s such that Uses (s, "incre")
 10,105,107,108,109,110,112,113,114,117,118,12,130,134,136,137,14,143,144,145,15,150,159,16,160,161,166,167,180,181,182,191,192,195,22,244,250,255,259,262,264,265,266,274,29,30,31,33,34,35,37,38,41,42,44,45,5,54,6,63,66,7,76,78,79,8,80,83,84,86,87,9,93
 stmt s;
 Select s such that Uses (s, "total")
-none
+NONE
 assign a;
 Select a such that Uses (a, "difference")
 19,20,213,35,67
 assign a;
 Select a such that Uses (a, "total")
-none
+NONE
 if ifs;
 Select ifs such that Uses (ifs, "x1")
 107,109,14,140,144,15,159,160,163,204,250,34,38,66,72,76,80,86
 if ifs;
 Select ifs such that Uses (ifs, "blue")
-none
+NONE
 while w;
 Select w such that Uses (w, "x2")
 105,113,12,136,143,16,180,181,191,29,47,6,69,79,83
 while w;
 Select w such that Uses (w, "circumference")
-none
+NONE
 call c;
 Select c such that Uses (c, "decrement")
 108,114,117,118,195,22,259,262,274,33,41,42,44,45,5,54,63,78,84,87
 call c;
 Select c such that Uses (c, "unknown")
-none
+NONE
 variable v;
 Select v such that Uses ("Init", v)
-none
+NONE
 variable v;
 Select v such that Uses ("Random", v)
-bottom,decrement,incre,top
+BOTTOM,DECREMENT,INCRE,TOP
 variable v;
 Select v such that Uses ("Draw", v)
-asterick,bottom,cover,decrement,difference,dx,dy,green,incre,lengx,marking,mean,median,mtoggle,pct,pink,range,s,top,x1,x2,y1,y2
+ASTERICK,BOTTOM,COVER,DECREMENT,DIFFERENCE,DX,DY,GREEN,INCRE,LENGX,MARKING,MEAN,MEDIAN,MTOGGLE,PCT,PINK,RANGE,S,TOP,X1,X2,Y1,Y2
 procedure p;
 Select p such that Uses (p, "x2")
-Draw,Main,Move,Shear,Shift,Shrink,Transform
+DRAW,MAIN,MOVE,SHEAR,SHIFT,SHRINK,TRANSFORM
 procedure p;
 Select p such that Uses (p, "p1")
-none
+NONE
 procedure p;
 Select p such that Uses (p, "cs2")
 PP,QQ,RR,TT
@@ -447,31 +447,31 @@ Select c such that Uses (c, _)
 108,114,117,118,18,190,195,208,22,221,222,227,231,232,235,259,262,274,277,286,287,292,293,294,295,296,297,307,33,41,42,44,45,5,54,62,63,78,84,87,92
 procedure p;
 Select p such that Uses (p, _)
-Clear,Draw,Enlarge,Fill,Main,Move,PP,QQ,Random,Rotate,RR,Scale,Shear,Shift,Show,Shrink,SS,Transform,Translate,TT,UU,XX
+CLEAR,DRAW,ENLARGE,FILL,MAIN,MOVE,PP,QQ,RANDOM,ROTATE,RR,SCALE,SHEAR,SHIFT,SHOW,SHRINK,SS,TRANSFORM,TRANSLATE,TT,UU,XX
 stmt s;
 Select BOOLEAN such that Uses (218, "total")
-false
+FALSE
 stmt s;
 Select BOOLEAN such that Uses ("Main", "green")
-true
+TRUE
 stmt s;
 Select BOOLEAN such that Uses ("Scale", "wrong")
-true
+TRUE
 procedure p;
 Select p such that Calls (p, "Draw")
-Main,Shrink
+MAIN,SHRINK
 procedure p;
 Select p such that Calls* (p, "Scale")
-none
+NONE
 procedure p;
 Select p such that Calls* (p, "Show")
-Draw,Enlarge,Main,Rotate,Shrink,Translate
+DRAW,ENLARGE,MAIN,ROTATE,SHRINK,TRANSLATE
 procedure p;
 Select p such that Calls ("Scale", p)
-none
+NONE
 procedure p;
 Select p such that Calls* ("Main", p)
-Clear,Draw,Enlarge,Fill,Init,Move,Random,Rotate,Shear,Shift,Show,Shrink,Transform,Translate
+CLEAR,DRAW,ENLARGE,FILL,INIT,MOVE,RANDOM,ROTATE,SHEAR,SHIFT,SHOW,SHRINK,TRANSFORM,TRANSLATE
 procedure p;
 Select p such that Calls* ("RR", p)
 PP,QQ,SS,TT,UU,XX
@@ -480,40 +480,40 @@ Select p such that Calls (p, "QQ")
 PP,RR,TT
 procedure p;
 Select BOOLEAN such that Calls ("PP", "XX")
-false
+FALSE
 procedure p;
 Select BOOLEAN such that Calls* ("RR", "XX")
-true
+TRUE
 procedure p;
 Select BOOLEAN such that Calls* ("PP", "XX")
-true
+TRUE
 procedure p;
 Select BOOLEAN such that Calls (_, _)
-true
+TRUE
 procedure p;
 Select BOOLEAN such that Calls* (_, _)
-true
+TRUE
 procedure p;
 Select p such that Calls (p, p)
-none
+NONE
 procedure p;
 Select p such that Calls* (p, p)
-none
+NONE
 procedure p;
 Select p such that Calls (p, _)
-Draw,Enlarge,Main,PP,Rotate,RR,Shrink,SS,Translate,TT,UU
+DRAW,ENLARGE,MAIN,PP,ROTATE,RR,SHRINK,SS,TRANSLATE,TT,UU
 procedure p;
 Select p such that Calls* (p, _)
-Draw,Enlarge,Main,PP,Rotate,RR,Shrink,SS,Translate,TT,UU
+DRAW,ENLARGE,MAIN,PP,ROTATE,RR,SHRINK,SS,TRANSLATE,TT,UU
 procedure p;
 Select p such that Calls (_, p)
-Clear,Draw,Enlarge,Fill,Init,Move,PP,QQ,Random,Rotate,Shear,Shift,Show,Shrink,SS,Transform,Translate,TT,UU,XX
+CLEAR,DRAW,ENLARGE,FILL,INIT,MOVE,PP,QQ,RANDOM,ROTATE,SHEAR,SHIFT,SHOW,SHRINK,SS,TRANSFORM,TRANSLATE,TT,UU,XX
 stmt s; variable v;
 Select s such that Modifies (s, v) with v.varName = "incre"
 1,105,107,108,109,110,119,12,128,134,14,15,159,16,160,162,29,33,34,38,41,6,65,66,76,78
 procedure p; variable v;
 Select p such that Uses (p, v) with v.varName = "pct"
-Draw,Main,Shrink
+DRAW,MAIN,SHRINK
 assign a; variable v;
 Select a pattern a (v, _) with v.varName = "x1"
 120,138,164,165,174,182,245,252,67,7
@@ -522,13 +522,14 @@ Select w pattern w (v, _) with v.varName = "I"
 184,187,251,6,69
 stmt s1, s2;
 Select s1 such that Parent* (s1, s2) with s1.stmt# = 41
-none
+NONE
 procedure p, q;
 Select <p, q> such that Calls (p, q) with p.procName = "Main"
-Main Draw,Main Enlarge,Main Init,Main Move,Main Random,Main Shear,Main Shift,Main Shrink,Main Transform,Main Translate
+MAIN DRAW,MAIN ENLARGE,MAIN INIT,MAIN MOVE,MAIN RANDOM,MAIN SHEAR,MAIN SHIFT,MAIN SHRINK,MAIN TRANSFORM,MAIN TRANSLATE
 if ifs; while w;
 Select ifs such that Follows* (w, ifs) with w.stmt# = 29
 34,55
 assign a; if ifs;
 Select a such that Parent* (ifs, a) with ifs.stmt# = 97
 98,99
+
