@@ -10,7 +10,9 @@ namespace Core.PQLo.QueryPreProcessor
 			this.Api = api;
 
 		public string ProcessQuery(string query) =>
-			SplitQuery(BreakdownQuery(query));
+			string.IsNullOrWhiteSpace(query)
+				? string.Empty
+				: SplitQuery(BreakdownQuery(query));
 
 		public PKBApi Api { get; }
 

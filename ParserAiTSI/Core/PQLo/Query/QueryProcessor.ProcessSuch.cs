@@ -19,8 +19,8 @@ namespace Core.PQLo.QueryPreProcessor
                                 var main = this.Api.PKB.ArrayForm
                                   .Where(i => i.Token == Instruction.Procedure)
                                   .ToNodeEnumerator()
-                                  .Where(true, Instruction.Assign | Instruction.Expression, i => i.Variable == data.Right)
-                                  .Select(true, i => this.Api.GetProcedure(i.Id) as INode)
+                                  .Where(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable == data.Right)
+                                  .Select(Mode.StandardRecursion, i => this.Api.GetProcedure(i.Id) as INode)
                                   .Distinct()
                                   .ToArray();
 
@@ -28,8 +28,8 @@ namespace Core.PQLo.QueryPreProcessor
 
                                 var calls = this.Api.PKB.ArrayForm
                                     .ToNodeEnumerator()
-                                    .Where(true, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
-                                    .Select(true, i => this.Api.GetProcedure(i.Id) as INode)
+                                    .Where(Mode.StandardRecursion, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
+                                    .Select(Mode.StandardRecursion, i => this.Api.GetProcedure(i.Id) as INode)
                                     .ToArray();
 
                                 main = main.Concat(calls).Distinct().ToArray();
@@ -40,8 +40,8 @@ namespace Core.PQLo.QueryPreProcessor
                                     calls = calls.Concat(
                                         calls
                                             .ToNodeEnumerator()
-                                            .Where(true, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
-                                            .Select(true, i => this.Api.GetProcedure(i.Id) as INode)
+                                            .Where(Mode.StandardRecursion, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
+                                            .Select(Mode.StandardRecursion, i => this.Api.GetProcedure(i.Id) as INode)
                                             .ToArray()
                                         ).Distinct().ToArray();
 
@@ -68,35 +68,24 @@ namespace Core.PQLo.QueryPreProcessor
 
                                 var calls = f
                                     .ToNodeEnumerator()
-                                    .Where(true, Instruction.Call)
-                                    .Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
+                                    .Gather(
+                                        Mode.GreedyRecursion, 
+                                        Instruction.Call,
+                                        i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable)
+                                    )
                                     .ToArray();
-
-                                bool change = false;
-                                int callCount = calls.Count();
-                                do
-                                {
-                                    calls = calls.Concat(
-                                            calls
-                                                .ToNodeEnumerator()
-                                                .Where(true, Instruction.Call)
-                                                .Select(true, i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable) as INode)
-                                        ).Distinct().ToArray();
-                                    change = callCount != calls.Length;
-                                    callCount = calls.Length;
-                                } while (change);
 
                                 var en = f
                                     .ToNodeEnumerator()
-                                    .Where(true, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
-                                    .Select(false, i => i.Variable.ToUpperInvariant())
+                                    .Where(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
+                                    .Select(Mode.NoRecursion, i => i.Variable.ToUpperInvariant())
                                     .Distinct()
                                     .ToArray();
 
                                 var enC = calls
                                     .ToNodeEnumerator()
-                                    .Where(true, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
-                                    .Select(false, i => i.Variable.ToUpperInvariant())
+                                    .Where(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable != null)
+                                    .Select(Mode.NoRecursion, i => i.Variable.ToUpperInvariant())
                                     .Distinct()
                                     .ToArray();
 
@@ -172,8 +161,8 @@ namespace Core.PQLo.QueryPreProcessor
                                 {
                                     list.AddRange(this.Api.PKB.Procedures
                                         .ToNodeEnumerator()
-                                        .Where(true, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
-                                        .Select(false, x => x).ToList());
+                                        .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
+                                        .Select(Mode.NoRecursion, x => x).ToList());
                                 }
                                 var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
                                 result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == Instruction.If).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());

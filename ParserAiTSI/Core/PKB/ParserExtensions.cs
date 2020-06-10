@@ -13,9 +13,9 @@ namespace Core
 				string[] ii = j
 					.Replace('\t', '\n')
 					.Replace('\r', '\n')
-					.Replace(';', '\n')
-					.Replace("}", "}\n")
-					.Replace("{", "{\n")
+					.Replace(';' , '\n')
+					.Replace("}" , "}\n")
+					.Replace("{" , "{\n")
 					.Split('\n')
 					.Select(i => i.Trim())
 					.Where(i => !string.IsNullOrWhiteSpace(i))

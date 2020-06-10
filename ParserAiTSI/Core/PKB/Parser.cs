@@ -14,7 +14,7 @@ namespace Core
 		}
 
 		public IEnumerable<(int LineNumber, string Line)> NormalizedForm { get; private set; }
-		public IEnumerable<Node  > ArrayForm      { get; private set; }
+		public IEnumerable<Node> ArrayForm { get; private set; }
 
 		public readonly Node Root = new Node();
 

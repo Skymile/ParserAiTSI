@@ -1,6 +1,6 @@
 ﻿//#define TEST
 using System;
-
+using System.Linq;
 using Core;
 using Core.PQLo.QueryPreProcessor;
 
@@ -11,8 +11,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"assign a;",
-				"Select a such that Modifies (a, \"temporary\")"
+				"variable v;",
+				"Select v such that Modifies (79, v)"
 				//"if ifs;",
 				//"Select ifs such that Modifies (ifs, \"x1\")"
 //				"stmt s;",
@@ -47,8 +47,14 @@ namespace Terminal
 				{
 					var lines = Query();
 					var qp = new QueryProcessor(new PKBApi(new PKB(parser)));
-					string result = qp.ProcessQuery(lines[0] + ";" + lines[1]).ToUpperInvariant();
-					Console.WriteLine(string.IsNullOrWhiteSpace(result) ? "NONE" : result);
+
+					if (lines.Length != 2 || lines.All(string.IsNullOrWhiteSpace))
+						Console.WriteLine(string.Empty);
+					else
+					{
+						string result = qp.ProcessQuery(lines[0] + ";" + lines[1]).ToUpperInvariant();
+						Console.WriteLine(string.IsNullOrWhiteSpace(result) ? "NONE" : result);
+					}
 				}
 #if !TEST
 				catch (Exception ex)

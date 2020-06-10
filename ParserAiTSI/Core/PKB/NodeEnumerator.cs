@@ -12,9 +12,36 @@ namespace Core
 			this.Nodes = chunk;
 
 		public IEnumerable<INode> Nodes { get; private set; }
-		public IEnumerable<T> Select<T>(bool applyRecursive, Func<INode, T> func)
+
+		public IEnumerable<INode> Gather(Mode recursion, Instruction instruction, Func<INode, INode> func)
 		{
-			if (applyRecursive)
+			int c;
+			do
+			{
+				c = this.Nodes.Count();
+				this.Nodes = this.Nodes.Concat(Where(recursion, instruction).Select(recursion, func)).Distinct();
+			} while (this.Nodes.Count() != c);
+			return this.Nodes;
+		}
+
+		public IEnumerable<T> Select<T>(Mode recursion, Instruction instruction, Func<INode, T> func) => 
+			Where(recursion, instruction).Select(recursion, func);
+
+		public IEnumerable<T> Select<T>(Mode recursion, Func<INode, T> func)
+		{
+			if (recursion == Mode.GreedyRecursion)
+			{
+				var list = new List<T>();
+				int i;
+				do
+				{
+					i = list.Count;
+					RecSelect(this.Nodes, list);
+					list = list.Distinct().ToList();
+				} while (i != list.Count);
+				return list;
+			}
+			else if (recursion == Mode.StandardRecursion)
 			{
 				var list = new List<T>();
 				RecSelect(this.Nodes, list);
@@ -32,15 +59,27 @@ namespace Core
 			}
 		}
 
-		public NodeEnumerator Where(bool applyRecursive, Instruction instruction, Func<INode, bool> filter) =>
-			Where(applyRecursive, i => instruction.HasFlag(i.Token) && filter(i));
+		public NodeEnumerator Where(Mode recursion, Instruction instruction, Func<INode, bool> filter) =>
+			Where(recursion, i => instruction.HasFlag(i.Token) && filter(i));
 
-		public NodeEnumerator Where(bool applyRecursive, Instruction instruction) =>
-			Where(applyRecursive, i => instruction.HasFlag(i.Token));
+		public NodeEnumerator Where(Mode recursion, Instruction instruction) =>
+			Where(recursion, i => instruction.HasFlag(i.Token));
 
-		public NodeEnumerator Where(bool applyRecursive, Func<INode, bool> filter)
+		public NodeEnumerator Where(Mode recursion, Func<INode, bool> filter)
 		{
-			if (applyRecursive)
+			if (recursion == Mode.GreedyRecursion)
+			{
+				var list = new List<INode>();
+				int i;
+				do
+				{
+					i = list.Count;
+					RecWhere(this.Nodes, list);
+					list = list.Distinct().ToList();
+				} while (i != list.Count);
+				this.Nodes = list;
+			}
+			else if (recursion == Mode.StandardRecursion)
 			{
 				var list = new List<INode>();
 				RecWhere(this.Nodes, list);
