@@ -43,7 +43,6 @@ namespace Core.PQLo.QueryPreProcessor
                                 foreach (var item in inProcedure)
                                 {
                                     list.AddRange(this.Api.PKB.Procedures
-                                        .ToNodeEnumerator()
                                         .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
                                         .Select(Mode.NoRecursion, x => x).ToList());
                                 }
