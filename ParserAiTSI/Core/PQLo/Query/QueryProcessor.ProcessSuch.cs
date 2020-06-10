@@ -121,9 +121,9 @@ namespace Core.PQLo.QueryPreProcessor
                             }
                         case StatementType.Stmtlst:
                             break;
-                        case StatementType.While:
+                        case StatementType.While: 
                             return FindInstructionLinesForModifies(Instruction.Loop, data);
-                        case StatementType.If:
+                        case StatementType.If: // TODO: JAK BEDZIE ELSE
                             return FindInstructionLinesForModifies(Instruction.If, data);
                         case StatementType.ProgLine:
                             break;

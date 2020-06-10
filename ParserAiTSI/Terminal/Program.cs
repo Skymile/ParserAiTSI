@@ -1,4 +1,4 @@
-﻿//#define TEST
+﻿#define TEST
 using System;
 using System.Linq;
 using Core;
@@ -11,8 +11,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"call c;",
-				"Select c such that Modifies (c, \"unknown\")"
+				"stmt s;",
+				"Select s such that Parent (103, s)"
 				//"if ifs;",
 				//"Select ifs such that Modifies (ifs, \"x1\")"
 //				"stmt s;",
