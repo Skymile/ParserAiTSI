@@ -11,8 +11,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"variable v;",
-				"Select v such that Modifies (79, v)"
+				"call c;",
+				"Select c such that Modifies (c, \"unknown\")"
 				//"if ifs;",
 				//"Select ifs such that Modifies (ifs, \"x1\")"
 //				"stmt s;",

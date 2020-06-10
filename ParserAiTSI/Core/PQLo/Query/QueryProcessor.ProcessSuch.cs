@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -54,6 +55,23 @@ namespace Core.PQLo.QueryPreProcessor
                                 return main.Select(i => i.Variable);
                             }
                         case StatementType.Call:
+                            {
+                                var modifiedValues = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
+                                if (modifiedValues == null)
+                                    return Enumerable.Empty<string>();
+                                var inProcedure = modifiedValues
+                                    .Select(x => new { Node = x, Parents = GetParents(x as Node) })
+                                    .ToList();
+                                var list = new List<INode>();
+                                foreach (var item in inProcedure)
+                                {
+                                    list.AddRange(this.Api.PKB.Procedures
+                                        .ToNodeEnumerator()
+                                        .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
+                                        .Select(Mode.NoRecursion, x => x).ToList());
+                                }
+                                return list.Distinct(new KScheduleComparer()).Select(x => x.LineNumber.ToString());
+                            }
                         case StatementType.Variable:
                             {
                                 var f = this.Api.PKB.ArrayForm
@@ -69,7 +87,7 @@ namespace Core.PQLo.QueryPreProcessor
                                 var calls = f
                                     .ToNodeEnumerator()
                                     .Gather(
-                                        Mode.GreedyRecursion, 
+                                        Mode.GreedyRecursion,
                                         Instruction.Call,
                                         i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable)
                                     )
@@ -197,23 +215,38 @@ namespace Core.PQLo.QueryPreProcessor
             var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
             result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == instruction).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
             return result.Distinct().Select(x => x.ToString());
+        }
+        private IEnumerable<Node> GetParents(Node node)
+        {
+            if (node == null) return new List<Node>();
+            var parents = new List<Node>();
+            setParent(node.Parent);
 
-            IEnumerable<Node> GetParents(Node node)
+            return parents;
+            void setParent(Node parent)
             {
-                if (node == null) return new List<Node>();
-                var parents = new List<Node>();
-                setParent(node.Parent);
-
-                return parents;
-                void setParent(Node parent)
+                parents.Add(parent);
+                if (parent.Parent != null)
                 {
-                    parents.Add(parent);
-                    if (parent.Parent != null)
-                    {
-                        setParent(parent.Parent);
-                    }
+                    setParent(parent.Parent);
                 }
             }
+        }
+
+    }
+
+    public class KScheduleComparer : IEqualityComparer<INode>
+    {
+        public bool Equals(INode x, INode y)
+        {
+            if (x?.LineNumber == 0 || y?.LineNumber == 0)
+                return false;
+            return x?.LineNumber == y?.LineNumber;
+        }
+
+        public int GetHashCode(INode obj)
+        {
+            return obj.GetHashCode();
         }
     }
 }
