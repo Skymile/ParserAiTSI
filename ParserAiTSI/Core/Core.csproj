@@ -58,6 +58,7 @@
     <Compile Include="PKB\Mode.cs" />
     <Compile Include="PKB\NodeCollection.cs" />
     <Compile Include="PKB\NodeEnumerator.cs" />
+    <Compile Include="PKB\NodeEnumeratorExtensions.cs" />
     <Compile Include="PKB\PKB.cs" />
     <Compile Include="PKB\PKBApi.cs" />
     <Compile Include="PQLo\Field.cs" />
