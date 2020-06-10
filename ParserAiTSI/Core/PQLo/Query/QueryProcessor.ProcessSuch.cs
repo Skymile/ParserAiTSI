@@ -117,10 +117,27 @@ namespace Core.PQLo.QueryPreProcessor
 								var f = en.Keys.FirstOrDefault(
 									i => i.Name.Equals(data.Right, StringComparison.InvariantCultureIgnoreCase)
 								);
-								var list = en[f];
-								for (int i = 0; i < list.Count; i++)
-									GatherParents(list[i], list);
-								return list.Select(i => i.LineNumber.ToString());
+								var main = en[f];
+
+								for (int i = 0; i < main.Count; i++)
+									GatherParents(main[i], main);
+
+								var procedures = main
+									.Select(i => this.Api.GetProcedure(i.Id));
+								var hash = procedures.Select(i => i.Variable).ToHashSet();
+
+								var calls = this.Api.PKB.ArrayForm
+									.Where(i => i.Token == Instruction.Call && hash.Contains(i.Variable))
+									.Select(i => i as INode)
+									.ToList();
+
+								for (int i = 0; i < calls.Count; i++)
+									GatherParents(calls[i], calls);
+
+								return main.Concat(calls)
+									.Where(i => i.Token != Instruction.Procedure)
+									.Select(i => i.LineNumber.ToString())
+									.Distinct();
 
 								void GatherParents(INode node, List<INode> nodes)
 								{
