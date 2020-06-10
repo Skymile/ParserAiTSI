@@ -191,8 +191,8 @@ namespace Core.PQLo.QueryPreProcessor
             {
                 list.AddRange(this.Api.PKB.Procedures
                     .ToNodeEnumerator()
-                    .Where(true, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
-                    .Select(false, x => x).ToList());
+                    .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
+                    .Select(Mode.NoRecursion, x => x).ToList());
             }
             var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
             result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == instruction).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
