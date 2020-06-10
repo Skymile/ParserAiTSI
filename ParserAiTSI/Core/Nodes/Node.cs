@@ -11,9 +11,15 @@ namespace Core
     public class Node : INode
     {
         public Node() { }
-        public Node(IEnumerable<Node> nodes) 
-            => this.Nodes.AddRange(nodes);
+        public Node(IEnumerable<Node> nodes)  => 
+            this.Nodes.AddRange(nodes);
+
         public Node Parent { get; set; }
+
+        public Node Twin =>
+            Token == Core.Instruction.Else ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) - 1) : null;
+//            Token == Core.Instruction.If   ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) + 1) : null;
+
         public List<Node> Nodes { get; } = new List<Node>();
         public int LineNumber { get; set; }
         public int Id { get; set; }
@@ -146,14 +152,14 @@ namespace Core
     [Flags]
     public enum Instruction : byte
     {
-        None = 0,
-        If = 1 << 0,
-        Else = 1 << 1,
-        Assign = 1 << 2,
+        None       = 0,
+        If         = 1 << 0,
+        Else       = 1 << 1,
+        Assign     = 1 << 2,
         Expression = 1 << 3,
-        Loop = 1 << 4,
-        Call = 1 << 5,
-        Procedure = 1 << 6,
-        All = (1 << 7) - 1,
+        Loop       = 1 << 4,
+        Call       = 1 << 5,
+        Procedure  = 1 << 6,
+        All        = (1 << 7) - 1,
     }
 }
