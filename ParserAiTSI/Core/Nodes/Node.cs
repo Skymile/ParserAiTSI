@@ -11,6 +11,8 @@ namespace Core
     public class Node : INode
     {
         public Node() { }
+        public Node(IEnumerable<Node> nodes) 
+            => this.Nodes.AddRange(nodes);
         public Node Parent { get; set; }
         public List<Node> Nodes { get; } = new List<Node>();
         public int LineNumber { get; set; }
