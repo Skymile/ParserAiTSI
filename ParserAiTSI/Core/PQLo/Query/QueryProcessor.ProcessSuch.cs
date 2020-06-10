@@ -18,41 +18,20 @@ namespace Core.PQLo.QueryPreProcessor
                         case StatementType.Procedure:
                             {
                                 var main = this.Api.PKB.ArrayForm
-                                  .Where(i => i.Token == Instruction.Procedure)
-                                  .ToNodeEnumerator()
-                                  .Where(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable == data.Right)
-                                  .Select(Mode.StandardRecursion, i => this.Api.GetProcedure(i.Id) as INode)
-                                  .Distinct()
-                                  .ToArray();
-
-                                bool change = false;
+                                    .ToNodeEnumerator()
+                                    .Where(Mode.NoRecursion, Instruction.Procedure)
+                                    .Where(Mode.GreedyRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable == data.Right)
+                                    .Select(Mode.NoRecursion, i => this.Api.GetProcedure(i.Id))
 
                                 var calls = this.Api.PKB.ArrayForm
                                     .ToNodeEnumerator()
                                     .Where(Mode.StandardRecursion, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
-                                    .Select(Mode.StandardRecursion, i => this.Api.GetProcedure(i.Id) as INode)
-                                    .ToArray();
-
-                                main = main.Concat(calls).Distinct().ToArray();
-
-                                int callCount = calls.Length;
-                                do
-                                {
-                                    calls = calls.Concat(
-                                        calls
-                                            .ToNodeEnumerator()
-                                            .Where(Mode.StandardRecursion, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
-                                            .Select(Mode.StandardRecursion, i => this.Api.GetProcedure(i.Id) as INode)
-                                            .ToArray()
-                                        ).Distinct().ToArray();
-
-                                    main = main.Concat(calls).Distinct().ToArray();
-
-                                    change = callCount != calls.Length;
-                                    callCount = calls.Length;
-                                } while (change);
-
-                                return main.Select(i => i.Variable);
+                                    .Select(Mode.NoRecursion, i => this.Api.GetProcedure(i.Id));
+                                
+                                return main
+                                    .Concat(calls)
+                                    .Select(i => i.Variable)
+                                    .Distinct();
                             }
                         case StatementType.Call:
                         case StatementType.Variable:

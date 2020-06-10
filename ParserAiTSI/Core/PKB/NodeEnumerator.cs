@@ -12,17 +12,25 @@ namespace Core
 			this.Nodes = chunk;
 
 		public IEnumerable<INode> Nodes { get; private set; }
-
-		public IEnumerable<INode> Gather(Mode recursion, Instruction instruction, Func<INode, INode> func)
+		
+		public IEnumerable<INode> Gather(Mode recursion, Instruction instruction, Func<INode, bool> filter, Func<INode, INode> func)
 		{
 			int c;
 			do
 			{
 				c = this.Nodes.Count();
-				this.Nodes = this.Nodes.Concat(Where(recursion, instruction).Select(recursion, func)).Distinct();
+
+				this.Nodes = this.Nodes
+					.Concat(Where(recursion, instruction, filter)
+					.Select(recursion, func))
+					.Distinct();
+
 			} while (this.Nodes.Count() != c);
 			return this.Nodes;
 		}
+
+		public IEnumerable<INode> Gather(Mode recursion, Instruction instruction, Func<INode, INode> func) => 
+			Gather(recursion, instruction, i => true, func);
 
 		public IEnumerable<T> Select<T>(Mode recursion, Instruction instruction, Func<INode, T> func) => 
 			Where(recursion, instruction).Select(recursion, func);
