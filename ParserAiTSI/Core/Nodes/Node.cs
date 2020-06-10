@@ -17,8 +17,8 @@ namespace Core
         public Node Parent { get; set; }
 
         public Node Twin =>
-            Token == Core.Instruction.Else ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) - 1) : null;
-//            Token == Core.Instruction.If   ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) + 1) : null;
+            this.Token == Core.Instruction.Else ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) - 1) :
+            this.Token == Core.Instruction.If   ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) + 1) : null;
 
         public List<Node> Nodes { get; } = new List<Node>();
         public int LineNumber { get; set; }
