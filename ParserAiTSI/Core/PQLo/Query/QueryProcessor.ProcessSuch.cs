@@ -140,51 +140,16 @@ namespace Core.PQLo.QueryPreProcessor
                         case StatementType.Stmtlst:
                             break;
                         case StatementType.While:
+                            {
+                                return FindInstructionLinesForModifies(Instruction.Loop, data);
+                            }
+                        case StatementType.If:
+                            {
+                                return FindInstructionLinesForModifies(Instruction.If, data);
+                            }
                             break;
                         case StatementType.ProgLine:
                             break;
-                        case StatementType.If:
-                            {
-                                var modifiedValues = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
-                                var inProcedure = modifiedValues
-                                    .Select(x => new { Node = x, Parents = GetParents(x as Node) })
-                                    .ToList();
-                                var result = inProcedure
-                                    .Select(x => x.Parents
-                                        .Where(z => z.Token == Instruction.If)
-                                        .Select(z => z.LineNumber)
-                                        .ToList())
-                                    .SelectMany(x => x)
-                                    .ToList();
-                                var list = new List<INode>();
-                                foreach (var item in inProcedure)
-                                {
-                                    list.AddRange(this.Api.PKB.Procedures
-                                        .ToNodeEnumerator()
-                                        .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
-                                        .Select(Mode.NoRecursion, x => x).ToList());
-                                }
-                                var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
-                                result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == Instruction.If).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
-                                return result.Distinct().Select(x => x.ToString());
-
-                                IEnumerable<Node> GetParents(Node node)
-                                {
-                                    if (node == null) return new List<Node>();
-                                    var parents = new List<Node>();
-                                    setParent(node.Parent);
-
-                                    return parents;
-                                    void setParent(Node parent)
-                                    {
-                                        parents.Add(parent);
-                                        if (parent.Parent != null)
-                                        {
-                                            setParent(parent.Parent);
-                                        }
-                                    }
-                                }
-                            }
                         case StatementType.Constant:
                             break;
                     }
@@ -206,6 +171,49 @@ namespace Core.PQLo.QueryPreProcessor
                     break;
             }
             return Enumerable.Empty<string>();
+        }
+
+        private IEnumerable<string> FindInstructionLinesForModifies(Instruction instruction, SuchData data)
+        {
+            var modifiedValues = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
+            var inProcedure = modifiedValues
+                .Select(x => new { Node = x, Parents = GetParents(x as Node) })
+                .ToList();
+            var result = inProcedure
+                .Select(x => x.Parents
+                    .Where(z => z.Token == instruction)
+                    .Select(z => z.LineNumber)
+                    .ToList())
+                .SelectMany(x => x)
+                .ToList();
+            var list = new List<INode>();
+            foreach (var item in inProcedure)
+            {
+                list.AddRange(this.Api.PKB.Procedures
+                    .ToNodeEnumerator()
+                    .Where(true, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
+                    .Select(false, x => x).ToList());
+            }
+            var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
+            result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == instruction).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
+            return result.Distinct().Select(x => x.ToString());
+
+            IEnumerable<Node> GetParents(Node node)
+            {
+                if (node == null) return new List<Node>();
+                var parents = new List<Node>();
+                setParent(node.Parent);
+
+                return parents;
+                void setParent(Node parent)
+                {
+                    parents.Add(parent);
+                    if (parent.Parent != null)
+                    {
+                        setParent(parent.Parent);
+                    }
+                }
+            }
         }
     }
 }
