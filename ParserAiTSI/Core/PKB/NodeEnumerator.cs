@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,7 +7,7 @@ using Core.Interfaces.PQL;
 
 namespace Core
 {
-	public class NodeEnumerator
+	public class NodeEnumerator : IEnumerable<INode>
 	{
 		public NodeEnumerator(IEnumerable<INode> chunk) =>
 			this.Nodes = chunk;
@@ -31,7 +32,6 @@ namespace Core
 
 		public IEnumerable<INode> Gather(Mode recursion, Instruction instruction, Func<INode, INode> func) => 
 			Gather(recursion, instruction, i => true, func);
-
 		public IEnumerable<T> Select<T>(Mode recursion, Instruction instruction, Func<INode, T> func) => 
 			Where(recursion, instruction).Select(recursion, func);
 
@@ -106,5 +106,8 @@ namespace Core
 				}
 			}
 		}
+
+		public IEnumerator<INode> GetEnumerator() => Nodes.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => Nodes.GetEnumerator();
 	}
 }
