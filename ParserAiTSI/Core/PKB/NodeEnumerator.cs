@@ -8,11 +8,10 @@ namespace Core
 {
 	public class NodeEnumerator
 	{
-		public NodeEnumerator(IEnumerable<INode> chunk) => 
+		public NodeEnumerator(IEnumerable<INode> chunk) =>
 			this.Nodes = chunk;
 
 		public IEnumerable<INode> Nodes { get; private set; }
-
 		public IEnumerable<T> Select<T>(bool applyRecursive, Func<INode, T> func)
 		{
 			if (applyRecursive)
