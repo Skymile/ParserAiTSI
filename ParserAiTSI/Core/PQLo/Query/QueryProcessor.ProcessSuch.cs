@@ -123,14 +123,9 @@ namespace Core.PQLo.QueryPreProcessor
                         case StatementType.Stmtlst:
                             break;
                         case StatementType.While:
-                            {
-                                return FindInstructionLinesForModifies(Instruction.Loop, data);
-                            }
+                            return FindInstructionLinesForModifies(Instruction.Loop, data);
                         case StatementType.If:
-                            {
-                                return FindInstructionLinesForModifies(Instruction.If, data);
-                            }
-                            break;
+                            return FindInstructionLinesForModifies(Instruction.If, data);
                         case StatementType.ProgLine:
                             break;
                         case StatementType.Constant:
