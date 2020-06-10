@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
+
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -105,7 +105,15 @@ namespace Core.PQLo.QueryPreProcessor
                                 for (int i = 0; i < calls.Count; i++)
                                     GatherParents(calls[i], calls);
 
-                                return main.Concat(calls)
+                                var result = main.Concat(calls);
+
+                                result = result.Concat(
+                                    result
+                                        .Where(Mode.NoRecursion, Instruction.Else, i => i.Twin != null)
+                                        .Select(Mode.NoRecursion, i => i.Twin)
+                                ).Distinct();
+
+                                return result
                                     .Where(i => i.Token != Instruction.Procedure)
                                     .Select(i => i.LineNumber.ToString())
                                     .Distinct();

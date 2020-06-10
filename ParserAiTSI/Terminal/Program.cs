@@ -1,6 +1,7 @@
 ﻿//#define TEST
 using System;
 using System.Linq;
+
 using Core;
 using Core.PQLo.QueryPreProcessor;
 
@@ -11,16 +12,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"call c;",
-				"Select c such that Modifies (c, \"unknown\")"
-				//"if ifs;",
-				//"Select ifs such that Modifies (ifs, \"x1\")"
-//				"stmt s;",
-//				"Select s such that Modifies (s, \"tmp\")"
-				////"procedure p;",
-				////"Select p such that Modifies (p, \"factor\")"
-				//"stmt s;",
-				//"Select s such that Modifies (s, \"tmp\")"
+				"stmt s;",
+				"Select s such that Modifies (s, \"tmp\")"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()

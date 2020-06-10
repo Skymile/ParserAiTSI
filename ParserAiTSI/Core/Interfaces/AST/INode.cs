@@ -13,6 +13,7 @@ namespace Core.Interfaces.PQL
 		Instruction Token       { get; }
 
         Node       Parent { get; }
+        Node       Twin   { get; }
         List<Node> Nodes  { get; }
 
         string Assignment { get; set; }
