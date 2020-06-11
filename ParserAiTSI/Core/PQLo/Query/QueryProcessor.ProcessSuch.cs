@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -168,6 +169,8 @@ namespace Core.PQLo.QueryPreProcessor
                     break;
                 case CommandType.Follows:
                     {
+                        if (IsFollows(false, data, ref overwrite) is IEnumerable<Node> n)
+                            return n;
                         if (int.TryParse(data.Right, out var number))
                         {
                             var ins = stateToInstruction[statement];
@@ -183,25 +186,34 @@ namespace Core.PQLo.QueryPreProcessor
                         }
                         else if (d.TryGetValue(data.Right, out var statementLeft))
                         {
+                            Instruction ins = stateToInstruction[statementLeft];
+
                             if (data.Left == "_")
                             {
-                                Instruction ins = stateToInstruction[statementLeft];
-
                                 return this.Api.ArrayForm
                                     .Where(i => i.Next?.Token != Instruction.Else)
                                     .Where(i => ins.HasFlag(i.Token))
                                     .Select(i => i.Next);
                             }
+                            else if (int.TryParse(data.Left, out var number4))
+                            {
+                                return this.Api.ArrayForm
+                                    .Where(i => i.LineNumber == number4)
+                                    .Where(i => i.Next?.Token != Instruction.Else)
+                                    .Where(i => ins.HasFlag(i.Next.Token))
+                                    .Select(i => i.Next);
+                            }
+
                         }
                         else if (d.TryGetValue(data.Left, out var statementRight))
                         {
                             if (data.Right == "_")
                             {
-                                //Instruction ins = stateToInstruction[statementRight];
-                                //
-                                //return this.Api.ArrayForm
-                                //    .Where(i => ins.HasFlag(i.Previous.Token))
-                                //    .Select(i => i.Previous);
+                                Instruction ins = stateToInstruction[statementRight];
+                                
+                                return this.Api.ArrayForm
+                                    .Where(i => i.Previous != null && ins.HasFlag(i.Previous.Token))
+                                    .Select(i => i.Previous);
                             }
                         }
                     }
@@ -285,15 +297,16 @@ namespace Core.PQLo.QueryPreProcessor
                     }
                 case CommandType.FollowsStar:
                     {
+                        if (IsFollows(true, data, ref overwrite) is IEnumerable<Node> n)
+                            return n;
                         if (int.TryParse(data.Left, out var number))
                         {
-                            var node = this.Api.ArrayForm[number];
                             var flags = stateToInstruction[statement];
-                            var next = node.Next;
+                            var next = this.Api.ArrayForm.FirstOrDefault(i => i.LineNumber == number).Next;
                             var nodes = new List<INode>();
                             while (next != null)
                             {
-                                if (flags.HasFlag(next.Token))
+                                if (flags.HasFlag(next.Token) && next.LineNumber != number)
                                     nodes.Add(next);
                                 if (next.Level <= next.Next.Level)
                                     next = next.Next;
@@ -302,18 +315,90 @@ namespace Core.PQLo.QueryPreProcessor
                             }
                             return nodes;
                         }
-                        if (data.Left == "_")
+                        else if (data.Left == "_")
                         {
                             var nodes = this.Api.ArrayForm;
                             var flags = stateToInstruction[statement];
                             return nodes
-                                .Where(i => i.Next != null && flags.HasFlag(i.Next.Token))
+                                .Where(i => i.Next != null && flags.HasFlag(i.Next.Token) && i.Next.LineNumber != number)
                                 .Select(i => i.Next);
+                        }
+                        else if (int.TryParse(data.Right, out number))
+                        {
+                            var flags = stateToInstruction[statement];
+                            var next = this.Api.ArrayForm.FirstOrDefault(i => i.LineNumber == number).Previous;
+                            var nodes = new List<INode>();
+                            while (next != null)
+                            {
+                                if (flags.HasFlag(next.Token) && next.LineNumber != number)
+                                    nodes.Add(next);
+                                if (next.Level <= next.Previous.Level)
+                                    next = next.Previous;
+                                else
+                                    break;
+                            }
+                            return nodes;
                         }
                     }
                     break;
             }
             return null;
+        }
+
+        private IEnumerable<Node> IsFollows(bool isStar, SuchData data, ref Func<INode, string> overwrite)
+        {
+            if (data.Variable == "BOOLEAN")
+            {
+                bool isF = false;
+                overwrite = i => isF.ToString();
+
+                if (data.Left == "_" && data.Right == "_")
+                {
+                    isF = true;
+                }
+                else if (int.TryParse(data.Left, out var left))
+                {
+                    var l = this.Api.ArrayForm[left];
+
+                    if (int.TryParse(data.Right, out var right))
+                    {
+                        var r = this.Api.ArrayForm[right];
+
+                        isF = checkFollows(l, r);
+                    }
+                }
+                else if (int.TryParse(data.Right, out var right))
+                {
+                    var r = this.Api.ArrayForm[right];
+
+                    if (int.TryParse(data.Left, out left))
+                    {
+                        var l = this.Api.ArrayForm[left];
+                        isF = checkFollows(l, r);
+                    }
+                }
+                return new[] { new Node() };
+            }
+            return null;
+
+            bool checkFollows(Node l, Node r)
+            {
+                if (isStar)
+                {
+                    bool isFollows = this.Api.PKB.Follows.IsFollows(l, r);
+
+                    var next = l.Next;
+
+                    while (next.Next != null)
+                    {
+                        isFollows |= this.Api.PKB.Follows.IsFollows(next, r);
+                        next = next.Next;
+                    }
+
+                    return isFollows;
+                }
+                return this.Api.PKB.Follows.IsFollows(l, r);
+            }
         }
 
         private List<INode> FindLinesForGivenParentInstruction(Instruction instruction, SuchData suchData)
@@ -373,7 +458,7 @@ namespace Core.PQLo.QueryPreProcessor
             { StatementType.If       , Instruction.If          },
             { StatementType.Procedure, Instruction.Procedure   },
             { StatementType.ProgLine , Instruction.Procedure   },
-            { StatementType.Stmt     , Instruction.If | Instruction.Call | Instruction.Expression | Instruction.Assign  },
+            { StatementType.Stmt     , Instruction.Loop | Instruction.If | Instruction.Call | Instruction.Expression | Instruction.Assign  },
             { StatementType.Stmtlst  , Instruction.Expression  },
             { StatementType.Variable , Instruction.Expression  },
             { StatementType.While    , Instruction.Loop        },
