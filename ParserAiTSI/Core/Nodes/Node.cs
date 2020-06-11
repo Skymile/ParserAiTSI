@@ -14,19 +14,53 @@ namespace Core
         public Node(IEnumerable<Node> nodes)  => 
             this.Nodes.AddRange(nodes);
 
+        public Node Previous
+        {
+            get
+            {
+                if (this.Parent is null)
+                    return null;
+                if (this.Parent.Nodes.Count == 1)
+                    return this.Parent;
+                int i = this.Parent.Nodes.IndexOf(this);
+                return i == 0 ? this.Parent : this.Parent.Nodes.ElementAt(i - 1);
+            }
+        }
+
+        public Node Next
+        {
+            get
+            {
+                if (this.Parent is null)
+                    return null;
+                int i = this.Parent.Nodes.IndexOf(this);
+                var prev = this.Parent;
+                if (prev.Nodes.Count > i - 1)
+                    return prev.Nodes.ElementAt(i + 1);
+                foreach (var p in this.Parents.Skip(1))
+                {
+                    i = p.Nodes.IndexOf(prev);
+                    if (p.Nodes.Count > i - 1)
+                        return this.Parent.Nodes.ElementAt(i + 1);
+                    prev = p;
+                }
+                return null;
+            }
+        }
+
         public Node Parent { get; set; }
 
-        public IEnumerable<INode> Parents
+        public IEnumerable<Node> Parents
         {
             get
             {
                 if (!(parents is null))
                     return this.parents;
-                var list = new List<INode>();
+                var list = new List<Node>();
                 GatherParents(this, list);
                 return this.parents = list;
 
-                void GatherParents(INode node, List<INode> nodes)
+                void GatherParents(INode node, List<Node> nodes)
                 {
                     if (node.Parent != null)
                     {
@@ -37,7 +71,7 @@ namespace Core
             }
         }
 
-        private List<INode> parents;
+        private List<Node> parents;
 
         public Node Twin =>
             this.Token == Core.Instruction.Else ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) - 1) :

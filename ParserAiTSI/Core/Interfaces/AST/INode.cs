@@ -20,6 +20,9 @@ namespace Core.Interfaces.PQL
         string Variable        { get; set; }
         List<string> Variables { get; set; }
 
-        IEnumerable<INode> Parents { get; }
+        IEnumerable<Node> Parents { get; }
+
+        Node Next { get; }
+        Node Previous { get; }
     }
 }
