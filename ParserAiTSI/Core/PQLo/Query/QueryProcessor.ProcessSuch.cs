@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Security.Cryptography.X509Certificates;
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -151,33 +151,109 @@ namespace Core.PQLo.QueryPreProcessor
                         switch (Find(d, data.Variable))
                         {
                             case StatementType.Call:
-                                break;
+                                {
+                                    if (data.Left == data.Variable)
+                                    {
+                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
+                                        return z.Where(x => x.Parent.Token != Instruction.Procedure).Select(x => x.Parent.LineNumber.ToString());
+                                    }
+                                    else
+                                    {
+                                        var result = FindLinesForGivenParentInstruction(Instruction.Call, data);
+
+                                        return result.Select(x => x.ToString());
+                                    }
+                                }
                             case StatementType.Stmt:
                                 {
-                                var z = this.Api.PKB.Parent.dict.Where(x => x.Key.LineNumber.ToString() == data.Left).Select(x => x.Key).ToList();
+                                    if (data.Left == data.Variable)
+                                    {
+                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
+                                        return z.Where(x => x.Parent.Token != Instruction.Procedure).Select(x => x.Parent.LineNumber.ToString());
+                                    }
+                                    else
+                                    {
+                                        var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber.ToString() == data.Left);
+                                        var result = new List<int>();
+                                        if (z.Key == null)
+                                            return result.Select(x => x.ToString());
+                                        if (z.Key.Token == Instruction.If)
+                                        {
+                                            result.AddRange(this.FindResultForGivenParent(z.Key.Twin.Nodes));
+                                            result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == Instruction.Loop).Select(x => x.LineNumber));
+                                        }
+                                        result.AddRange(this.FindResultForGivenParent(z.Value.Select(x => x as Node).ToList()));
+
+
+                                        return result.Select(x => x.ToString());
+                                    }
 
                                 }
-                            break;
-                            case StatementType.Assign: // TODO: JAK BEDZIE ELSE
+                            case StatementType.Assign:
                                 {
-                                    var z = this.Api.PKB.Parent.dict.Where(x => x.Key.LineNumber.ToString() == data.Left).Select(x => x.Key).ToList();
-                                    var c = this.Api.GetNodes(Instruction.Else);
+                                    if (data.Left == data.Variable)
+                                    {
+                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
+                                        return z.Where(x => x.Parent.Token != Instruction.Procedure).Select(x => x.Parent.LineNumber.ToString());
+                                    }
+                                    else
+                                    {
+                                        var result = FindLinesForGivenParentInstruction(Instruction.Assign, data);
 
-                                    break;
+                                        return result.Select(x => x.ToString());
+                                    }
                                 }
                             case StatementType.While:
-                                //var a = this.Api.PKB.Parent.dict.Where(Mode.StandardRecursion,Instruction.Loop, x => x.Key.LineNumber.ToString() == data.Right).ToList(); /TODO:: naprawic
-                                break;
-                            case StatementType.ProgLine:
-                                break;
+                                {
+                                    if (data.Left == data.Variable)
+                                    {
+                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
+                                        return z.Where(x => x.Parent.Token == Instruction.Loop).Select(x => x.Parent.LineNumber.ToString());
+                                    }
+                                    else
+                                    {
+                                        var result = FindLinesForGivenParentInstruction(Instruction.Loop, data);
+
+                                        return result.Select(x => x.ToString());
+                                    }
+                                }
                             case StatementType.If:
                                 break;
                         }
                         break;
                     }
-                    break;
             }
             return Enumerable.Empty<string>();
+        }
+
+        private List<int> FindLinesForGivenParentInstruction(Instruction instruction, SuchData suchData)
+        {
+            var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber.ToString() == suchData.Left);
+            var result = new List<int>();
+            if (z.Key.Token == Instruction.If)
+            {
+                result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == instruction).Select(x => x.LineNumber));
+            }
+            result.AddRange(z.Value.Where(x => x.Token == instruction).Select(x => x.LineNumber));
+            return result;
+        }
+
+        private List<int> FindResultForGivenParent(List<Node> z)
+        {
+            var result = new List<int>();
+            foreach (var item in z)
+            {
+                if (item.Token == Instruction.If)
+                {
+                    result.Add(item.LineNumber);
+                    result.Add(item.Twin.LineNumber);
+                }
+                else
+                {
+                    result.Add(item.LineNumber);
+                }
+            }
+            return result;
         }
 
         private IEnumerable<string> FindInstructionLinesForModifies(Instruction instruction, SuchData data)
@@ -187,8 +263,8 @@ namespace Core.PQLo.QueryPreProcessor
             var list = new List<INode>();
             var result = inProcedure
                 .Select(x => x.Parents
-                    .Where(Mode.StandardRecursion, z => z.Token == instruction || (z.Twin?.Nodes.Exists(i => i.Variable == data.Right) ?? false))
-                    .Select(Mode.NoRecursion, z => z).Distinct(new KScheduleComparer()).Distinct(new KScheduleComparer())
+                    .Where(z => z.Token == instruction)
+                    .Select(z => z).Distinct(new KScheduleComparer()).Distinct(new KScheduleComparer())
                 )
                 .SelectMany(x => x.Distinct(new KScheduleComparer()))
                 .ToList();
@@ -209,9 +285,8 @@ namespace Core.PQLo.QueryPreProcessor
             result.AddRange(list
                 .Select(x => x
                              .Parents
-                             .Where(z => z.Token == instruction
-                                || (z.Twin?.Nodes.Exists(i => i.Variable == data.Right) ?? false)
-                             ).Select(z => z)
+                             .Where(z => z.Token == instruction)
+                             .Select(z => z)
                              .ToList()
                 ).SelectMany(x => x)
                 .ToList());

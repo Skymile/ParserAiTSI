@@ -221,8 +221,20 @@ stmt s;
 Select s such that Parent (s, 83)
 80
 stmt s;
+Select s such that Parent (s, 6)
+NONE
+stmt s;
+Select s such that Parent (s, 12)
+6
+stmt s;
+Select s such that Parent (s, 17)
+16
+stmt s;
 Select s such that Parent (103, s)
 104
+stmt s;
+Select s such that Parent (101, s)
+102,103
 stmt s;
 Select s such that Parent* (s, 117)
 105,107,12,6
