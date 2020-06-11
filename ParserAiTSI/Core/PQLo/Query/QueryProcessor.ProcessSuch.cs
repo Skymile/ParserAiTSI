@@ -12,19 +12,21 @@ namespace Core.PQLo.QueryPreProcessor
         private IEnumerable<string> ProcessToString(IEnumerable result) =>
             result.Cast<object>().Select(i => i.ToString()).Distinct();
 
-        private IEnumerable ProcessToObject(IEnumerable<INode> nodes, CommandType type, StatementType statement)
+        private IEnumerable ProcessToObject(IEnumerable<INode> nodes, StatementType statement, Func<INode, string> overwrite)
         {
             if (nodes is null)
                 return Enumerable.Empty<string>();
+            if (!(overwrite is null))
+                return nodes.Select(overwrite);
             switch (statement)
             {
                 case StatementType.Procedure:
                 case StatementType.Variable: return nodes.Select(i => i.Variable);
                 case StatementType.While:
                 case StatementType.If:
-                case StatementType.Call:
                 case StatementType.Assign:
                 case StatementType.Constant:
+                case StatementType.Call:
                 case StatementType.Stmtlst:
                 case StatementType.ProgLine:
                 case StatementType.Stmt: return nodes.Select(i => i.LineNumber);
@@ -32,11 +34,12 @@ namespace Core.PQLo.QueryPreProcessor
             return Enumerable.Empty<string>();
         }
 
-        private IEnumerable<INode> ProcessSuch(SuchData data, Dictionary<string, StatementType> d, out CommandType command, out StatementType statement)
+        private IEnumerable<INode> ProcessSuch(SuchData data, Dictionary<string, StatementType> d, out StatementType statement, out Func<INode, string> overwrite)
         {
+            overwrite = null;
             statement = Find(d, data.Variable);
 
-            switch (command = data.Type)
+            switch (data.Type)
             {
                 case CommandType.Modifies:
                     switch (statement)
@@ -155,15 +158,17 @@ namespace Core.PQLo.QueryPreProcessor
                     switch (Find(d, data.Variable))
                     {
                         case StatementType.Procedure:
-                            if (data.Left == data.Variable)
                             {
-                                var a = this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last().Variable).Distinct().ToList();
-                                return a;
-                            }
-                            else
-                            {
-                                var a = this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
-                                return a.Select(x => x.Variable);
+                                overwrite = i => i.Variable;
+                                if (data.Left == data.Variable)
+                                {
+
+                                    return this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last()).Distinct().ToList();
+                                }
+                                else
+                                {
+                                    return this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
+                                }
                             }
                     }
                     break;

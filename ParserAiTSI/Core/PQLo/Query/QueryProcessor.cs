@@ -97,9 +97,9 @@ namespace Core.PQLo.QueryPreProcessor
 				first.AddRange(
 					ProcessToString(
 						ProcessToObject(
-							ProcessSuch(such, command.Declarations, out var cmdType, out var statementType),
-							cmdType,
-							statementType
+							ProcessSuch(such, command.Declarations, out var statement, out var func),
+							statement,
+							func
 						)
 					)
 				);
