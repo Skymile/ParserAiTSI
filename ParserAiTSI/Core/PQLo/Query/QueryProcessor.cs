@@ -152,11 +152,14 @@ namespace Core.PQLo.QueryPreProcessor
 
 		private readonly Dictionary<string, CommandType> commandsDict = new Dictionary<string, CommandType>
 		{
-			{ "MODIFIES", CommandType.Modifies },
-			{ "CALLS"   , CommandType.Calls    },
-			{ "USES"    , CommandType.Uses     },
-			{ "FOLLOWS" , CommandType.Follows  },
-			{ "PARENT"  , CommandType.Parent   },
+			{ "MODIFIES", CommandType.Modifies    },
+			{ "CALLS"   , CommandType.Calls       },
+			{ "USES"    , CommandType.Uses        },
+			{ "FOLLOWS" , CommandType.Follows     },
+			{ "PARENT"  , CommandType.Parent      },
+			{ "FOLLOWS*", CommandType.FollowsStar },
+			{ "CALLS*"  , CommandType.CallsStar   },
+			{ "PARENT*" , CommandType.ParentStar  },
 		};
 
 		private readonly Dictionary<string, Func<string, QueryNode>> statementsList = new Dictionary<string, Func<string, QueryNode>> {

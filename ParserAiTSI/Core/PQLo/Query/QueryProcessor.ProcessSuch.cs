@@ -167,28 +167,42 @@ namespace Core.PQLo.QueryPreProcessor
                     }
                     break;
                 case CommandType.Follows:
-                    if (int.TryParse(data.Right, out var number))
                     {
-                        var ins = stateToInstruction[statement];
-                        return this.Api.PKB.ArrayForm
-                            .Where(i => i.LineNumber == number)
-                            .Select(i => {
-                                var j = i.Previous;
-                                if (j.Token == Instruction.Else)
-                                    j = j.Previous;
-                                return j;
-                            })
-                            .Where(i => i.Token == ins);
-                    }
-                    else if (d.TryGetValue(data.Right, out var statementLeft))
-                    {
-                        if (data.Left == "_")
+                        if (int.TryParse(data.Right, out var number))
                         {
-                            var ins = stateToInstruction[statementLeft];
+                            var ins = stateToInstruction[statement];
+                            return this.Api.PKB.ArrayForm
+                                .Where(i => i.LineNumber == number)
+                                .Select(i => {
+                                    var j = i.Previous;
+                                    if (j.Token == Instruction.Else)
+                                        j = j.Previous;
+                                    return j;
+                                })
+                                .Where(i => ins.HasFlag(i.Token));
+                        }
+                        else if (d.TryGetValue(data.Right, out var statementLeft))
+                        {
+                            if (data.Left == "_")
+                            {
+                                Instruction ins = stateToInstruction[statementLeft];
 
-                            var k = this.Api.ArrayForm.Where(Mode.NoRecursion, ins);
-
-                            return k.Select(i => i.Next);
+                                return this.Api.ArrayForm
+                                    .Where(i => i.Next?.Token != Instruction.Else)
+                                    .Where(i => ins.HasFlag(i.Token))
+                                    .Select(i => i.Next);
+                            }
+                        }
+                        else if (d.TryGetValue(data.Left, out var statementRight))
+                        {
+                            if (data.Right == "_")
+                            {
+                                //Instruction ins = stateToInstruction[statementRight];
+                                //
+                                //return this.Api.ArrayForm
+                                //    .Where(i => ins.HasFlag(i.Previous.Token))
+                                //    .Select(i => i.Previous);
+                            }
                         }
                     }
                     return null;
@@ -259,6 +273,35 @@ namespace Core.PQLo.QueryPreProcessor
                         }
                         break;
                     }
+                case CommandType.FollowsStar:
+                    {
+                        if (int.TryParse(data.Left, out var number))
+                        {
+                            var node = this.Api.ArrayForm[number];
+                            var flags = stateToInstruction[statement];
+                            var next = node.Next;
+                            var nodes = new List<INode>();
+                            while (next != null)
+                            {
+                                if (flags.HasFlag(next.Token))
+                                    nodes.Add(next);
+                                if (next.Level <= next.Next.Level)
+                                    next = next.Next;
+                                else
+                                    break;
+                            }
+                            return nodes;
+                        }
+                        if (data.Left == "_")
+                        {
+                            var nodes = this.Api.ArrayForm;
+                            var flags = stateToInstruction[statement];
+                            return nodes
+                                .Where(i => i.Next != null && flags.HasFlag(i.Next.Token))
+                                .Select(i => i.Next);
+                        }
+                    }
+                    break;
             }
             return null;
         }
@@ -314,13 +357,13 @@ namespace Core.PQLo.QueryPreProcessor
 
         private static readonly Dictionary<StatementType, Instruction> stateToInstruction = new Dictionary<StatementType, Instruction>
         {
-            { StatementType.Assign   , Instruction.Assign      },
+            { StatementType.Assign   , Instruction.Assign | Instruction.Expression },
             { StatementType.Call     , Instruction.Call        },
             { StatementType.Constant , Instruction.Expression  },
             { StatementType.If       , Instruction.If          },
             { StatementType.Procedure, Instruction.Procedure   },
             { StatementType.ProgLine , Instruction.Procedure   },
-            { StatementType.Stmt     , Instruction.Expression  },
+            { StatementType.Stmt     , Instruction.If | Instruction.Call | Instruction.Expression | Instruction.Assign  },
             { StatementType.Stmtlst  , Instruction.Expression  },
             { StatementType.Variable , Instruction.Expression  },
             { StatementType.While    , Instruction.Loop        },
