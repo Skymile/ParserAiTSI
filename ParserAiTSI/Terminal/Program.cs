@@ -12,8 +12,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"stmt s;",
-				"Select s such that Follows (s, _)"
+				"procedure p;",
+				"Select p such that Calls* (\"RR\", p)"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()

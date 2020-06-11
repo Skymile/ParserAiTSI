@@ -155,14 +155,76 @@ namespace Core.PQLo.QueryPreProcessor
                         return en[f];
                     }
                 case CommandType.Calls:
-
                     switch (Find(d, data.Variable))
                     {
                         case StatementType.Procedure:
                             overwrite = i => i.Variable;
                             return data.Left == data.Variable
-                                ? this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last()).Distinct().ToList()
+                                ? this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last())
                                 : (IEnumerable<INode>)this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
+                    }
+                    break;
+                case CommandType.CallsStar:
+                    switch (Find(d, data.Variable))
+                    {
+                        case StatementType.Procedure:
+                            overwrite = i => i.Variable;
+                            if (data.Left == data.Variable)
+                            {
+                                var procedures = this.Api.ArrayForm
+                                    .Where(Mode.NoRecursion, Instruction.Call, i => i.Variable == data.Right)
+                                    .Select(i => this.Api.GetProcedure(i.Id));
+
+                                var hash = procedures.Select(i => i.Variable.ToUpperInvariant()).ToHashSet();
+                                
+                                procedures = procedures.Concat(
+                                    this.Api.ArrayForm
+                                        .Where(
+                                            Mode.NoRecursion,
+                                            Instruction.Call,
+                                            i => hash.Contains(i.Variable.ToUpperInvariant())
+                                        )
+                                        .Select(i => this.Api.GetProcedure(i.Id))
+                                );
+
+                                return procedures;
+                            }
+                            else if (data.Right == data.Variable)
+                            {
+                                var procedures = this.Api.ArrayForm
+                                    .Where(Mode.NoRecursion, Instruction.Procedure, i => i.Variable == data.Left)
+                                    .Select(Mode.StandardRecursion, Instruction.Call, i => i)
+                                    .ToList();
+
+                                var calls = new List<INode>();
+
+                                bool change = true;
+                                while (change)
+                                {
+                                    var set = procedures
+                                        .Select(i => i.Variable)
+                                        .ToHashSet();
+
+                                    calls = this.Api.ArrayForm
+                                        .Where(Mode.StandardRecursion, Instruction.Procedure, i => set.Contains(i.Variable))
+                                        .ToList();
+
+                                    int len = procedures.Count;
+
+                                    procedures = procedures
+                                        .Concat(calls
+                                            .Select(i => this.Api.GetProcedure(i.Id))
+                                            .Select(Mode.StandardRecursion, Instruction.Call, i => i)
+                                        )
+                                        .Distinct()
+                                        .ToList();
+
+                                    change = len != procedures.Count;
+                                }
+
+                                return procedures;
+                            }
+                            return this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
                     }
                     break;
                 case CommandType.Follows:
