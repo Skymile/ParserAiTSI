@@ -275,8 +275,14 @@ if ifs;
 Select ifs such that Parent (ifs, 240)
 NONE
 if ifs;
+Select ifs such that Parent (ifs, 73)
+72
+if ifs;
 Select ifs such that Parent (163, ifs)
-none
+NONE
+if ifs;
+Select ifs such that Parent (66, ifs)
+76
 if ifs;
 Select ifs such that Parent* (ifs, 71)
 14,15,66
