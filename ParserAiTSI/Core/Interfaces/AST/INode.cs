@@ -16,8 +16,10 @@ namespace Core.Interfaces.PQL
         Node       Twin   { get; }
         List<Node> Nodes  { get; }
 
-        string Assignment { get; set; }
-        string Variable { get; set; }
+        string Assignment      { get; set; }
+        string Variable        { get; set; }
         List<string> Variables { get; set; }
+
+        IEnumerable<INode> Parents { get; }
     }
 }

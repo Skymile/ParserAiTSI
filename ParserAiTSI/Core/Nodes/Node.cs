@@ -16,6 +16,29 @@ namespace Core
 
         public Node Parent { get; set; }
 
+        public IEnumerable<INode> Parents
+        {
+            get
+            {
+                if (!(parents is null))
+                    return this.parents;
+                var list = new List<INode>();
+                GatherParents(this, list);
+                return this.parents = list;
+
+                void GatherParents(INode node, List<INode> nodes)
+                {
+                    if (node.Parent != null)
+                    {
+                        nodes.Add(node.Parent);
+                        GatherParents(node.Parent, nodes);
+                    }
+                }
+            }
+        }
+
+        private List<INode> parents;
+
         public Node Twin =>
             this.Token == Core.Instruction.Else ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) - 1) :
             this.Token == Core.Instruction.If   ? this.Parent.Nodes.ElementAt(this.Parent.Nodes.IndexOf(this) + 1) : null;

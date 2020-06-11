@@ -37,7 +37,6 @@ namespace Core.PQLo.QueryPreProcessor
                                 if (modifiedValues == null)
                                     return Enumerable.Empty<string>();
                                 var inProcedure = modifiedValues
-                                    .Select(x => new { Node = x, Parents = GetParents(x as Node) })
                                     .ToList();
                                 var list = new List<INode>();
                                 foreach (var item in inProcedure)
@@ -88,10 +87,7 @@ namespace Core.PQLo.QueryPreProcessor
                                 var f = en.Keys.FirstOrDefault(
                                     i => i.Name.Equals(data.Right, StringComparison.InvariantCultureIgnoreCase)
                                 );
-                                var main = en[f];
-
-                                for (int i = 0; i < main.Count; i++)
-                                    GatherParents(main[i], main);
+                                var main = en[f].SelectMany(i => i.Parents.Append(i));
 
                                 var procedures = main
                                     .Select(i => this.Api.GetProcedure(i.Id));
@@ -99,11 +95,8 @@ namespace Core.PQLo.QueryPreProcessor
 
                                 var calls = this.Api.PKB.ArrayForm
                                     .Where(i => i.Token == Instruction.Call && hash.Contains(i.Variable))
-                                    .Select(i => i as INode)
+                                    .SelectMany(i => i.Parents.Append(i))
                                     .ToList();
-
-                                for (int i = 0; i < calls.Count; i++)
-                                    GatherParents(calls[i], calls);
 
                                 var result = main.Concat(calls);
 
@@ -117,15 +110,6 @@ namespace Core.PQLo.QueryPreProcessor
                                     .Where(i => i.Token != Instruction.Procedure)
                                     .Select(i => i.LineNumber.ToString())
                                     .Distinct();
-
-                                void GatherParents(INode node, List<INode> nodes)
-                                {
-                                    if (node.Parent != null)
-                                    {
-                                        nodes.Add(node.Parent);
-                                        GatherParents(node.Parent, nodes);
-                                    }
-                                }
                             }
                         case StatementType.Stmtlst:
                             break;
@@ -160,15 +144,12 @@ namespace Core.PQLo.QueryPreProcessor
 
         private IEnumerable<string> FindInstructionLinesForModifies(Instruction instruction, SuchData data)
         {
-            var modifiedValues = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
-            var inProcedure = modifiedValues
-                .Select(x => new { Node = x, Parents = GetParents(x as Node) })
-                .ToList();
+            var inProcedure = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
             var result = inProcedure
                 .Select(x => x.Parents
                     .Where(z => z.Token == instruction)
                     .Select(z => z.LineNumber)
-                    .ToList())
+                )
                 .SelectMany(x => x)
                 .ToList();
             var list = new List<INode>();
@@ -178,27 +159,9 @@ namespace Core.PQLo.QueryPreProcessor
                     .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
                     .Select(Mode.NoRecursion, x => x).ToList());
             }
-            var calledIf = list.Select(x => new { Node = x, Parents = GetParents(x as Node) }).ToList();
-            result.AddRange(calledIf.Select(x => x.Parents.Where(z => z.Token == instruction).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
+            result.AddRange(list.Select(x => x.Parents.Where(z => z.Token == instruction).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
             return result.Distinct().Select(x => x.ToString());
         }
-        private IEnumerable<Node> GetParents(Node node)
-        {
-            if (node == null) return new List<Node>();
-            var parents = new List<Node>();
-            setParent(node.Parent);
-
-            return parents;
-            void setParent(Node parent)
-            {
-                parents.Add(parent);
-                if (parent.Parent != null)
-                {
-                    setParent(parent.Parent);
-                }
-            }
-        }
-
     }
 
     public class KScheduleComparer : IEqualityComparer<INode>
