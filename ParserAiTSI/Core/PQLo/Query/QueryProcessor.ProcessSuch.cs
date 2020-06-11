@@ -25,7 +25,7 @@ namespace Core.PQLo.QueryPreProcessor
                                 var calls = this.Api.PKB.ArrayForm
                                     .Where(Mode.StandardRecursion, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
                                     .Select(Mode.NoRecursion, i => this.Api.GetProcedure(i.Id));
-                                
+
                                 return main
                                     .Concat(calls)
                                     .Select(i => i.Variable)
@@ -113,7 +113,7 @@ namespace Core.PQLo.QueryPreProcessor
                             }
                         case StatementType.Stmtlst:
                             break;
-                        case StatementType.While: 
+                        case StatementType.While:
                             return FindInstructionLinesForModifies(Instruction.Loop, data);
                         case StatementType.If: // TODO: JAK BEDZIE ELSE
                             return FindInstructionLinesForModifies(Instruction.If, data);
@@ -138,7 +138,7 @@ namespace Core.PQLo.QueryPreProcessor
                         return this.Api.PKB.ArrayForm
                             .Where(i => i.LineNumber == number)
                             .Select(i => i.Previous.LineNumber.ToString());
-                    } 
+                    }
                     //else if (int.TryParse(data.Left, out number))
                     //{
                     //    return this.Api.PKB.ArrayForm
@@ -147,6 +147,33 @@ namespace Core.PQLo.QueryPreProcessor
                     //}
                     return new List<string> { "NONE" };
                 case CommandType.Parent:
+                    {
+                        switch (Find(d, data.Variable))
+                        {
+                            case StatementType.Call:
+                                break;
+                            case StatementType.Stmt:
+                                {
+                                var z = this.Api.PKB.Parent.dict.Where(x => x.Key.LineNumber.ToString() == data.Left).Select(x => x.Key).ToList();
+
+                                }
+                            break;
+                            case StatementType.Assign: // TODO: JAK BEDZIE ELSE
+                                {
+                                var z = this.Api.PKB.Parent.dict.Where(x => x.Key.LineNumber.ToString() == data.Left).Select(x => x.Key).ToList();
+                                var c = this.Api.GetNodes(Instruction.Else);
+                               
+                                break;
+                            case StatementType.While:
+                                //var a = this.Api.PKB.Parent.dict.Where(Mode.StandardRecursion,Instruction.Loop, x => x.Key.LineNumber.ToString() == data.Right).ToList(); /TODO:: naprawic
+                                break;
+                            case StatementType.ProgLine:
+                                break;
+                            case StatementType.If:
+                                break;
+                        }
+                        break;
+                    }
                     break;
             }
             return Enumerable.Empty<string>();
@@ -155,22 +182,39 @@ namespace Core.PQLo.QueryPreProcessor
         private IEnumerable<string> FindInstructionLinesForModifies(Instruction instruction, SuchData data)
         {
             var inProcedure = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
+
+            var list = new List<INode>();
             var result = inProcedure
                 .Select(x => x.Parents
-                    .Where(z => z.Token == instruction)
-                    .Select(z => z.LineNumber)
+                    .Where(Mode.StandardRecursion, z => z.Token == instruction || (z.Twin?.Nodes.Exists(i => i.Variable == data.Right) ?? false))
+                    .Select(Mode.NoRecursion, z => z).Distinct(new KScheduleComparer()).Distinct(new KScheduleComparer())
                 )
-                .SelectMany(x => x)
+                .SelectMany(x => x.Distinct(new KScheduleComparer()))
                 .ToList();
-            var list = new List<INode>();
+            //var dupa = inProcedure
+            //    .Select(x => x.Parents
+            //        .Where(Mode.StandardRecursion, z => z.Token == instruction)
+            //        .Select(Mode.NoRecursion, z => z).Distinct(new KScheduleComparer()).ToList()).ToList();
+            //foreach (var item in dupa)
+            //{
+            //    var xddd = item.Where(Mode.StandardRecursion, x => x.Nodes.Exists(a => a.Variable == data.Right)).ToList();
+            //}
             foreach (var item in inProcedure)
             {
                 list.AddRange(this.Api.PKB.Procedures
                     .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
                     .Select(Mode.NoRecursion, x => x).ToList());
             }
-            result.AddRange(list.Select(x => x.Parents.Where(z => z.Token == instruction).Select(z => z.LineNumber).ToList()).SelectMany(x => x).ToList());
-            return result.Distinct().Select(x => x.ToString());
+            result.AddRange(list
+                .Select(x => x
+                             .Parents
+                             .Where(z => z.Token == instruction
+                                || (z.Twin?.Nodes.Exists(i => i.Variable == data.Right) ?? false)
+                             ).Select(z => z)
+                             .ToList()
+                ).SelectMany(x => x)
+                .ToList());
+            return result.Distinct().Select(x => x.LineNumber.ToString());
         }
     }
 
