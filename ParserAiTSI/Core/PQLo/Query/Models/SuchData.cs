@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Core.PQLo.QueryPreProcessor
+﻿namespace Core.PQLo.QueryPreProcessor
 {
 	public partial class QueryProcessor
 	{
