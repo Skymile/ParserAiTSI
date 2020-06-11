@@ -299,6 +299,12 @@ procedure p;
 Select p such that Calls ("Scale", p)
 NONE
 procedure p;
+Select p such that Calls ("PP", p)
+QQ,TT
+procedure p;
+Select p such that Calls ("Main", p)
+DRAW,ENLARGE,INIT,MOVE,RANDOM,SHEAR,SHIFT,SHRINK,TRANSFORM,TRANSLATE
+procedure p;
 Select p such that Calls* ("Main", p)
 CLEAR,DRAW,ENLARGE,FILL,INIT,MOVE,RANDOM,ROTATE,SHEAR,SHIFT,SHOW,SHRINK,TRANSFORM,TRANSLATE
 procedure p;
@@ -307,3 +313,6 @@ PP,QQ,SS,TT,UU,XX
 procedure p;
 Select p such that Calls (p, "QQ")
 PP,RR,TT
+procedure p;
+Select p such that Calls (p, "TT")
+PP
