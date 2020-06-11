@@ -50,10 +50,12 @@ namespace Terminal
 					}
 				}
 #if !TEST
+#pragma warning disable CA1031 // Do not catch general exception types
 				catch (Exception ex)
 				{
 					Console.Error.WriteLine(ex.Message);
 				}
+#pragma warning restore CA1031 // Do not catch general exception types
 #endif
 		}
 	}

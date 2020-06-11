@@ -61,17 +61,11 @@
     <Compile Include="PKB\NodeEnumeratorExtensions.cs" />
     <Compile Include="PKB\PKB.cs" />
     <Compile Include="PKB\PKBApi.cs" />
-    <Compile Include="PQLo\Field.cs" />
     <Compile Include="Interfaces\PQL\IFollows.cs" />
     <Compile Include="Interfaces\PQL\IModifies.cs" />
     <Compile Include="Interfaces\PQL\IParent.cs" />
     <Compile Include="Interfaces\PQL\IPQLMatcher.cs" />
     <Compile Include="Interfaces\PQL\IUses.cs" />
-    <Compile Include="PQLo\Node.cs" />
-    <Compile Include="PQLo\NodeExtensions.cs" />
-    <Compile Include="PQLo\PQLMatcher.cs" />
-    <Compile Include="PQLo\PQLNode.cs" />
-    <Compile Include="PQLo\PQLTree.cs" />
     <Compile Include="PQLo\Query\Models\CommandType.cs" />
     <Compile Include="PQLo\Query\Models\CommandUnit.cs" />
     <Compile Include="PQLo\Query\Models\QueryNode.cs" />
