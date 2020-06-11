@@ -161,14 +161,8 @@ namespace Core.PQLo.QueryPreProcessor
                             {
                                 overwrite = i => i.Variable;
                                 if (data.Left == data.Variable)
-                                {
-
                                     return this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last()).Distinct().ToList();
-                                }
-                                else
-                                {
-                                    return this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
-                                }
+                                return this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
                             }
                     }
                     break;
@@ -199,10 +193,7 @@ namespace Core.PQLo.QueryPreProcessor
                                             .Where(x => x.Parent.Token != Instruction.Procedure)
                                             .Select(i => i.Parent);
                                     }
-                                    else
-                                    {
-                                        return FindLinesForGivenParentInstruction(Instruction.Call, data);
-                                    }
+                                    return FindLinesForGivenParentInstruction(Instruction.Call, data);
                                 }
                             case StatementType.Stmt:
                                 {
