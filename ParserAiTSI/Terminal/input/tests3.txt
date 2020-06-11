@@ -1,0 +1,309 @@
+assign a; procedure z; assign x;
+Select a such that Modifies(a, "x")
+106, 116
+assign b;
+Select b such that Uses(b, "x1")
+8, 19, 30, 36, 37, 43, 49, 64, 71, 82, 142, 148, 150, 152, 153, 154, 155, 156, 158, 159, 162, 165, 185, 206, 245, 249, 252, 254
+variable v;
+Select v such that Modifies (191, v)
+ASTERICK,DX,DY,LEFT,MARKING,PCT,PEAK,RANGE,RIGHT,TRIM
+variable v;
+Select v such that Modifies (79, v)
+ASTERICK,BLUE,DEPTH,DX,DY,EDGE,FACTOR,GREEN,HEIGHT,I,J,LEFT,LINE,MARKING,NOTMOVE,P1,P2,PCT,PEAK,PINK,PIXEL,RANGE,RIGHT,S,SEMI,TEMPORARY,TMP,TOTAL,TRIM,WIDTH,X1,X2,Y1,Y2
+variable v;
+Select v such that Modifies (136, v)
+TMP,WEIGHT,X1,X2,Y1,Y2
+variable v;
+Select v such that Modifies (160, v)
+DECREMENT,FACTOR,INCRE,X1,X2,Y1
+variable v;
+Select v such that Modifies (218, v)
+BLUE,DEPTH,EDGE,GREEN,LINE,NOTMOVE,PINK,SEMI,TEMPORARY
+stmt s;
+Select s such that Modifies (s, "tmp")
+105,107,108,12,133,136,137,14,149,15,16,17,180,181,187,188,29,33,34,38,4,42,47,48,59,6,60,63,66,76,78,79,80,81,89,90,95,96
+stmt s;
+Select s such that Modifies (s, "temporary")
+12,14,15,16,18,216,217,218,224,226,59,6,62,79,80,89,92
+assign a;
+Select a such that Modifies (a, "incre")
+110,128,134,162,65
+assign a;
+Select a such that Modifies (a, "temporary")
+226
+if ifs;
+Select ifs such that Modifies (ifs, "x1")
+107,14,15,159,160,163,173,250,34,38,66,76,80
+if ifs;
+Select ifs such that Modifies (ifs, "line")
+14,15,216,80
+while w;
+Select w such that Modifies (w, "x2")
+105,12,136,16,180,181,29,6,69,79,83
+while w;
+Select w such that Modifies (w, "x1")
+105,12,136,16,180,181,251,29,6,79,83
+call c;
+Select c such that Modifies (c, "x1")
+1,108,119,22,33,41,42,63,78,84
+call c;
+Select c such that Modifies (c, "unknown")
+NONE
+variable v;
+Select v such that Modifies ("Init", v)
+BOTTOM,DECREMENT,INCRE,LEFT,RIGHT,TOP,X1,X2,Y1,Y2
+variable v;
+Select v such that Modifies ("Draw", v)
+ASTERICK,BLUE,DX,DY,GREEN,LEFT,MARKING,P1,P2,PCT,PEAK,PINK,RANGE,RIGHT,S,TRIM
+variable v;
+Select v such that Modifies ("Shrink", v)
+ASTERICK,BLUE,DX,DY,FACTOR,GREEN,I,J,LEFT,MARKING,P1,P2,PCT,PEAK,PINK,RANGE,RIGHT,S,TRIM,X1,X2,Y1,Y2
+procedure p;
+Select p such that Modifies (p, "factor")
+MAIN,MOVE,SHEAR,SHRINK,TRANSLATE
+procedure p;
+Select p such that Modifies (p, "temporary")
+ENLARGE,MAIN
+procedure p;
+Select p such that Modifies (p, "cs1")
+PP,QQ,RR,TT
+stmt s;
+Select s such that Follows (15, s)
+NONE
+stmt s;
+Select s such that Follows (s, 69)
+68
+stmt s;
+Select s such that Follows* (23, s)
+29,34,45,46,47,54,55,59
+stmt s;
+Select s such that Follows* (s, 116)
+113
+assign a;
+Select a such that Follows* (32, a)
+NONE
+assign a;
+Select a such that Follows (a, 69)
+68
+assign a;
+Select a such that Follows* (17, a)
+19,20,21,46
+assign a;
+Select a such that Follows* (a, 55)
+17,19,20,21,46
+if ifs;
+Select ifs such that Follows (66, ifs)
+NONE
+if ifs;
+Select ifs such that Follows (ifs, 196)
+192
+if ifs;
+Select ifs such that Follows* (17, ifs)
+23,34,55
+if ifs;
+Select ifs such that Follows* (ifs, 163)
+NONE
+while w;
+Select w such that Follows* (54, w)
+59
+while w;
+Select w such that Follows (w, 62)
+NONE
+while w;
+Select w such that Follows* (14, w)
+101,105,95
+while w;
+Select w such that Follows* (w, 119)
+6
+call c;
+Select c such that Follows (91, c)
+92
+call c;
+Select c such that Follows (c, 78)
+NONE
+call c;
+Select c such that Follows* (34, c)
+45,54
+call c;
+Select c such that Follows* (c, 219)
+NONE
+stmt s;
+Select s such that Follows (_, s)
+10,100,101,103,105,107,109,11,111,112,115,116,118,119,12,121,122,123,124,125,126,127,128,129,131,133,134,135,136,138,139,14,140,143,146,148,149,151,152,153,154,155,156,157,158,162,163,166,169,170,173,18,183,184,186,187,189,19,191,194,196,198,2,20,200,202,203,204,207,208,21,211,212,214,215,22,220,221,222,223,224,227,228,229,23,230,233,234,236,245,246,247,248,249,25,250,253,254,256,258,259,260,262,264,270,271,272,273,275,276,277,28,284,285,286,287,29,291,296,297,299,3,300,301,303,306,307,308,31,32,33,34,36,37,4,40,41,42,44,45,46,47,49,5,50,51,54,55,57,59,6,61,62,63,64,65,66,68,69,71,72,75,8,82,83,85,86,9,91,92,94,95,97
+stmt s;
+Select s such that Follows (s, _)
+1,10,101,102,106,108,11,110,111,113,114,12,120,121,122,123,124,125,126,127,128,13,130,132,133,134,135,137,138,139,14,140,143,145,147,150,151,152,153,154,155,156,157,16,161,162,163,166,169,17,170,18,182,183,184,186,188,19,190,191,192,193,196,197,198,199,2,20,201,204,21,210,211,213,214,218,219,22,220,221,222,223,224,227,228,229,23,230,234,24,244,245,246,247,248,249,250,251,252,255,257,259,261,263,265,266,267,27,270,271,272,275,283,284,285,286,29,290,295,296,298,299,3,30,300,302,303,306,307,31,32,34,35,36,39,4,40,41,43,45,46,47,48,49,5,50,54,55,56,6,60,61,63,64,65,67,68,7,70,71,72,8,81,82,84,85,9,90,91,93,95,96,97
+stmt s;
+Select s such that Follows* (s, _)
+1,10,101,102,106,108,11,110,111,113,114,12,120,121,122,123,124,125,126,127,128,13,130,132,133,134,135,137,138,139,14,140,143,145,147,150,151,152,153,154,155,156,157,16,161,162,163,166,169,17,170,18,182,183,184,186,188,19,190,191,192,193,196,197,198,199,2,20,201,204,21,210,211,213,214,218,219,22,220,221,222,223,224,227,228,229,23,230,234,24,244,245,246,247,248,249,250,251,252,255,257,259,261,263,265,266,267,27,270,271,272,275,283,284,285,286,29,290,295,296,298,299,3,30,300,302,303,306,307,31,32,34,35,36,39,4,40,41,43,45,46,47,48,49,5,50,54,55,56,6,60,61,63,64,65,67,68,7,70,71,72,8,81,82,84,85,9,90,91,93,95,96,97
+stmt s;
+Select s such that Follows* (_, s)
+10,100,101,103,105,107,109,11,111,112,115,116,118,119,12,121,122,123,124,125,126,127,128,129,131,133,134,135,136,138,139,14,140,143,146,148,149,151,152,153,154,155,156,157,158,162,163,166,169,170,173,18,183,184,186,187,189,19,191,194,196,198,2,20,200,202,203,204,207,208,21,211,212,214,215,22,220,221,222,223,224,227,228,229,23,230,233,234,236,245,246,247,248,249,25,250,253,254,256,258,259,260,262,264,270,271,272,273,275,276,277,28,284,285,286,287,29,291,296,297,299,3,300,301,303,306,307,308,31,32,33,34,36,37,4,40,41,42,44,45,46,47,49,5,50,51,54,55,57,59,6,61,62,63,64,65,66,68,69,71,72,75,8,82,83,85,86,9,91,92,94,95,97
+assign a;
+Select a such that Follows (_, a)
+10,100,11,111,112,115,116,121,122,123,124,125,126,127,128,129,131,133,134,135,138,139,146,148,149,151,152,153,154,155,156,157,158,162,169,183,186,189,19,194,2,20,200,202,203,207,21,211,212,214,215,220,223,228,229,233,236,245,246,247,248,249,25,253,254,258,260,270,271,272,273,275,276,28,284,285,299,3,300,306,308,31,32,36,37,4,40,46,49,50,57,61,64,65,68,71,75,8,82,85,9,91,94
+assign a;
+Select a such that Follows (a, _)
+10,102,106,11,110,111,120,121,122,123,124,125,126,127,128,13,130,132,133,134,135,137,138,139,145,147,150,151,152,153,154,155,156,157,161,162,169,17,182,183,186,188,19,193,197,199,2,20,201,21,210,211,213,214,219,220,223,228,229,24,244,245,246,247,248,249,252,255,257,261,263,27,270,271,272,275,283,284,285,290,298,299,3,30,300,302,306,31,32,35,36,39,4,40,43,46,48,49,50,56,60,61,64,65,67,68,7,70,71,8,81,82,85,9,90,91,93,96
+assign a;
+Select a such that Follows* (_, a)
+10,100,11,111,112,115,116,121,122,123,124,125,126,127,128,129,131,133,134,135,138,139,146,148,149,151,152,153,154,155,156,157,158,162,169,183,186,189,19,194,2,20,200,202,203,207,21,211,212,214,215,220,223,228,229,233,236,245,246,247,248,249,25,253,254,258,260,270,271,272,273,275,276,28,284,285,299,3,300,306,308,31,32,36,37,4,40,46,49,50,57,61,64,65,68,71,75,8,82,85,9,91,94
+assign a;
+Select a such that Follows* (a, _)
+10,102,106,11,110,111,120,121,122,123,124,125,126,127,128,13,130,132,133,134,135,137,138,139,145,147,150,151,152,153,154,155,156,157,161,162,169,17,182,183,186,188,19,193,197,199,2,20,201,21,210,211,213,214,219,220,223,228,229,24,244,245,246,247,248,249,252,255,257,261,263,27,270,271,272,275,283,284,285,290,298,299,3,30,300,302,306,31,32,35,36,39,4,40,43,46,48,49,50,56,60,61,64,65,67,68,7,70,71,8,81,82,85,9,90,91,93,96
+if ifs;
+Select ifs such that Follows (_, ifs)
+107,109,14,140,163,166,170,173,198,204,224,23,230,250,291,303,34,51,55,66,72,86,97
+if ifs;
+Select ifs such that Follows (ifs, _)
+14,140,163,166,170,192,198,204,224,23,230,250,266,267,303,34,55,72,97
+if ifs;
+Select ifs such that Follows* (_, ifs)
+107,109,14,140,163,166,170,173,198,204,224,23,230,250,291,303,34,51,55,66,72,86,97
+if ifs;
+Select ifs such that Follows* (ifs, _)
+14,140,163,166,170,192,198,204,224,23,230,250,266,267,303,34,55,72,97
+while w;
+Select w such that Follows (_, w)
+101,103,105,12,136,143,184,187,191,196,234,256,264,29,301,47,59,6,69,83,95
+while w;
+Select w such that Follows (w, _)
+101,113,12,143,16,184,191,196,218,234,251,265,29,47,6,95
+while w;
+Select w such that Follows* (_, w)
+101,103,105,12,136,143,184,187,191,196,234,256,264,29,301,47,59,6,69,83,95
+while w;
+Select w such that Follows* (w, _)
+101,113,12,143,16,184,191,196,218,234,251,265,29,47,6,95
+call c;
+Select c such that Follows (_, c)
+118,119,18,208,22,221,222,227,259,262,277,286,287,296,297,307,33,41,42,44,45,5,54,62,63,92
+call c;
+Select c such that Follows (c, _)
+1,108,114,18,190,22,221,222,227,259,286,295,296,307,41,45,5,54,63,84
+call c;
+Select c such that Follows* (_, c)
+118,119,18,208,22,221,222,227,259,262,277,286,287,296,297,307,33,41,42,44,45,5,54,62,63,92
+call c;
+Select c such that Follows* (c, _)
+1,108,114,18,190,22,221,222,227,259,286,295,296,307,41,45,5,54,63,84
+stmt s;
+Select BOOLEAN such that Follows (51, 54)
+FALSE
+stmt s;
+Select BOOLEAN such that Follows* (14, 104)
+FALSE
+stmt s;
+Select BOOLEAN such that Follows (_, _)
+TRUE
+stmt s;
+Select BOOLEAN such that Follows* (_, 1)
+FALSE
+while w; assign a;
+Select a such that Follows* (w, a)
+116,149,186,207,236,254,46,64,65
+assign a; if ifs;
+Select <ifs, a> such that Follows* (a, ifs)
+107 106,14 13,140 137,140 138,140 139,163 161,163 162,166 161,166 162,170 161,170 162,170 169,173 161,173 162,173 169,198 197,224 219,224 220,224 223,23 17,23 19,23 20,23 21,230 219,230 220,230 223,230 228,230 229,250 244,250 245,250 246,250 247,250 248,250 249,291 290,303 302,34 17,34 19,34 20,34 21,51 48,51 49,51 50,55 17,55 19,55 20,55 21,55 46,66 64,66 65,72 70,72 71,86 85,97 96
+assign a; call c;
+Select <c, a> such that Follows* (c, a)
+1 2,1 3,1 4,114 115,18 19,18 20,18 21,18 46,22 46,221 223,221 228,221 229,221 233,222 223,222 228,222 229,222 233,227 228,227 229,227 233,259 260,307 308,45 46,63 64,63 65,84 85
+if ifs1, ifs2;
+Select <ifs1, ifs2> such that Follows* (ifs1, ifs2)
+163 166,163 170,163 173,166 170,166 173,170 173,192 204,224 230,23 34,23 55,34 55
+while w1, w2;
+Select <w1, w2> such that Follows* (w1, w2)
+101 105,184 187,218 234,29 47,29 59,47 59,95 101,95 105
+assign a1, a2;
+Select <a1, a2> such that Follows (a1, a2)
+10 11,110 111,111 112,120 121,121 122,122 123,123 124,124 125,125 126,126 127,127 128,128 129,130 131,132 133,133 134,134 135,137 138,138 139,145 146,147 148,150 151,151 152,152 153,153 154,154 155,155 156,156 157,157 158,161 162,182 183,188 189,19 20,193 194,199 200,2 3,20 21,201 202,210 211,211 212,213 214,214 215,219 220,228 229,24 25,244 245,245 246,246 247,247 248,248 249,252 253,257 258,27 28,270 271,271 272,272 273,275 276,283 284,284 285,298 299,299 300,3 4,30 31,31 32,35 36,36 37,39 40,48 49,49 50,56 57,60 61,64 65,67 68,7 8,70 71,8 9,81 82,9 10,90 91,93 94
+stmt s;
+Select s such that Parent (s, 83)
+80
+stmt s;
+Select s such that Parent (s, 6)
+NONE
+stmt s;
+Select s such that Parent (s, 12)
+6
+stmt s;
+Select s such that Parent (s, 17)
+16
+stmt s;
+Select s such that Parent (103, s)
+104
+stmt s;
+Select s such that Parent (101, s)
+102,103
+stmt s;
+Select s such that Parent* (s, 117)
+105,107,12,6
+stmt s;
+Select s such that Parent (s, 46)
+16
+while w;
+Select w such that Parent (w, 46)
+16
+stmt s;
+Select s such that Parent* (79, s)
+80,81,82,83,84,85,86,87,88,89,90,91,92
+assign a;
+Select a such that Parent (86, a)
+88
+assign a;
+Select a such that Parent* (66, a)
+67,68,70,71,73,74,75,77
+while w;
+Select w such that Parent (w, 118)
+6
+while w;
+Select w such that Parent (15, w)
+16,79
+while w;
+Select w such that Parent (w, 56)
+NONE
+stmt s;
+Select s such that Parent (s, 56)
+55
+while w;
+Select w such that Parent* (w, 90)
+12,6,79,89
+while w;
+Select w such that Parent* (6, w)
+101,103,105,113,12,16,26,29,47,59,69,79,83,89,95
+if ifs;
+Select ifs such that Parent (ifs, 240)
+NONE
+if ifs;
+Select ifs such that Parent (163, ifs)
+none
+if ifs;
+Select ifs such that Parent* (ifs, 71)
+14,15,66
+if ifs;
+Select ifs such that Parent* (17, ifs)
+NONE
+call c;
+Select c such that Parent (230, c)
+231,232
+procedure p;
+Select p such that Calls (p, "Draw")
+MAIN,SHRINK
+procedure p;
+Select p such that Calls* (p, "Scale")
+NONE
+procedure p;
+Select p such that Calls* (p, "Show")
+DRAW,ENLARGE,MAIN,ROTATE,SHRINK,TRANSLATE
+procedure p;
+Select p such that Calls ("Scale", p)
+NONE
+procedure p;
+Select p such that Calls* ("Main", p)
+CLEAR,DRAW,ENLARGE,FILL,INIT,MOVE,RANDOM,ROTATE,SHEAR,SHIFT,SHOW,SHRINK,TRANSFORM,TRANSLATE
+procedure p;
+Select p such that Calls* ("RR", p)
+PP,QQ,SS,TT,UU,XX
+procedure p;
+Select p such that Calls (p, "QQ")
+PP,RR,TT
