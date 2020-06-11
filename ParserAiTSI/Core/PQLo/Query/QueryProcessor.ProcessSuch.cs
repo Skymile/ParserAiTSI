@@ -133,9 +133,19 @@ namespace Core.PQLo.QueryPreProcessor
                     }
                 case CommandType.Calls:
                 case CommandType.Follows:
-                    return new List<string> {
-                        int.TryParse(data.Right, out int r) ? (r - 1).ToString() : "NONE"
-                    };
+                    if (int.TryParse(data.Right, out var number))
+                    {
+                        return this.Api.PKB.ArrayForm
+                            .Where(i => i.LineNumber == number)
+                            .Select(i => i.Previous.LineNumber.ToString());
+                    } 
+                    //else if (int.TryParse(data.Left, out number))
+                    //{
+                    //    return this.Api.PKB.ArrayForm
+                    //        .Where(i => i.LineNumber == number)
+                    //        .Select(i => i.Previous.LineNumber.ToString());
+                    //}
+                    return new List<string> { "NONE" };
                 case CommandType.Parent:
                     break;
             }

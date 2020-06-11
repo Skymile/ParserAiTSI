@@ -12,18 +12,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				//"stmt s;",
-				//"Select s such that Parent (103, s)"
-				//"if ifs;",
-				//"Select ifs such that Modifies (ifs, \"x1\")"
-//				"stmt s;",
-//				"Select s such that Modifies (s, \"tmp\")"
-				////"procedure p;",
-				////"Select p such that Modifies (p, \"factor\")"
-				//"stmt s;",
-				//"Select s such that Modifies (s, \"tmp\")"
 				"stmt s;",
-				"Select s such that Modifies (s, \"tmp\")"
+				"Select s such that Follows (s, 69)"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()
