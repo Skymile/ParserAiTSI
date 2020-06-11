@@ -255,6 +255,16 @@ namespace Core.PQLo.QueryPreProcessor
                                     return FindLinesForGivenParentInstruction(Instruction.Loop, data);
                                 }
                             case StatementType.If:
+                                {
+                                    if (data.Left == data.Variable)
+                                    {
+                                        return this.Api.ArrayForm
+                                            .Where(x => x.LineNumber.ToString() == data.Right)
+                                            .Where(x => x.Parent.Token == Instruction.If)
+                                            .Select(i => i.Parent);
+                                    }
+                                    return FindLinesForGivenParentInstruction(Instruction.If, data);
+                                }
                                 break;
                         }
                         break;

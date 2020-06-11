@@ -1,4 +1,4 @@
-﻿//#define TEST
+﻿#define TEST
 using System;
 using System.Linq;
 
@@ -12,8 +12,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"stmt s;",
-				"Select s such that Follows (s, 69)"
+				"if s;",
+				"Select s such that Parent (s, 73)"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()
