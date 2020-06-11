@@ -35,13 +35,13 @@ namespace Core
                     return null;
                 int i = this.Parent.Nodes.IndexOf(this);
                 var prev = this.Parent;
-                if (prev.Nodes.Count > i - 1)
+                if (prev.Nodes.Count > i + 1)
                     return prev.Nodes.ElementAt(i + 1);
                 foreach (var p in this.Parents.Skip(1))
                 {
                     i = p.Nodes.IndexOf(prev);
-                    if (p.Nodes.Count > i - 1)
-                        return this.Parent.Nodes.ElementAt(i + 1);
+                    if (p.Nodes.Count > i + 1)
+                        return p.Nodes.ElementAt(i + 1);
                     prev = p;
                 }
                 return null;

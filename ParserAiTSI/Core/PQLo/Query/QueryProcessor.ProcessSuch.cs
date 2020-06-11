@@ -21,7 +21,7 @@ namespace Core.PQLo.QueryPreProcessor
             switch (statement)
             {
                 case StatementType.Procedure:
-                case StatementType.Variable: return nodes.Select(i => i.Variable);
+                case StatementType.Variable: return nodes.Where(i => !(i is null)).Select(i => i.Variable);
                 case StatementType.While:
                 case StatementType.If:
                 case StatementType.Assign:
@@ -29,7 +29,7 @@ namespace Core.PQLo.QueryPreProcessor
                 case StatementType.Call:
                 case StatementType.Stmtlst:
                 case StatementType.ProgLine:
-                case StatementType.Stmt: return nodes.Select(i => i.LineNumber);
+                case StatementType.Stmt: return nodes.Where(i => !(i is null)).Select(i => i.LineNumber);
             }
             return Enumerable.Empty<string>();
         }
@@ -169,16 +169,23 @@ namespace Core.PQLo.QueryPreProcessor
                 case CommandType.Follows:
                     if (int.TryParse(data.Right, out var number))
                     {
+                        var ins = stateToInstruction[statement];
                         return this.Api.PKB.ArrayForm
                             .Where(i => i.LineNumber == number)
-                            .Select(i => i.Previous);
+                            .Select(i => i.Previous)
+                            .Where(i => i.Token == ins);
                     }
-                    //else if (int.TryParse(data.Left, out number))
-                    //{
-                    //    return this.Api.PKB.ArrayForm
-                    //        .Where(i => i.LineNumber == number)
-                    //        .Select(i => i.Previous.LineNumber.ToString());
-                    //}
+                    else if (d.TryGetValue(data.Right, out var statementLeft))
+                    {
+                        if (data.Left == "_")
+                        {
+                            var ins = stateToInstruction[statementLeft];
+
+                            var k = this.Api.ArrayForm.Where(Mode.NoRecursion, ins);
+
+                            return k.Select(i => i.Next);
+                        }
+                    }
                     return null;
                 case CommandType.Parent:
                     {
@@ -310,6 +317,20 @@ namespace Core.PQLo.QueryPreProcessor
                 .ToList());
             return result;
         }
+
+        private static readonly Dictionary<StatementType, Instruction> stateToInstruction = new Dictionary<StatementType, Instruction>
+        {
+            { StatementType.Assign   , Instruction.Assign     },
+            { StatementType.Call     , Instruction.Call       },
+            { StatementType.Constant , Instruction.Expression },
+            { StatementType.If       , Instruction.If         },
+            { StatementType.Procedure, Instruction.Procedure  },
+            { StatementType.ProgLine , Instruction.Procedure  },
+            { StatementType.Stmt     , Instruction.Procedure  },
+            { StatementType.Stmtlst  , Instruction.Procedure  },
+            { StatementType.Variable , Instruction.Expression },
+            { StatementType.While    , Instruction.Loop       },
+        };
     }
 
     public class KScheduleComparer : IEqualityComparer<INode>
