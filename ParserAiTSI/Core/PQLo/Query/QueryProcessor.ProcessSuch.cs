@@ -172,7 +172,12 @@ namespace Core.PQLo.QueryPreProcessor
                         var ins = stateToInstruction[statement];
                         return this.Api.PKB.ArrayForm
                             .Where(i => i.LineNumber == number)
-                            .Select(i => i.Previous)
+                            .Select(i => {
+                                var j = i.Previous;
+                                if (j.Token == Instruction.Else)
+                                    j = j.Previous;
+                                return j;
+                            })
                             .Where(i => i.Token == ins);
                     }
                     else if (d.TryGetValue(data.Right, out var statementLeft))
@@ -285,37 +290,26 @@ namespace Core.PQLo.QueryPreProcessor
         {
             var inProcedure = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
 
-            var list = new List<INode>();
-            var result = inProcedure
-                .Select(x => x.Parents
-                    .Where(z => z.Token == instruction)
-                    .Select(z => z).Distinct(new KScheduleComparer()).Distinct(new KScheduleComparer())
+            return inProcedure
+                .Select(i => i.Parents)
+                .SelectMany(i => i)
+                .Concat(inProcedure
+                    .Select(i => this.Api.PKB.Procedures
+                        .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == i.Parents.Last().Variable)
+                        .Select(j => j.Parents)
+                    )
+                    .SelectMany(i => i)
+                    .SelectMany(i => i)
                 )
-                .SelectMany(x => x.Distinct(new KScheduleComparer()))
-                .ToList();
-            //var dupa = inProcedure
-            //    .Select(x => x.Parents
-            //        .Where(Mode.StandardRecursion, z => z.Token == instruction)
-            //        .Select(Mode.NoRecursion, z => z).Distinct(new KScheduleComparer()).ToList()).ToList();
-            //foreach (var item in dupa)
-            //{
-            //    var xddd = item.Where(Mode.StandardRecursion, x => x.Nodes.Exists(a => a.Variable == data.Right)).ToList();
-            //}
-            foreach (var item in inProcedure)
-            {
-                list.AddRange(this.Api.PKB.Procedures
-                    .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
-                    .Select(Mode.NoRecursion, x => x).ToList());
-            }
-            result.AddRange(list
-                .Select(x => x
-                             .Parents
-                             .Where(z => z.Token == instruction)
-                             .Select(z => z)
-                             .ToList()
-                ).SelectMany(x => x)
-                .ToList());
-            return result;
+                .SelectMany(GetWithTwin)
+                .Where(Mode.NoRecursion, instruction);
+        }
+
+        private static IEnumerable<INode> GetWithTwin(INode node)
+        {
+            if (node.Twin != null) // && node.Token == Instruction.If)
+                yield return node.Twin;
+            yield return node;
         }
 
         private static readonly Dictionary<StatementType, Instruction> stateToInstruction = new Dictionary<StatementType, Instruction>
