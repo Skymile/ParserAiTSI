@@ -1,19 +1,45 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
 {
     public partial class QueryProcessor
     {
-        private IEnumerable<string> ProcessSuch(SuchData data, Dictionary<string, StatementType> d)
+        private IEnumerable<string> ProcessToString(IEnumerable result) =>
+            result.Cast<object>().Select(i => i.ToString()).Distinct();
+
+        private IEnumerable ProcessToObject(IEnumerable<INode> nodes, CommandType type, StatementType statement)
         {
-            switch (data.Type)
+            if (nodes is null)
+                return Enumerable.Empty<string>();
+            switch (statement)
+            {
+                case StatementType.Procedure:
+                case StatementType.Variable: return nodes.Select(i => i.Variable);
+                case StatementType.While:
+                case StatementType.If:
+                case StatementType.Call:
+                case StatementType.Assign:
+                case StatementType.Constant:
+                case StatementType.Stmtlst:
+                case StatementType.ProgLine:
+                case StatementType.Stmt: return nodes.Select(i => i.LineNumber);
+            }
+            return Enumerable.Empty<string>();
+        }
+
+        private IEnumerable<INode> ProcessSuch(SuchData data, Dictionary<string, StatementType> d, out CommandType command, out StatementType statement)
+        {
+            statement = Find(d, data.Variable);
+
+            switch (command = data.Type)
             {
                 case CommandType.Modifies:
-                    switch (Find(d, data.Variable))
+                    switch (statement)
                     {
                         case StatementType.Procedure:
                             {
@@ -26,16 +52,13 @@ namespace Core.PQLo.QueryPreProcessor
                                     .Where(Mode.StandardRecursion, Instruction.Call, i => main.Any(j => j.Variable == i.Variable))
                                     .Select(Mode.NoRecursion, i => this.Api.GetProcedure(i.Id));
 
-                                return main
-                                    .Concat(calls)
-                                    .Select(i => i.Variable)
-                                    .Distinct();
+                                return main.Concat(calls);
                             }
                         case StatementType.Call:
                             {
                                 var modifiedValues = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
                                 if (modifiedValues == null)
-                                    return Enumerable.Empty<string>();
+                                    return null;
                                 var inProcedure = modifiedValues
                                     .ToList();
                                 var list = new List<INode>();
@@ -45,7 +68,7 @@ namespace Core.PQLo.QueryPreProcessor
                                         .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Parents.Last().Variable)
                                         .Select(Mode.NoRecursion, x => x).ToList());
                                 }
-                                return list.Distinct(new KScheduleComparer()).Select(x => x.LineNumber.ToString());
+                                return list.Distinct(new KScheduleComparer());
                             }
                         case StatementType.Variable:
                             {
@@ -65,21 +88,20 @@ namespace Core.PQLo.QueryPreProcessor
                                         Instruction.Call,
                                         i => this.Api.PKB.Procedures.Single(j => j.Name == i.Variable)
                                     )
-                                    .Select(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable);
+                                    .Select(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i);
 
                                 var en = f
-                                    .Select(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i.Variable);
+                                    .Select(Mode.StandardRecursion, Instruction.Assign | Instruction.Expression, i => i);
 
                                 return en.Concat(calls).Distinct();
                             }
-
                         case StatementType.Assign:
                             {
                                 var en = this.Api.PKB.Modifies.dict;
                                 var f = en.Keys.FirstOrDefault(
                                     i => i.Name.Equals(data.Right, StringComparison.InvariantCultureIgnoreCase)
                                 );
-                                return en[f].Select(i => i.LineNumber.ToString());
+                                return en[f];
                             }
                         case StatementType.Stmt:
                             {
@@ -106,10 +128,7 @@ namespace Core.PQLo.QueryPreProcessor
                                         .Select(Mode.NoRecursion, i => i.Twin)
                                 ).Distinct();
 
-                                return result
-                                    .Where(i => i.Token != Instruction.Procedure)
-                                    .Select(i => i.LineNumber.ToString())
-                                    .Distinct();
+                                return result.Where(i => i.Token != Instruction.Procedure);
                             }
                         case StatementType.Stmtlst:
                             break;
@@ -129,7 +148,7 @@ namespace Core.PQLo.QueryPreProcessor
                         var f = en.Keys.FirstOrDefault(
                             i => i.Name.Equals(data.Right, StringComparison.InvariantCultureIgnoreCase)
                         );
-                        return en[f].Select(i => i.LineNumber.ToString());
+                        return en[f];
                     }
                 case CommandType.Calls:
 
@@ -153,7 +172,7 @@ namespace Core.PQLo.QueryPreProcessor
                     {
                         return this.Api.PKB.ArrayForm
                             .Where(i => i.LineNumber == number)
-                            .Select(i => i.Previous.LineNumber.ToString());
+                            .Select(i => i.Previous);
                     }
                     //else if (int.TryParse(data.Left, out number))
                     //{
@@ -161,7 +180,7 @@ namespace Core.PQLo.QueryPreProcessor
                     //        .Where(i => i.LineNumber == number)
                     //        .Select(i => i.Previous.LineNumber.ToString());
                     //}
-                    return new List<string> { "NONE" };
+                    return null;
                 case CommandType.Parent:
                     {
                         switch (Find(d, data.Variable))
@@ -170,38 +189,38 @@ namespace Core.PQLo.QueryPreProcessor
                                 {
                                     if (data.Left == data.Variable)
                                     {
-                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
-                                        return z.Where(x => x.Parent.Token != Instruction.Procedure).Select(x => x.Parent.LineNumber.ToString());
+                                        return this.Api.ArrayForm
+                                            .Where(x => x.LineNumber.ToString() == data.Right)
+                                            .Where(x => x.Parent.Token != Instruction.Procedure)
+                                            .Select(i => i.Parent);
                                     }
                                     else
                                     {
-                                        var result = FindLinesForGivenParentInstruction(Instruction.Call, data);
-
-                                        return result.Select(x => x.ToString());
+                                        return FindLinesForGivenParentInstruction(Instruction.Call, data);
                                     }
                                 }
                             case StatementType.Stmt:
                                 {
                                     if (data.Left == data.Variable)
                                     {
-                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
-                                        return z.Where(x => x.Parent.Token != Instruction.Procedure).Select(x => x.Parent.LineNumber.ToString());
+                                        return this.Api.ArrayForm
+                                            .Where(x => x.LineNumber.ToString() == data.Right)
+                                            .Where(x => x.Parent.Token != Instruction.Procedure)
+                                            .Select(i => i.Parent);
                                     }
                                     else
                                     {
                                         var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber.ToString() == data.Left);
-                                        var result = new List<int>();
+                                        var result = new List<INode>();
                                         if (z.Key == null)
-                                            return result.Select(x => x.ToString());
+                                            return null;
                                         if (z.Key.Token == Instruction.If)
                                         {
-                                            result.AddRange(this.FindResultForGivenParent(z.Key.Twin.Nodes));
-                                            result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == Instruction.Loop).Select(x => x.LineNumber));
+                                            result.AddRange(FindResultForGivenParent(z.Key.Twin.Nodes));
+                                            result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == Instruction.Loop));
                                         }
-                                        result.AddRange(this.FindResultForGivenParent(z.Value.Select(x => x as Node).ToList()));
-
-
-                                        return result.Select(x => x.ToString());
+                                        result.AddRange(FindResultForGivenParent(z.Value));
+                                        return result;
                                     }
 
                                 }
@@ -209,29 +228,23 @@ namespace Core.PQLo.QueryPreProcessor
                                 {
                                     if (data.Left == data.Variable)
                                     {
-                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
-                                        return z.Where(x => x.Parent.Token != Instruction.Procedure).Select(x => x.Parent.LineNumber.ToString());
+                                        return this.Api.ArrayForm
+                                            .Where(x => x.LineNumber.ToString() == data.Right)
+                                            .Where(x => x.Parent.Token != Instruction.Procedure)
+                                            .Select(i => i.Parent);
                                     }
-                                    else
-                                    {
-                                        var result = FindLinesForGivenParentInstruction(Instruction.Assign, data);
-
-                                        return result.Select(x => x.ToString());
-                                    }
+                                    return FindLinesForGivenParentInstruction(Instruction.Assign, data);
                                 }
                             case StatementType.While:
                                 {
                                     if (data.Left == data.Variable)
                                     {
-                                        var z = this.Api.ArrayForm.Where(x => x.LineNumber.ToString() == data.Right).ToList();
-                                        return z.Where(x => x.Parent.Token == Instruction.Loop).Select(x => x.Parent.LineNumber.ToString());
+                                        return this.Api.ArrayForm
+                                            .Where(x => x.LineNumber.ToString() == data.Right)
+                                            .Where(x => x.Parent.Token == Instruction.Loop)
+                                            .Select(i => i.Parent);
                                     }
-                                    else
-                                    {
-                                        var result = FindLinesForGivenParentInstruction(Instruction.Loop, data);
-
-                                        return result.Select(x => x.ToString());
-                                    }
+                                    return FindLinesForGivenParentInstruction(Instruction.Loop, data);
                                 }
                             case StatementType.If:
                                 break;
@@ -239,40 +252,33 @@ namespace Core.PQLo.QueryPreProcessor
                         break;
                     }
             }
-            return Enumerable.Empty<string>();
+            return null;
         }
 
-        private List<int> FindLinesForGivenParentInstruction(Instruction instruction, SuchData suchData)
+        private List<INode> FindLinesForGivenParentInstruction(Instruction instruction, SuchData suchData)
         {
             var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber.ToString() == suchData.Left);
-            var result = new List<int>();
+            var result = new List<INode>();
             if (z.Key.Token == Instruction.If)
-            {
-                result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == instruction).Select(x => x.LineNumber));
-            }
-            result.AddRange(z.Value.Where(x => x.Token == instruction).Select(x => x.LineNumber));
+                result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == instruction));
+            result.AddRange(z.Value.Where(x => x.Token == instruction));
             return result;
         }
 
-        private List<int> FindResultForGivenParent(List<Node> z)
+        private List<INode> FindResultForGivenParent<T>(List<T> z)
+            where T : INode
         {
-            var result = new List<int>();
+            var result = new List<INode>();
             foreach (var item in z)
             {
+                result.Add(item);
                 if (item.Token == Instruction.If)
-                {
-                    result.Add(item.LineNumber);
-                    result.Add(item.Twin.LineNumber);
-                }
-                else
-                {
-                    result.Add(item.LineNumber);
-                }
+                    result.Add(item.Twin);
             }
             return result;
         }
 
-        private IEnumerable<string> FindInstructionLinesForModifies(Instruction instruction, SuchData data)
+        private IEnumerable<INode> FindInstructionLinesForModifies(Instruction instruction, SuchData data)
         {
             var inProcedure = this.Api.PKB.Modifies.dict.FirstOrDefault(x => x.Key.Name == data.Right).Value;
 
@@ -306,22 +312,15 @@ namespace Core.PQLo.QueryPreProcessor
                              .ToList()
                 ).SelectMany(x => x)
                 .ToList());
-            return result.Distinct().Select(x => x.LineNumber.ToString());
+            return result;
         }
     }
 
     public class KScheduleComparer : IEqualityComparer<INode>
     {
-        public bool Equals(INode x, INode y)
-        {
-            if (x?.LineNumber == 0 || y?.LineNumber == 0)
-                return false;
-            return x?.LineNumber == y?.LineNumber;
-        }
+        public bool Equals(INode x, INode y) => 
+            x?.LineNumber == 0 || y?.LineNumber == 0 ? false : x?.LineNumber == y?.LineNumber;
 
-        public int GetHashCode(INode obj)
-        {
-            return obj.GetHashCode();
-        }
+        public int GetHashCode(INode obj) => obj.GetHashCode();
     }
 }

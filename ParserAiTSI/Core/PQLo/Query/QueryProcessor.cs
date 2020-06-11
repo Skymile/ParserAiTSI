@@ -6,7 +6,7 @@ namespace Core.PQLo.QueryPreProcessor
 {
 	public partial class QueryProcessor
 	{
-		public QueryProcessor(PKBApi api) => 
+		public QueryProcessor(PKBApi api) =>
 			this.Api = api;
 
 		public string ProcessQuery(string query) =>
@@ -46,13 +46,13 @@ namespace Core.PQLo.QueryPreProcessor
 
 			SuchData? suchData = null;
 			WithData? withData = null;
-			
+
 			if (split.Count > 0 && split[0] == "SELECT")
 			{
-				string variable      = split[1];
-				string such          = split[2];
-				string modifies      = split[3];
-				string leftModified  = split[4];
+				string variable = split[1];
+				string such = split[2];
+				string modifies = split[3];
+				string leftModified = split[4];
 				string rightModified = split[5];
 
 				if (such == "SUCH_THAT")
@@ -62,7 +62,7 @@ namespace Core.PQLo.QueryPreProcessor
 			}
 
 			return string.Join(
-				",", 
+				",",
 				ProcessCommands(
 					(true, new CommandUnit(d, suchData, withData))
 				)
@@ -94,12 +94,20 @@ namespace Core.PQLo.QueryPreProcessor
 			var second = new List<string>();
 
 			if (command.Such is SuchData such)
-				first.AddRange(ProcessSuch(such, command.Declarations));
+				first.AddRange(
+					ProcessToString(
+						ProcessToObject(
+							ProcessSuch(such, command.Declarations, out var cmdType, out var statementType),
+							cmdType,
+							statementType
+						)
+					)
+				);
 			if (command.With is WithData with)
 				second.AddRange(ProcessWith(with, command.Declarations));
 
-			return second.Count == 0 
-				? first 
+			return second.Count == 0
+				? first
 				: first.Count == 0
 				? second
 				: first.Intersect(second);
@@ -124,7 +132,7 @@ namespace Core.PQLo.QueryPreProcessor
 				if (!string.IsNullOrWhiteSpace(sub))
 					split.Add(sub);
 				if (query[i] == '\"')
-				{	
+				{
 					i = query.IndexOf('\"', j + 1);
 					split.Add(query.Substring(j + 1, i - j - 1));
 					i += 1;
@@ -151,8 +159,8 @@ namespace Core.PQLo.QueryPreProcessor
 			{ "PARENT"  , CommandType.Parent   },
 		};
 
-		private readonly Dictionary<string, Func<string, QueryNode>> statementsList = new Dictionary<string, Func<string, QueryNode>> { 
-			{"ASSIGN"   , t => new QueryNode(StatementType.Assign   , t) }, 
+		private readonly Dictionary<string, Func<string, QueryNode>> statementsList = new Dictionary<string, Func<string, QueryNode>> {
+			{"ASSIGN"   , t => new QueryNode(StatementType.Assign   , t) },
 			{"STMTLST"  , t => new QueryNode(StatementType.Stmtlst  , t) },
 			{"STMT"     , t => new QueryNode(StatementType.Stmt     , t) },
 			{"WHILE"    , t => new QueryNode(StatementType.While    , t) },
