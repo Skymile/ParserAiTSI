@@ -314,16 +314,16 @@ namespace Core.PQLo.QueryPreProcessor
 
         private static readonly Dictionary<StatementType, Instruction> stateToInstruction = new Dictionary<StatementType, Instruction>
         {
-            { StatementType.Assign   , Instruction.Assign     },
-            { StatementType.Call     , Instruction.Call       },
-            { StatementType.Constant , Instruction.Expression },
-            { StatementType.If       , Instruction.If         },
-            { StatementType.Procedure, Instruction.Procedure  },
-            { StatementType.ProgLine , Instruction.Procedure  },
-            { StatementType.Stmt     , Instruction.Procedure  },
-            { StatementType.Stmtlst  , Instruction.Procedure  },
-            { StatementType.Variable , Instruction.Expression },
-            { StatementType.While    , Instruction.Loop       },
+            { StatementType.Assign   , Instruction.Assign      },
+            { StatementType.Call     , Instruction.Call        },
+            { StatementType.Constant , Instruction.Expression  },
+            { StatementType.If       , Instruction.If          },
+            { StatementType.Procedure, Instruction.Procedure   },
+            { StatementType.ProgLine , Instruction.Procedure   },
+            { StatementType.Stmt     , Instruction.Expression  },
+            { StatementType.Stmtlst  , Instruction.Expression  },
+            { StatementType.Variable , Instruction.Expression  },
+            { StatementType.While    , Instruction.Loop        },
         };
     }
 
