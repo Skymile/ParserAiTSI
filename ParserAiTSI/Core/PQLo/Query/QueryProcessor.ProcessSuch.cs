@@ -302,16 +302,9 @@ namespace Core.PQLo.QueryPreProcessor
 
     public class KScheduleComparer : IEqualityComparer<INode>
     {
-        public bool Equals(INode x, INode y)
-        {
-            if (x?.LineNumber == 0 || y?.LineNumber == 0)
-                return false;
-            return x?.LineNumber == y?.LineNumber;
-        }
+        public bool Equals(INode x, INode y) => 
+            x?.LineNumber == 0 || y?.LineNumber == 0 ? false : x?.LineNumber == y?.LineNumber;
 
-        public int GetHashCode(INode obj)
-        {
-            return obj.GetHashCode();
-        }
+        public int GetHashCode(INode obj) => obj.GetHashCode();
     }
 }
