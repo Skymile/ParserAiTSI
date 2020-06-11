@@ -3,7 +3,7 @@ using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Security.Cryptography.X509Certificates;
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -176,7 +176,8 @@ namespace Core.PQLo.QueryPreProcessor
                             var ins = stateToInstruction[statement];
                             return this.Api.PKB.ArrayForm
                                 .Where(i => i.LineNumber == number)
-                                .Select(i => {
+                                .Select(i =>
+                                {
                                     var j = i.Previous;
                                     if (j.Token == Instruction.Else)
                                         j = j.Previous;
@@ -210,7 +211,7 @@ namespace Core.PQLo.QueryPreProcessor
                             if (data.Right == "_")
                             {
                                 Instruction ins = stateToInstruction[statementRight];
-                                
+
                                 return this.Api.ArrayForm
                                     .Where(i => i.Previous != null && ins.HasFlag(i.Previous.Token))
                                     .Select(i => i.Previous);
@@ -228,7 +229,7 @@ namespace Core.PQLo.QueryPreProcessor
                                     {
                                         return this.Api.ArrayForm
                                             .Where(x => x.LineNumber.ToString() == data.Right)
-                                            .Where(x => x.Parent.Token != Instruction.Procedure)
+                                            .Where(x => x.Parent.Token != Instruction.Procedure || x.Parent.Token != Instruction.Expression || x.Parent.Token != Instruction.Assign)
                                             .Select(i => i.Parent);
                                     }
                                     return FindLinesForGivenParentInstruction(Instruction.Call, data);
@@ -290,6 +291,106 @@ namespace Core.PQLo.QueryPreProcessor
                                             .Select(i => i.Parent);
                                     }
                                     return FindLinesForGivenParentInstruction(Instruction.If, data);
+                                }
+                        }
+                        break;
+                    }
+                case CommandType.ParentStar:
+                    {
+                        switch (Find(d, data.Variable))
+                        {
+                            case StatementType.Assign:
+                                {
+                                    if (int.TryParse(data.Left, out var number))
+                                    {
+                                        var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber == number);
+                                        var flags = stateToInstruction[statement];
+                                        var result = new List<INode>();
+                                        if (z.Key.Token == Instruction.If || z.Key.Token == Instruction.Else)
+                                            result.AddRange(z.Key.Twin.Nodes.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        result.AddRange(z.Value.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        var a = result.Where(x => flags.HasFlag(x.Token));
+                                        return a;
+                                    }
+                                    return null;
+                                }
+                            case StatementType.Stmt:
+                                {
+                                    if (int.TryParse(data.Left, out var number))
+                                    {
+                                        var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber == number && x.Key.Token != Instruction.Else);
+                                        var flags = stateToInstruction[statement];
+                                        var result = new List<INode>();
+                                        if (z.Key.Token == Instruction.If)
+                                            result.AddRange(z.Key.Twin.Nodes.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        result.AddRange(z.Value.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        var a = result.Where(x => flags.HasFlag(x.Token));
+                                        return a;
+                                    }
+                                    else if (int.TryParse(data.Right, out number))
+                                    {
+                                        var flags = stateToInstruction[statement];
+                                        var a = this.Api.ArrayForm
+                                            .FirstOrDefault(x => x.LineNumber == number && x.Token != Instruction.Else);
+                                        var result = new List<INode>();
+                                        foreach (var item in a.Parents)
+                                        {
+                                            if (item.Token == Instruction.If || item.Token == Instruction.Else)
+                                                result.Add(item.Twin);
+
+                                        }
+                                        result.AddRange(a.Parents.Where(x => flags.HasFlag(x.Token) && x.LineNumber != number));
+                                        return result;
+                                    }
+                                    break;
+                                }
+                            case StatementType.While:
+                                {
+                                    if (int.TryParse(data.Right, out var number))
+                                    {
+                                        var flags = stateToInstruction[statement];
+                                        var a = this.Api.ArrayForm
+                                            .FirstOrDefault(x => x.LineNumber== number && x.Token != Instruction.Else);
+                                        var b = a.Parents.Where(x => flags.HasFlag(x.Token) || x.Token == Instruction.Else);
+                                        return b;
+                                    }
+                                    if (int.TryParse(data.Left, out number))
+                                    {
+                                        var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber == number && x.Key.Token != Instruction.Else);
+                                        var flags = stateToInstruction[statement];
+                                        var result = new List<INode>();
+                                        if (z.Key.Token == Instruction.If)
+                                            result.AddRange(z.Key.Twin.Nodes.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        result.AddRange(z.Value.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        var a = result.Where(x => flags.HasFlag(x.Token));
+                                        return a;
+                                    }
+                                    break;
+                                }
+                            case StatementType.If:
+                                {
+                                    if (int.TryParse(data.Left, out var number))
+                                    {
+                                        var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber == number && x.Key.Token != Instruction.Else);
+                                        if (z.Key == null)
+                                            return null;
+                                        var flags = stateToInstruction[statement];
+                                        var result = new List<INode>();
+                                        if (z.Key.Token == Instruction.If)
+                                            result.AddRange(z.Key.Twin.Nodes.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        result.AddRange(z.Value.Where(Mode.StandardRecursion, x => x.Nodes != null));
+                                        var a = result.Where(x => flags.HasFlag(x.Token));
+                                        return a;
+                                    }
+                                    else if(int.TryParse(data.Right, out  number))
+                                    {
+                                        var flags = stateToInstruction[statement];
+                                        var a = this.Api.ArrayForm
+                                            .FirstOrDefault(x => x.LineNumber == number && x.Token != Instruction.Else);
+                                        var b = a.Parents.Where(x => flags.HasFlag(x.Token) || x.Token == Instruction.Else);
+                                        return b;
+
+                                    }
                                 }
                                 break;
                         }
@@ -404,6 +505,8 @@ namespace Core.PQLo.QueryPreProcessor
         private List<INode> FindLinesForGivenParentInstruction(Instruction instruction, SuchData suchData)
         {
             var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber.ToString() == suchData.Left);
+            if (z.Key == null)
+                return null;
             var result = new List<INode>();
             if (z.Key.Token == Instruction.If)
                 result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == instruction));
@@ -467,7 +570,7 @@ namespace Core.PQLo.QueryPreProcessor
 
     public class KScheduleComparer : IEqualityComparer<INode>
     {
-        public bool Equals(INode x, INode y) => 
+        public bool Equals(INode x, INode y) =>
             x?.LineNumber == 0 || y?.LineNumber == 0 ? false : x?.LineNumber == y?.LineNumber;
 
         public int GetHashCode(INode obj) => obj.GetHashCode();

@@ -13,7 +13,7 @@ namespace Terminal
 			new[] {
 #if TEST
 				"stmt s;",
-				"Select s such that Follows (s, _)"
+				"Select s such that Parent* (s, 117)"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()
