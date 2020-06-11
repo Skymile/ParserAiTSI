@@ -239,6 +239,12 @@ stmt s;
 Select s such that Parent* (s, 117)
 105,107,12,6
 stmt s;
+Select s such that Parent (s, 46)
+16
+while w;
+Select w such that Parent (w, 46)
+16
+stmt s;
 Select s such that Parent* (79, s)
 80,81,82,83,84,85,86,87,88,89,90,91,92
 assign a;
@@ -253,6 +259,12 @@ Select w such that Parent (w, 118)
 while w;
 Select w such that Parent (15, w)
 16,79
+while w;
+Select w such that Parent (w, 56)
+NONE
+stmt s;
+Select s such that Parent (s, 56)
+55
 while w;
 Select w such that Parent* (w, 90)
 12,6,79,89
