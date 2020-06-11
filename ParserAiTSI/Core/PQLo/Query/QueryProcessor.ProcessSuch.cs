@@ -160,10 +160,11 @@ namespace Core.PQLo.QueryPreProcessor
                             break;
                             case StatementType.Assign: // TODO: JAK BEDZIE ELSE
                                 {
-                                var z = this.Api.PKB.Parent.dict.Where(x => x.Key.LineNumber.ToString() == data.Left).Select(x => x.Key).ToList();
-                                var c = this.Api.GetNodes(Instruction.Else);
-                               
-                                break;
+                                    var z = this.Api.PKB.Parent.dict.Where(x => x.Key.LineNumber.ToString() == data.Left).Select(x => x.Key).ToList();
+                                    var c = this.Api.GetNodes(Instruction.Else);
+
+                                    break;
+                                }
                             case StatementType.While:
                                 //var a = this.Api.PKB.Parent.dict.Where(Mode.StandardRecursion,Instruction.Loop, x => x.Key.LineNumber.ToString() == data.Right).ToList(); /TODO:: naprawic
                                 break;
