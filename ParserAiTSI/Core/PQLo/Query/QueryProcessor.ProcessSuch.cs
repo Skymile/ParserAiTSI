@@ -132,6 +132,22 @@ namespace Core.PQLo.QueryPreProcessor
                         return en[f].Select(i => i.LineNumber.ToString());
                     }
                 case CommandType.Calls:
+
+                    switch (Find(d, data.Variable))
+                    {
+                        case StatementType.Procedure:
+                            if (data.Left == data.Variable)
+                            {
+                                var a = this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last().Variable).Distinct().ToList();
+                                return a;
+                            }
+                            else
+                            {
+                                var a = this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
+                                return a.Select(x => x.Variable);
+                            }
+                    }
+                    break;
                 case CommandType.Follows:
                     if (int.TryParse(data.Right, out var number))
                     {

@@ -12,8 +12,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"while w;",
-				"Select w such that Parent (w, 46)"
+				"procedure p;",
+				"Select p such that Calls (p, \"QQ\")"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()

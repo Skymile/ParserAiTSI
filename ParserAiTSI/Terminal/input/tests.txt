@@ -556,4 +556,3 @@ Select ifs such that Follows* (w, ifs) with w.stmt# = 29
 assign a; if ifs;
 Select a such that Parent* (ifs, a) with ifs.stmt# = 97
 98,99
-
