@@ -54,7 +54,7 @@ namespace Core
         {
             get
             {
-                if (!(parents is null))
+                if (!(this.parents is null))
                     return this.parents;
                 var list = new List<Node>();
                 GatherParents(this, list);

@@ -12,8 +12,10 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"stmt s;",
-				"Select s such that Parent* (s, 117)"
+				//"procedure p;",
+				//"Select p such that Calls* (\"RR\", p)"
+				//"stmt s;",
+				//"Select s such that Parent* (s, 117)"
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()
@@ -50,10 +52,12 @@ namespace Terminal
 					}
 				}
 #if !TEST
+#pragma warning disable CA1031 // Do not catch general exception types
 				catch (Exception ex)
 				{
 					Console.Error.WriteLine(ex.Message);
 				}
+#pragma warning restore CA1031 // Do not catch general exception types
 #endif
 		}
 	}

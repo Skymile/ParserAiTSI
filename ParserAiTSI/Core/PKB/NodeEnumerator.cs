@@ -107,7 +107,7 @@ namespace Core
 			}
 		}
 
-		public IEnumerator<INode> GetEnumerator() => Nodes.GetEnumerator();
-		IEnumerator IEnumerable.GetEnumerator() => Nodes.GetEnumerator();
+		public IEnumerator<INode> GetEnumerator() => this.Nodes.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => this.Nodes.GetEnumerator();
 	}
 }

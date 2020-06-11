@@ -138,7 +138,7 @@ namespace Core.PQLo.QueryPreProcessor
                             break;
                         case StatementType.While:
                             return FindInstructionLinesForModifies(Instruction.Loop, data);
-                        case StatementType.If: // TODO: JAK BEDZIE ELSE
+                        case StatementType.If:
                             return FindInstructionLinesForModifies(Instruction.If, data);
                         case StatementType.ProgLine:
                             break;
@@ -155,16 +155,76 @@ namespace Core.PQLo.QueryPreProcessor
                         return en[f];
                     }
                 case CommandType.Calls:
-
                     switch (Find(d, data.Variable))
                     {
                         case StatementType.Procedure:
+                            overwrite = i => i.Variable;
+                            return data.Left == data.Variable
+                                ? this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last())
+                                : (IEnumerable<INode>)this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
+                    }
+                    break;
+                case CommandType.CallsStar:
+                    switch (Find(d, data.Variable))
+                    {
+                        case StatementType.Procedure:
+                            overwrite = i => i.Variable;
+                            if (data.Left == data.Variable)
                             {
-                                overwrite = i => i.Variable;
-                                if (data.Left == data.Variable)
-                                    return this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == data.Right).Select(x => x.Parents.Last()).Distinct().ToList();
-                                return this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
+                                var procedures = this.Api.ArrayForm
+                                    .Where(Mode.NoRecursion, Instruction.Call, i => i.Variable == data.Right)
+                                    .Select(i => this.Api.GetProcedure(i.Id));
+
+                                var hash = procedures.Select(i => i.Variable.ToUpperInvariant()).ToHashSet();
+                                
+                                procedures = procedures.Concat(
+                                    this.Api.ArrayForm
+                                        .Where(
+                                            Mode.NoRecursion,
+                                            Instruction.Call,
+                                            i => hash.Contains(i.Variable.ToUpperInvariant())
+                                        )
+                                        .Select(i => this.Api.GetProcedure(i.Id))
+                                );
+
+                                return procedures;
                             }
+                            else if (data.Right == data.Variable)
+                            {
+                                var procedures = this.Api.ArrayForm
+                                    .Where(Mode.NoRecursion, Instruction.Procedure, i => i.Variable == data.Left)
+                                    .Select(Mode.StandardRecursion, Instruction.Call, i => i)
+                                    .ToList();
+
+                                var calls = new List<INode>();
+
+                                bool change = true;
+                                while (change)
+                                {
+                                    var set = procedures
+                                        .Select(i => i.Variable)
+                                        .ToHashSet();
+
+                                    calls = this.Api.ArrayForm
+                                        .Where(Mode.StandardRecursion, Instruction.Procedure, i => set.Contains(i.Variable))
+                                        .ToList();
+
+                                    int len = procedures.Count;
+
+                                    procedures = procedures
+                                        .Concat(calls
+                                            .Select(i => this.Api.GetProcedure(i.Id))
+                                            .Select(Mode.StandardRecursion, Instruction.Call, i => i)
+                                        )
+                                        .Distinct()
+                                        .ToList();
+
+                                    change = len != procedures.Count;
+                                }
+
+                                return procedures;
+                            }
+                            return this.Api.PKB.Calls.dict.FirstOrDefault(x => x.Key.Variable == data.Left).Value;
                     }
                     break;
                 case CommandType.Follows:
@@ -224,63 +284,45 @@ namespace Core.PQLo.QueryPreProcessor
                         switch (Find(d, data.Variable))
                         {
                             case StatementType.Call:
-                                {
-                                    if (data.Left == data.Variable)
-                                    {
-                                        return this.Api.ArrayForm
-                                            .Where(x => x.LineNumber.ToString() == data.Right)
-                                            .Where(x => x.Parent.Token != Instruction.Procedure || x.Parent.Token != Instruction.Expression || x.Parent.Token != Instruction.Assign)
-                                            .Select(i => i.Parent);
-                                    }
-                                    return FindLinesForGivenParentInstruction(Instruction.Call, data);
-                                }
+                                return data.Left == data.Variable
+                                    ? this.Api.ArrayForm
+                                        .Where(x => x.LineNumber.ToString() == data.Right)
+                                        .Where(x => x.Parent.Token != Instruction.Procedure)
+                                        .Select(i => i.Parent)
+                                    : (IEnumerable<INode>)FindLinesForGivenParentInstruction(Instruction.Call, data);
                             case StatementType.Stmt:
+                                if (data.Left == data.Variable)
                                 {
-                                    if (data.Left == data.Variable)
-                                    {
-                                        return this.Api.ArrayForm
-                                            .Where(x => x.LineNumber.ToString() == data.Right)
-                                            .Where(x => x.Parent.Token != Instruction.Procedure)
-                                            .Select(i => i.Parent);
-                                    }
-                                    else
-                                    {
-                                        var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber.ToString() == data.Left);
-                                        var result = new List<INode>();
-                                        if (z.Key == null)
-                                            return null;
-                                        if (z.Key.Token == Instruction.If)
-                                        {
-                                            result.AddRange(FindResultForGivenParent(z.Key.Twin.Nodes));
-                                            result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == Instruction.Loop));
-                                        }
-                                        result.AddRange(FindResultForGivenParent(z.Value));
-                                        return result;
-                                    }
-
+                                    return this.Api.ArrayForm
+                                        .Where(x => x.LineNumber.ToString() == data.Right)
+                                        .Where(x => x.Parent.Token != Instruction.Procedure)
+                                        .Select(i => i.Parent);
                                 }
+                                var z = this.Api.PKB.Parent.dict.FirstOrDefault(x => x.Key.LineNumber.ToString() == data.Left);
+                                var result = new List<INode>();
+                                if (z.Key == null)
+                                    return null;
+                                if (z.Key.Token == Instruction.If)
+                                {
+                                    result.AddRange(FindResultForGivenParent(z.Key.Twin.Nodes));
+                                    result.AddRange(z.Key.Twin.Nodes.Where(x => x.Token == Instruction.Loop));
+                                }
+                                result.AddRange(FindResultForGivenParent(z.Value));
+                                return result;
                             case StatementType.Assign:
-                                {
-                                    if (data.Left == data.Variable)
-                                    {
-                                        return this.Api.ArrayForm
-                                            .Where(x => x.LineNumber.ToString() == data.Right)
-                                            .Where(x => x.Parent.Token != Instruction.Procedure)
-                                            .Select(i => i.Parent);
-                                    }
-                                    return FindLinesForGivenParentInstruction(Instruction.Assign, data);
-                                }
+                                return data.Left == data.Variable
+                                    ? this.Api.ArrayForm
+                                        .Where(x => x.LineNumber.ToString() == data.Right)
+                                        .Where(x => x.Parent.Token != Instruction.Procedure)
+                                        .Select(i => i.Parent)
+                                    : (IEnumerable<INode>)FindLinesForGivenParentInstruction(Instruction.Assign, data);
                             case StatementType.While:
-                                {
-                                    if (data.Left == data.Variable)
-                                    {
-                                        return this.Api.ArrayForm
-                                            .Where(x => x.LineNumber.ToString() == data.Right)
-                                            .Where(x => x.Parent.Token == Instruction.Loop)
-                                            .Select(i => i.Parent);
-                                    }
-                                    return FindLinesForGivenParentInstruction(Instruction.Loop, data);
-                                }
+                                return data.Left == data.Variable
+                                    ? this.Api.ArrayForm
+                                        .Where(x => x.LineNumber.ToString() == data.Right)
+                                        .Where(x => x.Parent.Token == Instruction.Loop)
+                                        .Select(i => i.Parent)
+                                    : (IEnumerable<INode>)FindLinesForGivenParentInstruction(Instruction.Loop, data);
                             case StatementType.If:
                                 {
                                     if (data.Left == data.Variable)

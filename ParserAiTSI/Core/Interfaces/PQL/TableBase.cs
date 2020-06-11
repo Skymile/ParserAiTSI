@@ -29,7 +29,6 @@ namespace Core.Interfaces.PQL
         
         protected void Set(T p1, U p2)
         {
-            var t2 = p2 as T;
             if (!this.dict.ContainsKey(p2))
                 this.dict.Add(p2, new List<T>());
             var calls = this.dict[p2];

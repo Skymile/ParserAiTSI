@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Core.Interfaces.PQL
 {
-	public interface INode : IComparable<INode>
+	public interface INode
     {
         int Id         { get; set; }
 		int LineNumber { get; set; }
