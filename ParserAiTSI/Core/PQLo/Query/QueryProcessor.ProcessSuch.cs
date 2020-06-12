@@ -1,9 +1,8 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -496,30 +495,14 @@ namespace Core.PQLo.QueryPreProcessor
                 overwrite = i => isF.ToString();
 
                 if (data.Left == "_" && data.Right == "_")
-                {
                     isF = true;
-                }
                 else if (int.TryParse(data.Left, out var left))
                 {
-                    var l = this.Api.ArrayForm[left];
-
                     if (int.TryParse(data.Right, out var right))
-                    {
-                        var r = this.Api.ArrayForm[right];
-
-                        isF = checkFollows(l, r);
-                    }
+                        isF = checkFollows(this.Api.ArrayForm[left], this.Api.ArrayForm[right]);
                 }
-                else if (int.TryParse(data.Right, out var right))
-                {
-                    var r = this.Api.ArrayForm[right];
-
-                    if (int.TryParse(data.Left, out left))
-                    {
-                        var l = this.Api.ArrayForm[left];
-                        isF = checkFollows(l, r);
-                    }
-                }
+                else if (int.TryParse(data.Right, out var right) && int.TryParse(data.Left, out left))
+                    isF = checkFollows(this.Api.ArrayForm[left], this.Api.ArrayForm[right]);
                 return new[] { new Node() };
             }
             return null;
@@ -529,7 +512,6 @@ namespace Core.PQLo.QueryPreProcessor
                 if (isStar)
                 {
                     bool isFollows = this.Api.PKB.Follows.IsFollows(l, r);
-
                     var next = l.Next;
 
                     while (next.Next != null)
