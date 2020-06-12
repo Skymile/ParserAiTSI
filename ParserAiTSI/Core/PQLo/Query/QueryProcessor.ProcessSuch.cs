@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-
+using System.Security.Policy;
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -11,7 +11,7 @@ namespace Core.PQLo.QueryPreProcessor
     public partial class QueryProcessor
     {
         private IEnumerable<string> ProcessToString(IEnumerable result) =>
-            result.Cast<object>().Select(i => i.ToString()).Distinct();
+            result.Cast<object>().Select(i => i?.ToString()).Distinct();
 
         private IEnumerable ProcessToObject(IEnumerable<INode> nodes, StatementType statement, Func<INode, string> overwrite)
         {
@@ -626,12 +626,16 @@ namespace Core.PQLo.QueryPreProcessor
                         x.LineNumber != number
                         && x.Token != Instruction.Procedure
                         && x.Token != Instruction.Call
-                        && x.Token != Instruction.Assign
                         && !string.IsNullOrWhiteSpace(x.Variable)
-                    ).Select(x => x.Token == Instruction.Expression ? x.Variables : x
-                        .Variables?
-                        .Append(x.Variable)
-                        ?? new List<string> { x.Variable })
+                    ).Select(x =>
+                    {
+                        if (x.Token == Instruction.Expression || x.Token == Instruction.Assign)
+                            return x.Variables.Where(z => !int.TryParse(z, out int res));
+                        return x
+                            .Variables?
+                            .Append(x.Variable)
+                            ?? new List<string> { x.Variable };
+                    })
                     .SelectMany(z => z.
                         Where(x => !int.TryParse(x, out int res))));
                 result = result.Distinct().ToList();
@@ -639,6 +643,7 @@ namespace Core.PQLo.QueryPreProcessor
             }
             return new[] { new Node() }; ;
         }
+
         private static IEnumerable<INode> GetWithTwin(INode node)
         {
             if (node.Twin != null) // && node.Token == Instruction.If)
