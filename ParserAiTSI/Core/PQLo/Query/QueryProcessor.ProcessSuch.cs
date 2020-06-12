@@ -654,7 +654,7 @@ namespace Core.PQLo.QueryPreProcessor
                     .Concat(lines.Nodes)
                     .Where(Mode.StandardRecursion, ~(Instruction.Procedure | Instruction.Call), i => i.LineNumber != number && i.Variable != null)
                     .SelectMany(x => x.Token == Instruction.Expression || x.Token == Instruction.Assign
-                        ? x.Variables.Where(z => !int.TryParse(z, out int _))
+                        ? x.Variables
                         : GetVars(x)
                     )
                     .Where(i => !int.TryParse(i, out int _))
