@@ -152,7 +152,16 @@ namespace Core.PQLo.QueryPreProcessor
                         case StatementType.Procedure:
                             break;
                         case StatementType.Call:
-                            break;
+                            var calls = this.Api.ArrayForm.Where(x => x.Token == Instruction.Expression ? x.Variables.Contains(data.Right) : x.Variable == data.Right).ToList();
+                            calls = calls.Where(x => x.Token != Instruction.Assign && x.Variables == null).ToList();
+                            var invokedProcedures = calls.Select(x => x.Parents.Last()).ToList();
+                            invokedProcedures = invokedProcedures.Distinct(new NodeStringComparer()).Select(x => x as Node).ToList();
+                            var result = new List<Node>();
+                            foreach (var item in invokedProcedures)
+                            {
+                                result.AddRange(this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == item.Variable).Select(x => x as Node));
+                            }
+                            return result;
                         case StatementType.Variable:
                             return GetUsesVariable(data, ref overwrite);
                         case StatementType.Constant:
@@ -589,7 +598,7 @@ namespace Core.PQLo.QueryPreProcessor
                 .SelectMany(GetWithTwin)
                 .Where(Mode.NoRecursion, instruction);
         }
-        
+
         private IEnumerable<Node> GetUsesVariable(SuchData data, ref Func<INode, string> overwrite)
         {
             if (int.TryParse(data.Left, out var number))
@@ -613,15 +622,15 @@ namespace Core.PQLo.QueryPreProcessor
                 result.AddRange(
                     xd
                     .Where
-                    (x => 
-                        x.LineNumber != number 
-                        && x.Token != Instruction.Procedure 
-                        && x.Token != Instruction.Call 
+                    (x =>
+                        x.LineNumber != number
+                        && x.Token != Instruction.Procedure
+                        && x.Token != Instruction.Call
                         && x.Token != Instruction.Assign
                         && !string.IsNullOrWhiteSpace(x.Variable)
                     ).Select(x => x.Token == Instruction.Expression ? x.Variables : x
                         .Variables?
-                        .Append(x.Variable) 
+                        .Append(x.Variable)
                         ?? new List<string> { x.Variable })
                     .SelectMany(z => z.
                         Where(x => !int.TryParse(x, out int res))));
@@ -662,7 +671,14 @@ namespace Core.PQLo.QueryPreProcessor
     public class NodeStringComparer : IEqualityComparer<INode>
     {
         public bool Equals(INode x, INode y) =>
-            string.IsNullOrEmpty(x?.Variable) || string.IsNullOrEmpty(y?.Variable)? false : x.Variable.Equals(y.Variable);
+            string.IsNullOrEmpty(x?.Variable) || string.IsNullOrEmpty(y?.Variable) ? false : x.Variable.Equals(y.Variable);
         public int GetHashCode(INode obj) => obj.GetHashCode();
     }
+
+    //public class NodeNameComparer : IEqualityComparer<INode>
+    //{
+    //    public bool Equals(INode x, INode y) =>
+    //        string.IsNullOrEmpty(x?.Variable) || string.IsNullOrEmpty(y?.Variable) ? false : x.Variable.Equals(y.Variable);
+    //    public int GetHashCode(INode obj) => obj.GetHashCode();
+    //}
 }
