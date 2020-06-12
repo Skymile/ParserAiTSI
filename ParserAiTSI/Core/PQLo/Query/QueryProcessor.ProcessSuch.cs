@@ -604,44 +604,38 @@ namespace Core.PQLo.QueryPreProcessor
             if (int.TryParse(data.Left, out var number))
             {
                 var lines = this.Api.PKB.ArrayForm.FirstOrDefault(x => x.LineNumber == number);
-                var result = new List<string>() { lines.Variable };
-                var xd = new List<INode>();
-                overwrite = x => string.Join(",", result);
-
                 if (lines.Nodes == null)
-                {
                     return new[] { new Node() }; ;
-                }
-                var calls = lines.Nodes.Select(Mode.StandardRecursion, Instruction.Call, x => x).Distinct(new NodeStringComparer()).ToList();
-                foreach (var item in calls.Distinct(new NodeStringComparer()).ToList())
-                {
-                    xd.AddRange(this.Api.PKB.Procedures.Where(x => x.Name == item.Variable).Select(Mode.StandardRecursion, x => x).Where(x => x.Token != Instruction.Procedure));
-                }
-                xd = xd.Distinct(new KScheduleComparer()).ToList();
-                xd.AddRange(lines.Nodes.Select(Mode.StandardRecursion, x => x));
-                result.AddRange(
-                    xd
-                    .Where
-                    (x =>
-                        x.LineNumber != number
-                        && x.Token != Instruction.Procedure
-                        && x.Token != Instruction.Call
-                        && !string.IsNullOrWhiteSpace(x.Variable)
-                    ).Select(x =>
-                    {
-                        if (x.Token == Instruction.Expression || x.Token == Instruction.Assign)
-                            return x.Variables.Where(z => !int.TryParse(z, out int res));
-                        return x
-                            .Variables?
-                            .Append(x.Variable)
-                            ?? new List<string> { x.Variable };
-                    })
-                    .SelectMany(z => z.
-                        Where(x => !int.TryParse(x, out int res))));
-                result = result.Distinct().ToList();
 
+                var result = lines.Nodes
+                    .Where(Mode.StandardRecursion, Instruction.Call)
+                    .SelectMany(i => this.Api.PKB.Procedures
+                        .Where(x => x.Name == i.Variable)
+                        .Where(Mode.StandardRecursion, x => x.Token != Instruction.Procedure)
+                    )
+                    .Concat(lines.Nodes)
+                    .Where(Mode.StandardRecursion, ~(Instruction.Procedure | Instruction.Call), i => i.LineNumber != number && i.Variable != null)
+                    .SelectMany(x => x.Token == Instruction.Expression || x.Token == Instruction.Assign
+                        ? x.Variables.Where(z => !int.TryParse(z, out int _))
+                        : GetVars(x)
+                    )
+                    .Where(i => !int.TryParse(i, out int _))
+                    .Append(lines.Variable)
+                    .Distinct()
+                    .ToList();
+                    
+                overwrite = x => string.Join(",", result);
             }
             return new[] { new Node() }; ;
+        }
+
+        private static IEnumerable<string> GetVars(INode node)
+        {
+            if (node.Variable != null)
+                yield return node.Variable;
+            if (node.Variables != null)
+                foreach (var i in node.Variables)
+                    yield return i;
         }
 
         private static IEnumerable<INode> GetWithTwin(INode node)
