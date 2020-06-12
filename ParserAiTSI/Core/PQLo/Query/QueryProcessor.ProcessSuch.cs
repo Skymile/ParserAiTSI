@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-
+using System.Security.Policy;
 using Core.Interfaces.PQL;
 
 namespace Core.PQLo.QueryPreProcessor
@@ -11,7 +11,7 @@ namespace Core.PQLo.QueryPreProcessor
     public partial class QueryProcessor
     {
         private IEnumerable<string> ProcessToString(IEnumerable result) =>
-            result.Cast<object>().Select(i => i.ToString()).Distinct();
+            result.Cast<object>().Select(i => i?.ToString()).Distinct();
 
         private IEnumerable ProcessToObject(IEnumerable<INode> nodes, StatementType statement, Func<INode, string> overwrite)
         {
@@ -152,7 +152,16 @@ namespace Core.PQLo.QueryPreProcessor
                         case StatementType.Procedure:
                             break;
                         case StatementType.Call:
-                            break;
+                            var calls = this.Api.ArrayForm.Where(x => x.Token == Instruction.Expression ? x.Variables.Contains(data.Right) : x.Variable == data.Right).ToList();
+                            calls = calls.Where(x => x.Token != Instruction.Assign && x.Variables == null).ToList();
+                            var invokedProcedures = calls.Select(x => x.Parents.Last()).ToList();
+                            invokedProcedures = invokedProcedures.Distinct(new NodeStringComparer()).Select(x => x as Node).ToList();
+                            var result = new List<Node>();
+                            foreach (var item in invokedProcedures)
+                            {
+                                result.AddRange(this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == item.Variable).Select(x => x as Node));
+                            }
+                            return result;
                         case StatementType.Variable:
                             return GetUsesVariable(data, ref overwrite);
                         case StatementType.Constant:
@@ -589,7 +598,7 @@ namespace Core.PQLo.QueryPreProcessor
                 .SelectMany(GetWithTwin)
                 .Where(Mode.NoRecursion, instruction);
         }
-        
+
         private IEnumerable<Node> GetUsesVariable(SuchData data, ref Func<INode, string> overwrite)
         {
             if (int.TryParse(data.Left, out var number))
@@ -613,16 +622,20 @@ namespace Core.PQLo.QueryPreProcessor
                 result.AddRange(
                     xd
                     .Where
-                    (x => 
-                        x.LineNumber != number 
-                        && x.Token != Instruction.Procedure 
-                        && x.Token != Instruction.Call 
-                        && x.Token != Instruction.Assign
+                    (x =>
+                        x.LineNumber != number
+                        && x.Token != Instruction.Procedure
+                        && x.Token != Instruction.Call
                         && !string.IsNullOrWhiteSpace(x.Variable)
-                    ).Select(x => x.Token == Instruction.Expression ? x.Variables : x
-                        .Variables?
-                        .Append(x.Variable) 
-                        ?? new List<string> { x.Variable })
+                    ).Select(x =>
+                    {
+                        if (x.Token == Instruction.Expression || x.Token == Instruction.Assign)
+                            return x.Variables.Where(z => !int.TryParse(z, out int res));
+                        return x
+                            .Variables?
+                            .Append(x.Variable)
+                            ?? new List<string> { x.Variable };
+                    })
                     .SelectMany(z => z.
                         Where(x => !int.TryParse(x, out int res))));
                 result = result.Distinct().ToList();
@@ -630,6 +643,7 @@ namespace Core.PQLo.QueryPreProcessor
             }
             return new[] { new Node() }; ;
         }
+
         private static IEnumerable<INode> GetWithTwin(INode node)
         {
             if (node.Twin != null) // && node.Token == Instruction.If)
@@ -662,7 +676,14 @@ namespace Core.PQLo.QueryPreProcessor
     public class NodeStringComparer : IEqualityComparer<INode>
     {
         public bool Equals(INode x, INode y) =>
-            string.IsNullOrEmpty(x?.Variable) || string.IsNullOrEmpty(y?.Variable)? false : x.Variable.Equals(y.Variable);
+            string.IsNullOrEmpty(x?.Variable) || string.IsNullOrEmpty(y?.Variable) ? false : x.Variable.Equals(y.Variable);
         public int GetHashCode(INode obj) => obj.GetHashCode();
     }
+
+    //public class NodeNameComparer : IEqualityComparer<INode>
+    //{
+    //    public bool Equals(INode x, INode y) =>
+    //        string.IsNullOrEmpty(x?.Variable) || string.IsNullOrEmpty(y?.Variable) ? false : x.Variable.Equals(y.Variable);
+    //    public int GetHashCode(INode obj) => obj.GetHashCode();
+    //}
 }

@@ -12,8 +12,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"variable v;",
-				"Select v such that Uses (217, v)"
+				"call v;",
+				"Select v such that Uses (v, \"decrement\")"
 				//"stmt s;",
 				//"Select s such that Parent* (s, 117)"
 #else
