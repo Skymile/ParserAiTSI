@@ -185,8 +185,9 @@ namespace Core
                         .Replace("-", " ")
                         .Replace("+", " ")
                         .Replace("/", " ")
-                        .Replace("(", "")
-                        .Replace(")", "")
+                        .Replace("(", " ")
+                        .Replace(")", " ")
+                        .Replace(",", " ")
                         .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                         .Distinct()
                         .ToList();
