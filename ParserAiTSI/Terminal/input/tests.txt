@@ -74,6 +74,12 @@ stmt s;
 Select s such that Follows (s, 69)
 68
 stmt s;
+Select s such that Follows (s, 246)
+245
+while w;
+Select w such that Follows (w, 246)
+NONE
+stmt s;
 Select s such that Follows* (23, s)
 29,34,45,46,47,54,55,59
 stmt s;
@@ -124,6 +130,21 @@ NONE
 call c;
 Select c such that Follows* (34, c)
 45,54
+stmt s;
+Select s such that Parent (s, 83)
+80
+stmt s;
+Select s such that Parent (s, 6)
+NONE
+stmt s;
+Select s such that Parent (s, 12)
+6
+stmt s;
+Select s such that Parent (s, 17)
+16
+stmt s;
+Select s such that Parent (103, s)
+104
 call c;
 Select c such that Follows* (c, 219)
 NONE
@@ -217,21 +238,6 @@ Select <w1, w2> such that Follows* (w1, w2)
 assign a1, a2;
 Select <a1, a2> such that Follows (a1, a2)
 10 11,110 111,111 112,120 121,121 122,122 123,123 124,124 125,125 126,126 127,127 128,128 129,130 131,132 133,133 134,134 135,137 138,138 139,145 146,147 148,150 151,151 152,152 153,153 154,154 155,155 156,156 157,157 158,161 162,182 183,188 189,19 20,193 194,199 200,2 3,20 21,201 202,210 211,211 212,213 214,214 215,219 220,228 229,24 25,244 245,245 246,246 247,247 248,248 249,252 253,257 258,27 28,270 271,271 272,272 273,275 276,283 284,284 285,298 299,299 300,3 4,30 31,31 32,35 36,36 37,39 40,48 49,49 50,56 57,60 61,64 65,67 68,7 8,70 71,8 9,81 82,9 10,90 91,93 94
-stmt s;
-Select s such that Parent (s, 83)
-80
-stmt s;
-Select s such that Parent (s, 6)
-NONE
-stmt s;
-Select s such that Parent (s, 12)
-6
-stmt s;
-Select s such that Parent (s, 17)
-16
-stmt s;
-Select s such that Parent (103, s)
-104
 stmt s;
 Select s such that Parent (101, s)
 102,103

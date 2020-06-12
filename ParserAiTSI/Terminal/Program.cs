@@ -12,10 +12,15 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"while  v;",
-				"Select v such that Uses (v, \"x2\")"
+				//"while  v;",
+				//"Select v such that Uses (v, \"x2\")"
 				//"stmt s;",
 				//"Select s such that Parent* (s, 117)"
+//				"assign a;",
+//"Select a such that Modifies (a, "temporary")"
+				"stmt s;",
+"Select s such that Follows (s, 246)"
+
 #else
 				Console.ReadLine(), 
 				Console.ReadLine()
