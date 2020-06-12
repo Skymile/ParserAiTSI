@@ -322,3 +322,66 @@ PP,RR,TT
 procedure p;
 Select p such that Calls (p, "TT")
 PP
+variable v;
+Select v such that Uses (191, v)
+ASTERICK,BOTTOM,COVER,DECREMENT,DX,DY,INCRE,LENGX,MARKING,MEAN,MEDIAN,MTOGGLE,PCT,RANGE,TOP,X1,X2,Y1,Y2
+variable v;
+Select v such that Uses (79, v)
+ASTERICK,BOTTOM,COVER,DECREASE,DECREMENT,DEPTH,DIFFERENCE,DOT,DX,DY,EDGE,FACTOR,GREEN,HALF,HEIGHT,I,INCRE,INCREASE,J,K,LENGX,MARKING,MEAN,MEDIAN,MTOGGLE,NOTDONE,NOTMOVE,PCT,PINK,PIXEL,RANGE,S,SEMI,TEMPORARY,TMP,TOP,WIDTH,X1,X2,Y1,Y2
+variable v;
+Select v such that Uses (160, v)
+DECREMENT,FACTOR,INCRE,X1,X2,Y1,Y2
+variable v;
+Select v such that Uses (97, v)
+TMP
+variable v;
+Select v such that Uses (217, v)
+DECREASE,DEPTH,DIFFERENCE,DOT,EDGE,GREEN,HALF,INCREASE,NOTMOVE,PINK,PIXEL,SEMI,TEMPORARY
+stmt s;
+Select s such that Uses (s, "incre")
+10,105,107,108,109,110,112,113,114,117,118,12,130,134,136,137,14,143,144,145,15,150,159,16,160,161,166,167,180,181,182,191,192,195,22,244,250,255,259,262,264,265,266,274,29,30,31,33,34,35,37,38,41,42,44,45,5,54,6,63,66,7,76,78,79,8,80,83,84,86,87,9,93
+stmt s;
+Select s such that Uses (s, "total")
+NONE
+assign a;
+Select a such that Uses (a, "difference")
+19,20,213,35,67
+assign a;
+Select a such that Uses (a, "total")
+NONE
+if ifs;
+Select ifs such that Uses (ifs, "x1")
+107,109,14,140,144,15,159,160,163,204,250,34,38,66,72,76,80,86
+if ifs;
+Select ifs such that Uses (ifs, "blue")
+NONE
+while w;
+Select w such that Uses (w, "x2")
+105,113,12,136,143,16,180,181,191,29,47,6,69,79,83
+while w;
+Select w such that Uses (w, "circumference")
+NONE
+call c;
+Select c such that Uses (c, "decrement")
+108,114,117,118,195,22,259,262,274,33,41,42,44,45,5,54,63,78,84,87
+call c;
+Select c such that Uses (c, "unknown")
+NONE
+variable v;
+Select v such that Uses ("Init", v)
+NONE
+variable v;
+Select v such that Uses ("Random", v)
+BOTTOM,DECREMENT,INCRE,TOP
+variable v;
+Select v such that Uses ("Draw", v)
+ASTERICK,BOTTOM,COVER,DECREMENT,DIFFERENCE,DX,DY,GREEN,INCRE,LENGX,MARKING,MEAN,MEDIAN,MTOGGLE,PCT,PINK,RANGE,S,TOP,X1,X2,Y1,Y2
+procedure p;
+Select p such that Uses (p, "x2")
+DRAW,MAIN,MOVE,SHEAR,SHIFT,SHRINK,TRANSFORM
+procedure p;
+Select p such that Uses (p, "p1")
+NONE
+procedure p;
+Select p such that Uses (p, "cs2")
+PP,QQ,RR,TT
