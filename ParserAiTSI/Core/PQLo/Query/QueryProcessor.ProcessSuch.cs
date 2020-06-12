@@ -167,8 +167,9 @@ namespace Core.PQLo.QueryPreProcessor
                             }
                             foreach (var item in invokedProcedures)
                             {
-                                var abc = this.Api.PKB.Procedures.Where(Mode.StandardRecursion, Instruction.Call, x =>  x.Variable == item.Variable).ToList();
-                                resultProc.AddRange(this.Api.ArrayForm.Where(Mode.GreedyRecursion, Instruction.Call, x => x.Variable == item.Variable).Select(x => x as Node));
+                                 resultProc.AddRange(this.Api.ArrayForm
+                                     .Where(Mode.GreedyRecursion, Instruction.Call, x => x.Variable == item.Variable)
+                                     .Select(x => x as Node));
                             }
                             foreach (var item in resultProc.Distinct())
                             {
@@ -182,14 +183,34 @@ namespace Core.PQLo.QueryPreProcessor
                         case StatementType.Stmt:
                             break;
                         case StatementType.Assign:
-                            var a = this.Api.PKB.ArrayForm.Where(Mode.NoRecursion, Instruction.Assign, x => x.Variables.Exists(z => z == data.Right)).ToList();
-                            a.AddRange(this.Api.PKB.ArrayForm.Where(Mode.NoRecursion, Instruction.Expression, x => x.Variables.Exists(z => z == data.Right)).ToList());
-                            return a ?? null;
+                            {
+                                var a = this.Api.PKB.ArrayForm.Where(Mode.NoRecursion, Instruction.Assign, x => x.Variables.Exists(z => z == data.Right)).ToList();
+                                a.AddRange(this.Api.PKB.ArrayForm.Where(Mode.NoRecursion, Instruction.Expression, x => x.Variables.Exists(z => z == data.Right)).ToList());
+                                return a ?? null;
+                            }
                             break;
                         case StatementType.Stmtlst:
                             break;
                         case StatementType.While:
-
+                            {
+                                var a = this.Api.PKB.ArrayForm.Where(Mode.NoRecursion, Instruction.Assign | Instruction.Expression, x => x.Variables.Exists(z => z == data.Right)).ToList();
+                                var list = new List<INode>();
+                                foreach (var item in a)
+                                {
+                                    list.AddRange(item.Parents.Where(x => x.Token == Instruction.Loop).ToList());
+                                }
+                                var parents = a.Select(x => x.Parents.Last());
+                                var ca = new List<INode>();
+                                foreach (var item in parents)
+                                {
+                                    ca.AddRange(this.Api.ArrayForm.Where(Mode.GreedyRecursion, Instruction.Call, x => x.Variable == item.Variable).Select(x => x as Node));
+                                }
+                                foreach (var item in ca)
+                                {
+                                    list.AddRange(item.Parents.Where(x => x.Token == Instruction.Loop).ToList());
+                                }
+                                return list.Distinct();
+                            }
                             break;
                         case StatementType.ProgLine:
                             break;
@@ -640,7 +661,7 @@ namespace Core.PQLo.QueryPreProcessor
                     .Append(lines.Variable)
                     .Distinct()
                     .ToList();
-                    
+
                 overwrite = x => string.Join(",", result);
             }
             return new[] { new Node() }; ;
