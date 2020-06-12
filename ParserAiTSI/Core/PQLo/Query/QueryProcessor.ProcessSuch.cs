@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Policy;
 using Core.Interfaces.PQL;
 
@@ -153,15 +154,27 @@ namespace Core.PQLo.QueryPreProcessor
                             break;
                         case StatementType.Call:
                             var calls = this.Api.ArrayForm.Where(x => x.Token == Instruction.Expression ? x.Variables.Contains(data.Right) : x.Variable == data.Right).ToList();
-                            calls = calls.Where(x => x.Token != Instruction.Assign && x.Variables == null).ToList();
+                            calls = calls.Where(x => x.Token != Instruction.Assign && x.Variables != null).ToList();
                             var invokedProcedures = calls.Select(x => x.Parents.Last()).ToList();
                             invokedProcedures = invokedProcedures.Distinct(new NodeStringComparer()).Select(x => x as Node).ToList();
                             var result = new List<Node>();
+                            var resultProc = new List<Node>();
                             foreach (var item in invokedProcedures)
                             {
-                                result.AddRange(this.Api.ArrayForm.Where(Mode.NoRecursion, Instruction.Call, x => x.Variable == item.Variable).Select(x => x as Node));
+                                resultProc.AddRange(this.Api.PKB.Procedures
+                                    .Where(Mode.StandardRecursion, Instruction.Call, x => x.Variable == item.Variable)
+                                    .Select(Mode.NoRecursion, x => x as Node).ToList());
                             }
-                            return result;
+                            foreach (var item in invokedProcedures)
+                            {
+                                var abc = this.Api.PKB.Procedures.Where(Mode.StandardRecursion, Instruction.Call, x =>  x.Variable == item.Variable).ToList();
+                                resultProc.AddRange(this.Api.ArrayForm.Where(Mode.GreedyRecursion, Instruction.Call, x => x.Variable == item.Variable).Select(x => x as Node));
+                            }
+                            foreach (var item in resultProc.Distinct())
+                            {
+                                result.AddRange(this.Api.ArrayForm.Where(Mode.GreedyRecursion, Instruction.Call, x => x.Variable == item.Variable).Select(x => x as Node));
+                            }
+                            return resultProc.Distinct();
                         case StatementType.Variable:
                             return GetUsesVariable(data, ref overwrite);
                         case StatementType.Constant:
@@ -169,10 +182,14 @@ namespace Core.PQLo.QueryPreProcessor
                         case StatementType.Stmt:
                             break;
                         case StatementType.Assign:
+                            var a = this.Api.PKB.ArrayForm.Where(Mode.NoRecursion, Instruction.Assign, x => x.Variables.Exists(z => z == data.Right)).ToList();
+                            a.AddRange(this.Api.PKB.ArrayForm.Where(Mode.NoRecursion, Instruction.Expression, x => x.Variables.Exists(z => z == data.Right)).ToList());
+                            return a ?? null;
                             break;
                         case StatementType.Stmtlst:
                             break;
                         case StatementType.While:
+
                             break;
                         case StatementType.ProgLine:
                             break;

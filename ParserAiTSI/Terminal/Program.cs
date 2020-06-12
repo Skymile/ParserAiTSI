@@ -1,4 +1,4 @@
-﻿//#define TEST
+﻿#define TEST
 using System;
 using System.Linq;
 
@@ -12,8 +12,8 @@ namespace Terminal
 		private static string[] Query() =>
 			new[] {
 #if TEST
-				"call v;",
-				"Select v such that Uses (v, \"decrement\")"
+				"while  v;",
+				"Select v such that Uses (v, \"x2\")"
 				//"stmt s;",
 				//"Select s such that Parent* (s, 117)"
 #else
