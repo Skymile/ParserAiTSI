@@ -13,7 +13,7 @@ namespace Terminal
 			new[] {
 #if TEST
 				"variable v;",
-				"Select v such that Uses (191, v)"
+				"Select v such that Uses (217, v)"
 				//"stmt s;",
 				//"Select s such that Parent* (s, 117)"
 #else

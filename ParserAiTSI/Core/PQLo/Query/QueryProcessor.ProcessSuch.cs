@@ -621,11 +621,12 @@ namespace Core.PQLo.QueryPreProcessor
                 {
                     return new[] { new Node() }; ;
                 }
-                var calls = lines.Nodes.Select(Mode.StandardRecursion, Instruction.Call, x => x);
-                foreach (var item in calls)
+                var calls = lines.Nodes.Select(Mode.StandardRecursion, Instruction.Call, x => x).Distinct(new NodeStringComparer()).ToList();
+                foreach (var item in calls.Distinct(new NodeStringComparer()).ToList())
                 {
                     xd.AddRange(this.Api.PKB.Procedures.Where(x => x.Name == item.Variable).Select(Mode.StandardRecursion, x => x).Where(x => x.Token != Instruction.Procedure));
                 }
+                xd = xd.Distinct(new KScheduleComparer()).ToList();
                 xd.AddRange(lines.Nodes.Select(Mode.StandardRecursion, x => x));
                 result.AddRange(
                     xd
@@ -673,7 +674,13 @@ namespace Core.PQLo.QueryPreProcessor
     {
         public bool Equals(INode x, INode y) =>
             x?.LineNumber == 0 || y?.LineNumber == 0 ? false : x?.LineNumber == y?.LineNumber;
+        public int GetHashCode(INode obj) => obj.GetHashCode();
+    }
 
+    public class NodeStringComparer : IEqualityComparer<INode>
+    {
+        public bool Equals(INode x, INode y) =>
+            string.IsNullOrEmpty(x?.Variable) || string.IsNullOrEmpty(y?.Variable)? false : x.Variable.Equals(y.Variable);
         public int GetHashCode(INode obj) => obj.GetHashCode();
     }
 }
