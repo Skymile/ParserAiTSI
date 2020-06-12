@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Core.Interfaces.PQL;
@@ -147,13 +148,36 @@ namespace Core.PQLo.QueryPreProcessor
                     }
                     break;
                 case CommandType.Uses:
+                    switch (statement)
                     {
-                        var en = this.Api.PKB.Uses.dict;
-                        var f = en.Keys.FirstOrDefault(
-                            i => i.Name.Equals(data.Right, StringComparison.InvariantCultureIgnoreCase)
-                        );
-                        return en[f];
+                        case StatementType.Procedure:
+                            break;
+                        case StatementType.Call:
+                            break;
+                        case StatementType.Variable:
+                            return GetUsesVariable(data, ref overwrite);
+                        case StatementType.Constant:
+                            break;
+                        case StatementType.Stmt:
+                            break;
+                        case StatementType.Assign:
+                            break;
+                        case StatementType.Stmtlst:
+                            break;
+                        case StatementType.While:
+                            break;
+                        case StatementType.ProgLine:
+                            break;
+                        case StatementType.If:
+                            break;
                     }
+                    break;
+                //var en = this.Api.PKB.Uses.dict;
+                //    var f = en.Keys.FirstOrDefault(
+                //        i => i.Name.Equals(data.Right, StringComparison.InvariantCultureIgnoreCase)
+                //    );
+                //    return en[f];
+
                 case CommandType.Calls:
                     switch (Find(d, data.Variable))
                     {
@@ -176,7 +200,7 @@ namespace Core.PQLo.QueryPreProcessor
                                     .Select(i => this.Api.GetProcedure(i.Id));
 
                                 var hash = procedures.Select(i => i.Variable.ToUpperInvariant()).ToHashSet();
-                                
+
                                 procedures = procedures.Concat(
                                     this.Api.ArrayForm
                                         .Where(
@@ -324,16 +348,12 @@ namespace Core.PQLo.QueryPreProcessor
                                         .Select(i => i.Parent)
                                     : (IEnumerable<INode>)FindLinesForGivenParentInstruction(Instruction.Loop, data);
                             case StatementType.If:
-                                {
-                                    if (data.Left == data.Variable)
-                                    {
-                                        return this.Api.ArrayForm
-                                            .Where(x => x.LineNumber.ToString() == data.Right)
-                                            .Where(x => x.Parent.Token == Instruction.If)
-                                            .Select(i => i.Parent);
-                                    }
-                                    return FindLinesForGivenParentInstruction(Instruction.If, data);
-                                }
+                                return data.Left == data.Variable
+                                    ? this.Api.ArrayForm
+                                        .Where(x => x.LineNumber.ToString() == data.Right)
+                                        .Where(x => x.Parent.Token == Instruction.If)
+                                        .Select(i => i.Parent)
+                                    : (IEnumerable<INode>)FindLinesForGivenParentInstruction(Instruction.If, data);
                         }
                         break;
                     }
@@ -392,7 +412,7 @@ namespace Core.PQLo.QueryPreProcessor
                                     {
                                         var flags = stateToInstruction[statement];
                                         var a = this.Api.ArrayForm
-                                            .FirstOrDefault(x => x.LineNumber== number && x.Token != Instruction.Else);
+                                            .FirstOrDefault(x => x.LineNumber == number && x.Token != Instruction.Else);
                                         var b = a.Parents.Where(x => flags.HasFlag(x.Token) || x.Token == Instruction.Else);
                                         return b;
                                     }
@@ -424,7 +444,7 @@ namespace Core.PQLo.QueryPreProcessor
                                         var a = result.Where(x => flags.HasFlag(x.Token));
                                         return a;
                                     }
-                                    else if(int.TryParse(data.Right, out  number))
+                                    else if (int.TryParse(data.Right, out number))
                                     {
                                         var flags = stateToInstruction[statement];
                                         var a = this.Api.ArrayForm
@@ -587,7 +607,46 @@ namespace Core.PQLo.QueryPreProcessor
                 .SelectMany(GetWithTwin)
                 .Where(Mode.NoRecursion, instruction);
         }
+        
+        private IEnumerable<Node> GetUsesVariable(SuchData data, ref Func<INode, string> overwrite)
+        {
+            if (int.TryParse(data.Left, out var number))
+            {
+                var lines = this.Api.PKB.ArrayForm.FirstOrDefault(x => x.LineNumber == number);
+                var result = new List<string>() { lines.Variable };
+                var xd = new List<INode>();
+                overwrite = x => string.Join(",", result);
 
+                if (lines.Nodes == null)
+                {
+                    return new[] { new Node() }; ;
+                }
+                var calls = lines.Nodes.Select(Mode.StandardRecursion, Instruction.Call, x => x);
+                foreach (var item in calls)
+                {
+                    xd.AddRange(this.Api.PKB.Procedures.Where(x => x.Name == item.Variable).Select(Mode.StandardRecursion, x => x).Where(x => x.Token != Instruction.Procedure));
+                }
+                xd.AddRange(lines.Nodes.Select(Mode.StandardRecursion, x => x));
+                result.AddRange(
+                    xd
+                    .Where
+                    (x => 
+                        x.LineNumber != number 
+                        && x.Token != Instruction.Procedure 
+                        && x.Token != Instruction.Call 
+                        && x.Token != Instruction.Assign
+                        && !string.IsNullOrWhiteSpace(x.Variable)
+                    ).Select(x => x.Token == Instruction.Expression ? x.Variables : x
+                        .Variables?
+                        .Append(x.Variable) 
+                        ?? new List<string> { x.Variable })
+                    .SelectMany(z => z.
+                        Where(x => !int.TryParse(x, out int res))));
+                result = result.Distinct().ToList();
+
+            }
+            return new[] { new Node() }; ;
+        }
         private static IEnumerable<INode> GetWithTwin(INode node)
         {
             if (node.Twin != null) // && node.Token == Instruction.If)
