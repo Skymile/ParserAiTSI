@@ -52,8 +52,8 @@ namespace Terminal
 						Console.WriteLine(string.Empty);
 					else
 					{
-						string result = qp.ProcessQuery(lines[0] + ";" + lines[1]).ToUpperInvariant();
-						Console.WriteLine(string.IsNullOrWhiteSpace(result) ? "NONE" : result);
+						string result = qp.ProcessQuery(lines[0] + ";" + lines[1]).ToLowerInvariant();
+						Console.WriteLine(string.IsNullOrWhiteSpace(result) ? "none" : result);
 					}
 				}
 #if !TEST

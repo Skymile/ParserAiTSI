@@ -35,7 +35,7 @@ namespace Core
 							i = i.Replace("}", string.Empty).Trim();
 
 						if (!string.IsNullOrWhiteSpace(i))
-							yield return i.Contains("procedure") ? (-1, i) : (count++, i);
+							yield return i.Contains("procedure") || i.Contains("else") ? (-1, i) : (count++, i);
 						for (int m = 0; m < start; m++)
 							yield return (count, "{");
 						for (int m = 0; m < close; m++)
