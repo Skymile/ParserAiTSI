@@ -7,7 +7,7 @@ using Core.Interfaces.PQL;
 
 namespace Core
 {
-    [DebuggerDisplay("{Level}|{Id}|{Nodes?.Count??0}: {Instruction}")]
+    [DebuggerDisplay("{Level}|{Id}|{LineNumber}|{Nodes?.Count??0}: {Instruction}")]
     public class Node : INode
     {
         public Node() { }
