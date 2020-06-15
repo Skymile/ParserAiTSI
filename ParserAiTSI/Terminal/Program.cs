@@ -35,7 +35,7 @@ namespace Terminal
 						? !string.IsNullOrWhiteSpace(args[0])
 							? args[0]
 							: throw new ArgumentException("Pusta ścieżka do pliku. Ustaw poprawną ścieżkę w zakładce \"Configuration\".")
-						: "../../input/2.txt"
+						: "./source.txt"
 					);
 
 			Console.WriteLine("Ready");
