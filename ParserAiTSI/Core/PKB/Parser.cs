@@ -9,6 +9,8 @@ namespace Core
 		public Parser Load(string filename)
 		{
 			this.Root.Nodes.Clear();
+			if (!File.Exists(filename))
+				throw new System.Exception($"Nie znaleziono pliku {filename}");
 			this.Root.Nodes.AddRange(LoadNodes(filename));
 			return this;
 		}
